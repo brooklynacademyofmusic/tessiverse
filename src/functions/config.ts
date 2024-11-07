@@ -2,7 +2,7 @@ import { AppConfigurationClient } from "@azure/app-configuration";
 import { DefaultAzureCredential } from "@azure/identity";
 const azure_app_config_url = process.env.AZURE_APP_CONFIG_URL;
 
-interface UserConfig {
+export interface UserConfig {
     firstname: string
     lastname: string
     userid: string
@@ -15,9 +15,9 @@ interface UserConfig {
     }
 }
 
-interface PlanStepConfig {
-    steptypeid: number
-    closestep: boolean
+export class PlanStepConfig {
+    steptypeid: number = 0
+    closestep: boolean = true
 }
 
 export async function readConfig(identity: string): Promise<UserConfig>{

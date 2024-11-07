@@ -13,7 +13,7 @@ export async function httpError(message: string): Promise<HttpResponseInit> {
     }
 }
 
-export async function tq_get(paths: string[], params: object, auth: string): Promise<any> {
+export async function tqGet(paths: string[], params: object, auth: string): Promise<any> {
     axios.get(path.join.apply(null,[tq_api_url].concat(paths)), {
         params: params,
         headers: {TQ_LOGIN: auth}}).then(
@@ -22,7 +22,7 @@ export async function tq_get(paths: string[], params: object, auth: string): Pro
             })
 }
 
-export async function tq_post(paths: string[], params: object, auth: string): Promise<any> {
+export async function tqPost(paths: string[], params: object, auth: string): Promise<any> {
     axios.post(path.join.apply(null,[tq_api_url].concat(paths)), {
         data: params,
         headers: {TQ_LOGIN: auth}}).then(
@@ -31,7 +31,7 @@ export async function tq_post(paths: string[], params: object, auth: string): Pr
             })
 }
 
-export async function tq_put(paths: string[], params: object, auth: string): Promise<any> {
+export async function tqPut(paths: string[], params: object, auth: string): Promise<any> {
     axios.put(path.join.apply(null,[tq_api_url].concat(paths)), {
         data: params,
         headers: {TQ_LOGIN: auth}}).then(

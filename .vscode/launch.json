@@ -8,6 +8,28 @@
       "restart": true,
       "port": 9229,
       "preLaunchTask": "func: host start"
+    },
+    {
+      "type": "node",
+      "name": "vscode-jest-tests.v2.tessiverse",
+      "request": "launch",
+      "args": [
+        "jest",
+        "--runInBand",
+        "--watchAll=false",
+        "--testNamePattern",
+        "${jest.testNamePattern}",
+        "--runTestsByPath",
+        "${jest.testFile}"
+      ],
+      "cwd": "c:\\Users\\ssyzygy\\node\\tessiverse\\tests",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true,
+      "program": "c:\\Users\\ssyzygy\\node\\tessiverse\\node_modules\\jest\\bin\\jest.js",
+      "env": {
+        "TQ_API_URL": "http://localhost:7072/api/"
+      }
     }
   ]
 }

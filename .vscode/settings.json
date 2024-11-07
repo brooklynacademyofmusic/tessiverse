@@ -8,5 +8,7 @@
   "azureFunctions.preDeployTask": "npm prune (functions)",
   "jest.nodeEnv": {
     "TQ_API_URL": "http://localhost:7072/api/"
-  }
+  },
+  "jest.jestCommandLine": "npx jest",
+  "jest.rootPath": "tests"
 }

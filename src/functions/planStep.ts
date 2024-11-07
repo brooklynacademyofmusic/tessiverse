@@ -1,21 +1,21 @@
 import { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { readConfig } from "./config"
-import {tq_get, tq_post, httpError} from "./http"
+import { readConfig, PlanStepConfig } from "./config"
+import { tqGet, tqPost, httpError } from "./http"
 
 export async function planStep(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(context.functionName,`processed request for url`,request.url);
     let config = await readConfig(request.params.from)
     let body = request.params.to + request.params.cc + request.params.bcc + request.params.subject + request.params.body
 
-    let plans = (await tq_get(["plans", "all"], {workerconstituentid: config.constituentid}, config.auth)) as Plan[]
+    let plans = await tqGet(["plans", "all"], {workerconstituentid: config.constituentid}, config.auth) as Plan[]
 
-    let plans_filtered: PlanScore[]
+    let plans_filtered = [] as PlanScore[]
 
     for (let i=0; i<plans.length; i++) {
         let plan = plans[i] as PlanScore
 
         let constituentid = plan.constituent.id.toString()
-        let emails = (await tq_get(["electronicaddresses", "all"], {constituentids: constituentid}, config.auth)) as Email[]
+        let emails = await tqGet(["electronicaddresses", "all"], {constituentids: constituentid}, config.auth) as Email[]
         
         let primary = emails.map((e) => e.address).concat(
             constituentid, plan.constituent.displayname.split(" "))
@@ -42,14 +42,16 @@ export async function planStep(request: HttpRequest, context: InvocationContext)
     // Found a plan!
     let plan = plans_filtered[0]
 
+    let planstepconfig = 'planstep' in config.apps ? config.apps.planstep : new PlanStepConfig()
+
     // Make a plan step
-    await tq_post(["planstep"],
+    await tqPost(["planstep"],
         {
             plan: {id: plan.id},
-            type: {id: config.apps.planstep.steptypeid },
+            type: {id: planstepconfig.steptypeid },
             notes: request.params.body,
             stepdatetime: new Date(),
-            completedondatetime: config.apps.planstep.closestep ? new Date() : null,
+            completedondatetime: planstepconfig.closestep ? new Date() : null,
             description: request.params.subject
         },
         config.auth)
@@ -57,7 +59,7 @@ export async function planStep(request: HttpRequest, context: InvocationContext)
     return 
 };
 
-function findFirstString(needle: string[], haystack: string): number {
+export function findFirstString(needle: string[], haystack: string): number {
     return needle
         .map((q) => {
             return haystack.search(new RegExp(q,"i"))
@@ -79,7 +81,7 @@ interface PlanScore extends Plan {
     tertiary: number
 }
 
-interface Plan {
+export interface Plan {
     campaign: {description: string},
     contributiondesignation: {description: string},
     constituent: {id: number, displayname: string},
@@ -87,6 +89,6 @@ interface Plan {
     id: number
 }
 
-interface Email {
+export interface Email {
     address: string
 }
