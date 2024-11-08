@@ -22,11 +22,11 @@
         "--runTestsByPath",
         "${jest.testFile}"
       ],
-      "cwd": "c:\\Users\\ssyzygy\\node\\tessiverse\\tests",
+      "cwd": "${workspaceFolder}/tests",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "disableOptimisticBPs": true,
-      "program": "c:\\Users\\ssyzygy\\node\\tessiverse\\node_modules\\jest\\bin\\jest.js",
+      "program": "${workspaceFolder}/node_modules/jest/bin/jest.js",
       "env": {
         "TQ_API_URL": "http://localhost:7072/api/"
       }
