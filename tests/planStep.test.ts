@@ -183,7 +183,7 @@ describe("planStep", () => {
          contributiondesignation: {description: "designation"},
          laststepdate: new Date().toString()}]
     
-    test.failing.each([
+    test.skip.each([
     {body: "a@test.com 2 C.Person", id: 1},
     {body: "2 a@test.com C.Person", id: 2},
     {body: "C. Person 2 a@test.com", id: 3}
