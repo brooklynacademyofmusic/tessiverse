@@ -1,17 +1,9 @@
 import { findFirstString, planStep, Plan, Email } from '../src/functions/planStep'
 import { httpError, tqGet, tqPost } from '../src/functions/http'
-import { readConfig, UserConfig } from '../src/functions/config'
-import { test, expect, jest, describe } from '@jest/globals'
+import { PlanStepConfig, UserConfig } from '../src/functions/config'
+import { test, expect, jest, describe, beforeEach } from '@jest/globals'
 import { HttpRequest, InvocationContext } from '@azure/functions'
-import { beforeEach } from 'node:test'
 jest.mock('../src/functions/http')
-jest.mock('../src/functions/config', () => {
-    const config_orig = jest.requireActual("../src/functions/config") as any
-    return {
-        ...config_orig,
-        readConfig: jest.fn(),
-    }
-})
 
 describe("findFirstString", () => {
     test("findFirstString finds the first needle in a haystack",() => {
@@ -24,16 +16,15 @@ describe("findFirstString", () => {
 })
 
 describe("planStep", () => {
-    let user: UserConfig = {
-        userid: "me",
-        firstname: "sky",
-        lastname: "syzygy",
-        apps: {},
-        inactive: false,
-        locked: false,
-        constituentid: -1,
-        auth: ""
-    }
+    let tqGetMocked = jest.mocked(tqGet)
+    let tqPostMocked = jest.mocked(tqPost)
+    let httpErrorMocked = jest.mocked(httpError)
+    
+    UserConfig.prototype.loadFromAzure = jest.fn(async () => {
+        let user = new UserConfig("me")
+        user.apps.planstep = new PlanStepConfig()
+        return user
+    })
 
     let email = {
         from: "me@test.com",
@@ -80,10 +71,7 @@ describe("planStep", () => {
         "type": {"id": 0}
     }
 
-    let readConfigMocked = jest.mocked(readConfig).mockResolvedValue(user)
-    let tqGetMocked = jest.mocked(tqGet)
-    let tqPostMocked = jest.mocked(tqPost)
-    let httpErrorMocked = jest.mocked(httpError)
+
 
     beforeEach(() => {
         httpErrorMocked.mockReset()
@@ -131,7 +119,7 @@ describe("planStep", () => {
         }), new InvocationContext())
 
         expect(tqPostMocked).toBeCalledTimes(1)
-        expect(tqPostMocked).toBeCalledWith(["planstep"], planstep, "")
+        expect(tqPostMocked).toBeCalledWith(["planstep"], planstep, "|||")
 
     })
 
@@ -161,7 +149,7 @@ describe("planStep", () => {
         }), new InvocationContext())
 
         expect(tqPostMocked).toBeCalledTimes(1)
-        expect(tqPostMocked).toBeCalledWith(["planstep"], planstep, "")
+        expect(tqPostMocked).toBeCalledWith(["planstep"], planstep, "|||")
 
     })
 
@@ -209,7 +197,7 @@ describe("planStep", () => {
     }), new InvocationContext())
 
     expect(tqPostMocked).toBeCalledTimes(1)
-    expect(tqPostMocked).toBeCalledWith(["planstep"], planstep, "")
+    expect(tqPostMocked).toBeCalledWith(["planstep"], planstep, "|||")
 
     })
 

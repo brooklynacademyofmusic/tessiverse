@@ -1,11 +1,11 @@
 import { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { readConfig, PlanStepConfig } from "./config"
+import { UserConfig, PlanStepConfig } from "./config"
 import { tqGet, tqPost, httpError } from "./http"
 
 export async function planStep(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(context.functionName,`processed request for url`,request.url);
-    let config = await readConfig(request.params.from)
-    let body = request.params.to + request.params.cc + request.params.bcc + request.params.subject + request.params.body
+    let config = await new UserConfig(request.params.from).loadFromAzure()
+    let body = [request.params.to,request.params.cc,request.params.bcc,request.params.subject,request.params.body].join(" ")
     let plans = await tqGet(["plans", "all"], {workerconstituentid: config.constituentid}, config.auth) as Plan[]
     let plans_filtered = [] as PlanScore[]
     let plans_emails = await Promise.all(plans.map((p) => {
