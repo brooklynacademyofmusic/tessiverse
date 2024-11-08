@@ -18,9 +18,9 @@ export async function planStep(request: HttpRequest, context: InvocationContext)
         let emails = await tqGet(["electronicaddresses", "all"], {constituentids: constituentid}, config.auth) as Email[]
         
         let primary = emails.map((e) => e.address).concat(
-            constituentid, plan.constituent.displayname.split(" "))
-        let secondary = plan.campaign.description.split(" ").concat(
-            plan.contributiondesignation.description.split(" "))
+            constituentid, plan.constituent.displayname)
+        let secondary = [plan.campaign.description].concat(
+            plan.contributiondesignation.description)
 
         plan.primary = findFirstString(primary, body)
         plan.secondary = findFirstString(secondary, body)
