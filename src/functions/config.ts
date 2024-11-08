@@ -1,7 +1,8 @@
-import { AppConfigurationClient } from "@azure/app-configuration";
+import { SecretClient } from "@azure/keyvault-secrets";
 import { DefaultAzureCredential } from "@azure/identity";
 import { tqGet } from "./http";
-const azure_app_config_url = process.env.AZURE_APP_CONFIG_URL;
+import { hash } from "crypto";
+const key_vault_url = process.env.AZURE_KEY_VAULT_URL;
 const admin_auth = process.env.TQ_ADMIN_LOGIN;
 const tessi_api_url = process.env.TESSI_API_URL || "";
 
@@ -38,27 +39,31 @@ export class UserConfig {
     }
 
     async loadFromAzure() {
-        const client = new AppConfigurationClient(
-            azure_app_config_url,
+        const client = new SecretClient(
+            key_vault_url,
             new DefaultAzureCredential()
         )
-        return client.getConfigurationSetting({
-            "key": ["users",this.identity].join(".")
-        }).then((response) => {
+        return client.getSecret(
+            hash("md5",["users",this.identity].join("."))
+        ).then((response) => {
+            if (response.properties.tags.identity != this.identity) {
+                throw new Error("Hash collision PANIC!")
+            }
             Object.assign(this,JSON.parse(response.value))
             return this
         })
     }
 
     async saveToAzure() {
-        const client = new AppConfigurationClient(
-            azure_app_config_url,
+        const client = new SecretClient(
+            key_vault_url,
             new DefaultAzureCredential()
         )
-        return client.setConfigurationSetting({
-            "key": ["users",this.identity].join("."),
-            "value": JSON.stringify(this)
-        }).then(() => this)
+        return client.setSecret(
+            hash("md5",["users",this.identity].join(".")),
+            JSON.stringify(this),
+            {tags: {identity: this.identity} }
+        ).then(() => this)
     }
 }
 
