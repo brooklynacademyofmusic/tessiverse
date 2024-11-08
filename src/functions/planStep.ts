@@ -6,16 +6,17 @@ export async function planStep(request: HttpRequest, context: InvocationContext)
     context.log(context.functionName,`processed request for url`,request.url);
     let config = await readConfig(request.params.from)
     let body = request.params.to + request.params.cc + request.params.bcc + request.params.subject + request.params.body
-
     let plans = await tqGet(["plans", "all"], {workerconstituentid: config.constituentid}, config.auth) as Plan[]
-
     let plans_filtered = [] as PlanScore[]
+    let plans_emails = await Promise.all(plans.map((p) => {
+        return tqGet(["electronicaddresses", "all"], {constituentids: p.constituent.id}, config.auth) as Promise<Email[]>
+    }))
 
     for (let i=0; i<plans.length; i++) {
         let plan = plans[i] as PlanScore
 
         let constituentid = plan.constituent.id.toString()
-        let emails = await tqGet(["electronicaddresses", "all"], {constituentids: constituentid}, config.auth) as Email[]
+        let emails = plans_emails[i]
         
         let primary = emails.map((e) => e.address).concat(
             constituentid, plan.constituent.displayname)
