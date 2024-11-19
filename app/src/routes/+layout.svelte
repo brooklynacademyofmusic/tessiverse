@@ -15,7 +15,7 @@
 	  <DarkLight />
 	  <Github repo={repo} />
 	</nav>
-	<main class="flex flex-col p-6 gap-8 max-w-screen-lg mx-auto w-full">
+	<main class="flex flex-col p-6 md:gap-16 gap-8 max-w-screen-lg mx-auto w-full">
 			{@render children()}
 	</main>
 

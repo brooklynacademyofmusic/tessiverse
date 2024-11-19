@@ -12,7 +12,7 @@
 
 <Card class={cn("flex flex-col border-primary",blur,className)}>
     <div class="w-full rounded-t bg-secondary p-3 font-extralight tracking-tight">{title}</div>
-    <CardContent class="grow">{@render children()}</CardContent>
+    <CardContent class="grow flex flex-col">{@render children()}</CardContent>
     <div class="text-right">
         {#if !disabled}
         <Button size="icon" variant="ghost" class="text-secondary-foreground border-primary border-r-0 border-b-0">
