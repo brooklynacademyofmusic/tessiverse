@@ -1,12 +1,11 @@
 <script lang="ts">
-    import * as Accordion from "$lib/components/ui/accordion/index.js";
     import Card from "$lib/components/ui/card/card.svelte";
+    import AppCard from "$lib/components/appCard.svelte";
 	import type { PageData } from "./$types";
     import Readme from "./readme.md"
     import { Ellipsis } from "lucide-svelte"
     import { fade } from "svelte/transition"
     let { data }: {data: PageData} = $props()
-	import { invalidateAll } from "$app/navigation";
     
 </script>
 
@@ -23,10 +22,10 @@
     </Card>
 </article>
 <article class="grid grid-cols-2 gap-8 min-h-[10rem]">
-    <Card class="p-4 border-primary">
+    <AppCard title = "Tessitura integration">
         Test a thing
-    </Card>
-    <Card class="p-4 border-primary">
+    </AppCard>
+    <AppCard title = "Plan Steps by Email" disabled={true}>
         Test another thing
-    </Card>
+    </AppCard>
 </article>
