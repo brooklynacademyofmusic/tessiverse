@@ -10,7 +10,7 @@
     }
 </script>
 
-<Card class={cn("flex flex-col border-primary",blur,className)}>
+<Card class={cn("flex flex-col border-primary shadow-3xl shadow-primary",blur,className)}>
     <div class="w-full rounded-t bg-secondary p-3 font-extralight tracking-tight">{title}</div>
     <CardContent class="grow flex flex-col">{@render children()}</CardContent>
     <div class="text-right">

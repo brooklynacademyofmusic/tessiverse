@@ -59,8 +59,8 @@ const config: Config = {
 			},
 			boxShadow: {
 				'xl': "0 0 25px -4px",
-				'2xl': "0 0 40px -8px", 
-				'3xl': "0 0 60px -15px"
+				'2xl': "0 0 30px -8px", 
+				'3xl': "0 0 40px -15px"
 			},
 			fontFamily: {
 				sans: [...fontFamily.sans]

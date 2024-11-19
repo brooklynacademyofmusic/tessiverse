@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "$lib/components/ui/accordion";
     import { Badge } from "$lib/components/ui/badge";
     import { Card } from "$lib/components/ui/card";
     import AppCard from "$lib/components/appCard.svelte";
@@ -18,8 +19,12 @@
             <span transition:fade>{ name }</span>
         {/await} 
     !</h1>
-    <Card class="min-h-16 p-4 bg-primary shadow-3xl shadow-primary text-center">
-        <Readme/>
+    <Card class="min-h-16 p-4 shadow-3xl shadow-primary dark:prose-headings:text-white">
+        <Accordion class="w-full"><AccordionItem value="readme" class="border-0">
+            <AccordionTrigger class="text-4xl flex hover:no-underline">
+                <div class="mx-auto">✨🪐✨ Welcome to the <span class="rainbow">tessiverse</span> ✨🪐✨</div></AccordionTrigger>
+            <AccordionContent><Readme/></AccordionContent>
+        </AccordionItem></Accordion>
     </Card>
 </article>
 <article class="grid md:grid-cols-2 grid-cols-1 gap-8 min-h-[10rem]">

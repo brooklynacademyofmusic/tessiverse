@@ -1,2 +1,1 @@
-# ✨🪐✨ Welcome to the <span class="rainbow">tessiverse</span>! ✨🪐✨
-**the <span class="rainbow">tessiverse</span>** is a collection of apps for importing and exporting and otherwise interacting with Tessitura data. 
+**<span class="rainbow">tessiverse</span>** is a collection of apps for importing, exporting and otherwise interacting with Tessitura data.
