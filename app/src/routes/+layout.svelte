@@ -1,6 +1,22 @@
 <script lang="ts">
-	import '../app.css';
+	import "../app.css"
 	let { children } = $props();
+	import { Button } from "$lib/components/ui/button/index.js";
+	import DarkLight from "$lib/components/darklight.svelte";
+	import Github from "$lib/components/github.svelte";
+	import { ModeWatcher } from "mode-watcher";
+	let repo = "skysyzygy/tessiverse"
 </script>
 
-{@render children()}
+<ModeWatcher />
+<div class="dark:bg-black bg-white flex min-h-screen w-full flex-col">
+	<nav class="hidden md:flex gap-2 p-1 bg-secondary w-full justify-end">
+	  <Button size="sm" class="hover:shadow-xl hover:shadow-primary">Logout</Button>
+	  <DarkLight class="hover:shadow-xl hover:shadow-primary"/>
+	  <Github repo={repo} class="hover:shadow-xl hover:shadow-primary"/>
+	</nav>
+	<main class="flex flex-col p-6 gap-8 max-w-screen-lg mx-auto w-full">
+			{@render children()}
+	</main>
+
+</div>

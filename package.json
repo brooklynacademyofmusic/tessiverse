@@ -14,7 +14,11 @@
     "@azure/app-configuration-provider": "^1.1.2",
     "@azure/functions": "^4.0.0",
     "@azure/keyvault-secrets": "^4.9.0",
-    "axios": "1.7.7"
+    "axios": "1.7.7",
+    "clsx": "^2.1.1",
+    "lucide-svelte": "^0.460.1",
+    "tailwind-merge": "^2.5.4",
+    "tailwind-variants": "^0.3.0"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
