@@ -1,17 +1,8 @@
-import { HttpResponseInit } from "@azure/functions";
+import { env } from '$env/dynamic/private';
 import axios from 'axios';
 import * as path from 'path';
 
-const tq_api_url = process.env.TQ_API_URL;
-
-export async function httpError(message: string): Promise<HttpResponseInit> {
-    return {
-        status: 400,
-        jsonBody: {
-            message: message
-        }
-    }
-}
+const tq_api_url = env.TQ_API_URL || "";
 
 export async function tqGet(paths: string[], params: object, auth: string): Promise<any> {
     axios.get(path.join.apply(null,[tq_api_url].concat(paths)), {

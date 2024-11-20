@@ -5,10 +5,5 @@
   "azureFunctions.projectRuntime": "~4",
   "debug.internalConsoleOptions": "neverOpen",
   "azureFunctions.projectLanguageModel": 4,
-  "azureFunctions.preDeployTask": "npm prune (functions)",
-  "jest.nodeEnv": {
-    "TQ_API_URL": "http://localhost:7072/api/"
-  },
-  "jest.jestCommandLine": "npx jest",
-  "jest.rootPath": "tests"
+  "azureFunctions.preDeployTask": "npm prune (functions)"
 }

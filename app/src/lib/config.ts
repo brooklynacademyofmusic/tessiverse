@@ -1,10 +1,12 @@
 import { SecretClient } from "@azure/keyvault-secrets";
 import { DefaultAzureCredential } from "@azure/identity";
-import { tqGet } from "./http";
+import { env } from "$env/dynamic/private"
+import { error } from "@sveltejs/kit"
+import { tqGet } from "./tq";
 import { hash } from "crypto";
-const key_vault_url = process.env.AZURE_KEY_VAULT_URL;
-const admin_auth = process.env.TQ_ADMIN_LOGIN;
-const tessi_api_url = process.env.TESSI_API_URL || "";
+const key_vault_url = env.AZURE_KEY_VAULT_URL || "";
+const admin_auth = env.TQ_ADMIN_LOGIN || "";
+const tessi_api_url = env.TESSI_API_URL || "";
 
 export class UserConfig {
     readonly identity: string = ""
@@ -35,7 +37,9 @@ export class UserConfig {
             then((tessi) => {
                 Object.assign(this, tessi)
                 return this
-            })
+            }).catch(() => 
+                error(500, "Couldn't connect to Tessitura")
+            )
     }
 
     async loadFromAzure() {
@@ -46,11 +50,14 @@ export class UserConfig {
         return client.getSecret(
             hash("md5",["users",this.identity].join("."))
         ).then((response) => {
-            if (response.properties.tags.identity != this.identity) {
+            if (response.properties?.tags?.identity != this.identity) {
                 throw new Error("Hash collision PANIC!")
             }
-            Object.assign(this,JSON.parse(response.value))
+            Object.assign(this,JSON.parse(response.value || ""))
             return this
+        }).catch((e) => {
+            console.log(e)
+            error(500, "Couldn't connect to secure storage")
         })
     }
 
@@ -63,7 +70,9 @@ export class UserConfig {
             hash("md5",["users",this.identity].join(".")),
             JSON.stringify(this),
             {tags: {identity: this.identity} }
-        ).then(() => this)
+        ).then(() => this).catch(() => 
+            error(500, "Couldn't connect to secure storage")
+        )
     }
 }
 

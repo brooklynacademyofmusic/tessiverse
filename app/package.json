@@ -15,6 +15,9 @@
 		"test:e2e": "playwright test"
 	},
 	"devDependencies": {
+		"@azure/app-configuration-provider": "^1.1.2",
+		"@azure/functions": "^4.0.0",
+		"@azure/keyvault-secrets": "^4.9.0",
 		"@azure/static-web-apps-cli": "^2.0.1",
 		"@playwright/test": "^1.45.3",
 		"@sveltejs/adapter-auto": "^3.0.0",
@@ -22,6 +25,7 @@
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"@types/eslint": "^9.6.0",
 		"autoprefixer": "^10.4.20",
+		"axios": "1.7.7",
 		"bits-ui": "^0.21.16",
 		"clsx": "^2.1.1",
 		"eslint": "^9.7.0",

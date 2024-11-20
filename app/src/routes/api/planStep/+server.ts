@@ -1,6 +1,6 @@
-import { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { UserConfig, PlanStepConfig } from "./config"
-import { tqGet, tqPost, httpError } from "./http"
+import { HttpRequest, type HttpResponseInit, InvocationContext } from "@azure/functions";
+import { UserConfig, PlanStepConfig } from "$lib/config"
+import { tqGet, tqPost, httpError } from "$lib/tq"
 
 export async function planStep(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(context.functionName,`processed request for url`,request.url);
@@ -54,15 +54,15 @@ export async function planStep(request: HttpRequest, context: InvocationContext)
     await tqPost(["planstep"],
         {
             plan: {id: plan.id},
-            type: {id: planstepconfig.steptypeid },
+            type: {id: planstepconfig?.steptypeid },
             notes: request.params.body,
             stepdatetime: new Date(),
-            completedondatetime: planstepconfig.closestep ? new Date() : null,
+            completedondatetime: planstepconfig?.closestep ? new Date() : null,
             description: request.params.subject
         },
         config.auth)
 
-    return 
+    return {}
 };
 
 export function findFirstString(needle: string[], haystack: string): number {
