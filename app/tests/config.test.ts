@@ -1,4 +1,4 @@
-import { PlanStepConfig, UserConfig } from "$lib/config";
+import { PlanStepConfig, UserConfig } from "$lib/userconfig";
 import { test, expect, describe, vi } from "vitest";
 import { SecretClient } from "@azure/keyvault-secrets"
 import { HttpResponse } from "@azure/functions";
@@ -17,10 +17,7 @@ describe("UserConfig", () => {
 
     test("loadFromAzure throws error if data does not exist in Azure", async () => {
         let user = new UserConfig("not_me@test.com")
-        const consoleSpy = vi.spyOn(console, 'log')
-        await expect(user.loadFromAzure()).rejects.toMatchObject({status: 500})
-        expect(consoleSpy).toHaveBeenCalledOnce()
-        expect(consoleSpy.mock.calls[0].toString()).toMatch(/A secret with .+ was not found/)
+        await expect(user.loadFromAzure()).rejects.toMatchObject({status: 404})
     })
 
     test("saveToAzure creates a new secret", async () => {

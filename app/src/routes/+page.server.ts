@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { UserConfig } from '$lib/config';
-import { User } from 'lucide-svelte';
+import { UserConfig } from '$lib/userconfig';
 import { error } from '@sveltejs/kit'
+import * as errors from "$lib/errors"
 
 type clientPrincipal = {
     identityProvider: string,
@@ -18,14 +18,12 @@ export const load: PageServerLoad = async ( { request, cookies }) => {
     const user = JSON.parse(header.toString('ascii') || "{}") as clientPrincipal
 
     if (!user.userDetails) {
-        error(401, 'User not logged in!?')
+        error(401, errors.AUTH_ERROR)
     }
 
     const userConfig = new UserConfig(user.userDetails)
-    console.log(await userConfig.loadFromAzure())
 
     return {
-        name: user.userDetails,
-        config: null
+        config: userConfig.loadFromAzure()
     }
 }

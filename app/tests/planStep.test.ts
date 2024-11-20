@@ -1,6 +1,6 @@
 import { findFirstString, planStep, type Plan, type Email } from '../src/routes/api/planStep/+server'
 import { tqGet, tqPost } from '$lib/tq'
-import { PlanStepConfig, UserConfig } from '$lib/config'
+import { PlanStepConfig, UserConfig } from '$lib/userconfig'
 import { test, expect, vi, describe, beforeEach } from 'vitest'
 import { HttpRequest, InvocationContext } from '@azure/functions'
 vi.mock('../src/functions/http')

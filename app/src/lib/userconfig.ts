@@ -4,6 +4,8 @@ import { env } from "$env/dynamic/private"
 import { error } from "@sveltejs/kit"
 import { tqGet } from "./tq";
 import { hash } from "crypto";
+import * as errors from "$lib/errors"
+
 const key_vault_url = env.AZURE_KEY_VAULT_URL || "";
 const admin_auth = env.TQ_ADMIN_LOGIN || "";
 const tessi_api_url = env.TESSI_API_URL || "";
@@ -38,7 +40,7 @@ export class UserConfig {
                 Object.assign(this, tessi)
                 return this
             }).catch(() => 
-                error(500, "Couldn't connect to Tessitura")
+                error(500, errors.TQ_ERROR)
             )
     }
 
@@ -56,8 +58,11 @@ export class UserConfig {
             Object.assign(this,JSON.parse(response.value || ""))
             return this
         }).catch((e) => {
+            if (e.code === "SecretNotFound") {
+                error(404, errors.USER_NOT_FOUND_ERROR)
+            }
             console.log(e)
-            error(500, "Couldn't connect to secure storage")
+            error(500, errors.AZURE_KEYVAULT_ERROR)
         })
     }
 
@@ -71,7 +76,7 @@ export class UserConfig {
             JSON.stringify(this),
             {tags: {identity: this.identity} }
         ).then(() => this).catch(() => 
-            error(500, "Couldn't connect to secure storage")
+            error(500, errors.AZURE_KEYVAULT_ERROR)
         )
     }
 }

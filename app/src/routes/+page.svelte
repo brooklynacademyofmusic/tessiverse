@@ -7,18 +7,21 @@
     import Readme from "./readme.md"
     import { Ellipsis } from "lucide-svelte"
     import { fade } from "svelte/transition"
+    import * as errors from "$lib/errors"
     let { data }: {data: PageData} = $props()
-    
+
 </script>
 
 <article class="prose max-w-none font-extralight">
     <h1 class="text-foreground font-extralight text-6xl">Hi, 
-        {#await data.name}
+        {#await data.config}
             <Ellipsis class="animate-pulse inline-block w-12 h-12 text-secondary"/>
-        {:then name }
-            <span transition:fade>{ name }</span>
+        {:then config }
+            <span transition:fade>{ config.firstname }</span>
+        {:catch error }
+            {JSON.stringify(error)}
         {/await} 
-    !</h1>
+    </h1>
     <Card class="min-h-16 p-4 shadow-3xl shadow-primary dark:prose-headings:text-white">
         <Accordion class="w-full"><AccordionItem value="readme" class="border-0">
             <AccordionTrigger class="text-4xl flex hover:no-underline">
@@ -29,7 +32,7 @@
 </article>
 <article class="grid md:grid-cols-2 grid-cols-1 gap-8 min-h-[10rem]">
     <AppCard title = "Tessitura integration">
-        {#await data.name}
+        {#await data.config}
         <Badge class="w-min ml-auto animate-pulse">Loading...</Badge>
         <Ellipsis class="inline-block w-12 h-12 text-secondary animate-pulse"/>
         {:then name }

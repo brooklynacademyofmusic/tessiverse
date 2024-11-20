@@ -1,5 +1,5 @@
 import { HttpRequest, type HttpResponseInit, InvocationContext } from "@azure/functions";
-import { UserConfig, PlanStepConfig } from "$lib/config"
+import { UserConfig, PlanStepConfig } from "$lib/userconfig"
 import { tqGet, tqPost, httpError } from "$lib/tq"
 
 export async function planStep(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
