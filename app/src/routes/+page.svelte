@@ -17,9 +17,13 @@
         {#await data.config}
             <Ellipsis class="animate-pulse inline-block w-12 h-12 text-secondary"/>
         {:then config }
-            <span transition:fade>{ config.firstname }</span>
+            <span transition:fade>{ config }!</span>
         {:catch error }
-            {JSON.stringify(error)}
+            {#if error.id == errors.USER_NOT_FOUND_ERROR.id}
+                New user!
+            {:else}
+                Ooops!
+            {/if}
         {/await} 
     </h1>
     <Card class="min-h-16 p-4 shadow-3xl shadow-primary dark:prose-headings:text-white">
@@ -34,17 +38,18 @@
     <AppCard title = "Tessitura integration">
         {#await data.config}
         <Badge class="w-min ml-auto animate-pulse">Loading...</Badge>
-        <Ellipsis class="inline-block w-12 h-12 text-secondary animate-pulse"/>
         {:then name }
         <Badge class="w-min ml-auto bg-green-600">Connected</Badge>
         <p>Username: Username</p>
         <p>Group: Group</p>
         <p>API server: https://tessitura.api</p>
-        {:catch name }
+        {:catch error }
         <Badge class="w-min ml-auto bg-destructive">Error</Badge>
-        <p>Username: Username</p>
-        <p>Group: Group</p>
-        <p>API server: https://tessitura.api</p>
+        {#if error.id == errors.USER_NOT_FOUND_ERROR.id}
+            New user!
+        {:else}
+            Ooops!
+        {/if}
         {/await}
     </AppCard>
     <AppCard title = "Plan Steps by Email" disabled={true}>
