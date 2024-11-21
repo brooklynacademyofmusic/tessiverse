@@ -3,7 +3,7 @@
     import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "$lib/components/ui/accordion";
     import { Badge } from "$lib/components/ui/badge";
     import { Card } from "$lib/components/ui/card";
-    import { AlertDialog, AlertDialogCancel, AlertDialogContent } from "$lib/components/ui/alert-dialog";
+    import Signup from "$lib/components/signup.svelte";
     import AppCard from "$lib/components/appCard.svelte";
 	import type { PageData } from "./$types";
     import Readme from "./readme.md"
@@ -22,26 +22,14 @@
         {:then config }
             <span transition:fade>{ config }!</span>
         {:catch e }
-            {#if e.id == errors.USER_NOT_FOUND.id+1}
-                <AlertDialog open={true}>
-                    <AlertDialogContent class="md:w-max max-w-none">
-                        <div class="text-4xl mx-auto">✨🪐✨ Welcome to the <span class="rainbow">tessiverse</span> ✨🪐✨</div>
-                        Error! {e.message}
-                    </AlertDialogContent>
-                </AlertDialog>
-            {:else}
-            <AlertDialog open={true}>
-                <AlertDialogContent class="border-destructive focus:ring-0 ring-0">
-                    Error! {e.message}
-                </AlertDialogContent>
-            </AlertDialog>
-            {/if}
+            <Signup />
         {/await} 
     </h1>
     <Card class="min-h-16 p-4 shadow-3xl shadow-primary dark:prose-headings:text-white">
         <Accordion class="w-full"><AccordionItem value="readme" class="border-0">
-            <AccordionTrigger class="text-4xl flex hover:no-underline">
-                <div class="mx-auto">✨🪐✨ Welcome to the <span class="rainbow">tessiverse</span> ✨🪐✨</div></AccordionTrigger>
+            <AccordionTrigger class="text-lg hover:no-underline align-text-bottom">
+                <span class="rainbow">the tessiverse</span> is a collection of apps for importing, exporting and otherwise interacting with Tessitura data.            
+            </AccordionTrigger>
             <AccordionContent><Readme/></AccordionContent>
         </AccordionItem></Accordion>
     </Card>
