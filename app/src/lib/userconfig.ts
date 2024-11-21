@@ -40,7 +40,7 @@ export class UserConfig {
                 Object.assign(this, tessi)
                 return this
             }).catch(() => 
-                error(500, errors.TQ_ERROR)
+                error(500, errors.TQ)
             )
     }
 
@@ -59,10 +59,10 @@ export class UserConfig {
             return this
         }).catch((e) => {
             if (e.code === "SecretNotFound") {
-                error(404, errors.USER_NOT_FOUND_ERROR)
+                error(404, errors.USER_NOT_FOUND)
             }
             console.log(e)
-            error(500, errors.AZURE_KEYVAULT_ERROR)
+            error(500, errors.AZURE_KEYVAULT)
         })
     }
 
@@ -76,7 +76,7 @@ export class UserConfig {
             JSON.stringify(this),
             {tags: {identity: this.identity} }
         ).then(() => this).catch(() => 
-            error(500, errors.AZURE_KEYVAULT_ERROR)
+            error(500, errors.AZURE_KEYVAULT)
         )
     }
 }

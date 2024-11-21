@@ -18,7 +18,7 @@ export const load: PageServerLoad = async ( { request, cookies }) => {
     const user = JSON.parse(header.toString('ascii') || "{}") as clientPrincipal
 
     if (!user.userDetails) {
-        error(401, errors.AUTH_ERROR)
+        error(401, errors.AUTH)
     }
 
     const userConfig = new UserConfig(user.userDetails)
