@@ -1,6 +1,7 @@
 import { HttpRequest, type HttpResponseInit, InvocationContext } from "@azure/functions";
 import { UserConfig, PlanStepConfig } from "$lib/userconfig"
-import { tqGet, tqPost, httpError } from "$lib/tq"
+import { tqGet, tqPost } from "$lib/tq"
+import { error as httpError } from "@sveltejs/kit"
 
 export async function planStep(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(context.functionName,`processed request for url`,request.url);
@@ -38,7 +39,7 @@ export async function planStep(request: HttpRequest, context: InvocationContext)
     }
     
     if (plans_filtered.length == 0) {
-        return httpError("couldn't find a matching plan")
+        return httpError(404, "couldn't find a matching plan")
     }
 
     plans_filtered = plans_filtered.sort((a,b) => {
