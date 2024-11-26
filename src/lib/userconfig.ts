@@ -2,13 +2,14 @@ import { SecretClient } from "@azure/keyvault-secrets";
 import { DefaultAzureCredential } from "@azure/identity";
 import { env } from "$env/dynamic/private"
 import { error } from "@sveltejs/kit"
-import { tqGet } from "./tq";
+import { tq } from "./tq";
 import { hash } from "crypto";
 import * as errors from "$lib/errors"
 
 const key_vault_url = env.AZURE_KEY_VAULT_URL || "";
 const admin_auth = env.TQ_ADMIN_LOGIN || "";
 const tessi_api_url = env.TESSI_API_URL || "";
+
 
 export class UserConfig {
     readonly identity: string = ""
@@ -21,9 +22,7 @@ export class UserConfig {
     group: string = ""
     tessiApiUrl: string = tessi_api_url
     location: string = ""
-    apps: {
-        planstep?: PlanStepConfig
-    }
+    apps: any = {}
 
     constructor(identity: string) {
         this.identity = identity
@@ -35,7 +34,7 @@ export class UserConfig {
     }
 
     async loadFromTessi() {
-        return tqGet(["users"],{"username":this.userid},admin_auth).
+        return tq("get","users",admin_auth,{"username":this.userid}).
             then((tessi) => {
                 Object.assign(this, tessi)
                 return this
@@ -79,10 +78,10 @@ export class UserConfig {
             error(500, errors.AZURE_KEYVAULT)
         )
     }
+
+    addApp(appName: string, data: any) {
+        this.apps[appName] = data
+    }
 }
 
-export class PlanStepConfig {
-    steptypeid: number = 0
-    closestep: boolean = true
-}
 

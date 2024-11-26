@@ -1,15 +1,16 @@
 import { HttpRequest, type HttpResponseInit, InvocationContext } from "@azure/functions";
-import { UserConfig, PlanStepConfig } from "$lib/userconfig"
-import { tqGet, tqPost } from "$lib/tq"
+import { UserConfig } from "$lib/userconfig"
+import { tq } from "$lib/tq"
 import { error as httpError } from "@sveltejs/kit"
+import type { Plan, Email, PlanScore, PlanStepConfig } from "./types.d.ts"
 
 export async function planStep(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(context.functionName,`processed request for url`,request.url);
     let config = await new UserConfig(request.params.from).loadFromAzure()
     let body = [request.params.to,request.params.cc,request.params.bcc,request.params.subject,request.params.body].join(" ")
-    let plans = await tqGet(["plans", "all"], {workerconstituentid: config.constituentid}, config.auth) as Plan[]
+    let plans = await tq("get", "plans", "all", {workerconstituentid: config.constituentid}, config.auth) as Plan[]
     let plans_emails = await Promise.all(plans.map((p) => {
-        return tqGet(["electronicaddresses", "all"], {constituentids: p.constituent.id}, config.auth) as Promise<Email[]>
+        return tq("get", "electronicaddresses", "all", {constituentids: p.constituent.id}, config.auth) as Promise<Email[]>
     }))
 
     let plans_filtered = [] as PlanScore[]
@@ -49,10 +50,10 @@ export async function planStep(request: HttpRequest, context: InvocationContext)
     // Found a plan!
     let plan = plans_filtered[0]
 
-    let planstepconfig = 'planstep' in config.apps ? config.apps.planstep : new PlanStepConfig()
+    let planstepconfig = config.apps.planstep || {}
 
     // Make a plan step
-    await tqPost(["planstep"],
+    await tq("post","planstep","",
         {
             plan: {id: plan.id},
             type: {id: planstepconfig?.steptypeid },
@@ -88,20 +89,3 @@ export function findFirstString(needle: string[], haystack: string): number {
     }) 
 }
 
-interface PlanScore extends Plan {
-    primary: number
-    secondary: number
-    tertiary: number
-}
-
-export interface Plan {
-    campaign: {description: string},
-    contributiondesignation: {description: string},
-    constituent: {id: number, displayname: string},
-    laststepdate: string,
-    id: number
-}
-
-export interface Email {
-    address: string
-}

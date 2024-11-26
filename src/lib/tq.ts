@@ -1,32 +1,26 @@
 import { env } from '$env/dynamic/private';
-import axios from 'axios';
-import * as path from 'path';
+import _ from 'lodash';
+import { spawnSync } from 'child_process'
 
-const tq_api_url = env.TQ_API_URL || "";
+export async function tq(verb: string, object: string, variant?: string, query?: any, login?: string): Promise<any> {
+    let flag = "";
+    if (variant != null) {
+        flag = "--"+variant;
+    }
+           
+    var tq = spawnSync('bin/tq', ["-c", "--no-highlight", verb, object, flag], 
+    {
+        encoding: 'utf8', 
+        input: JSON.stringify(query),
+        env: _.extend(process.env, 
+            {"TQ_LOGIN": login || env.TQ_LOGIN}),
+        timeout: 30000
+    });
 
-export async function tqGet(paths: string[], params: object, auth: string): Promise<any> {
-    axios.get(path.join.apply(null,[tq_api_url].concat(paths)), {
-        params: params,
-        headers: {TQ_LOGIN: auth}}).then(
-            (resp) => {
-                return resp.data
-            })
-}
+    if (tq.status != 0) {
+        throw(tq.stderr)
+    } else {
+        return JSON.parse(tq.stdout)
+    }
 
-export async function tqPost(paths: string[], params: object, auth: string): Promise<any> {
-    axios.post(path.join.apply(null,[tq_api_url].concat(paths)), {
-        data: params,
-        headers: {TQ_LOGIN: auth}}).then(
-            (resp) => {
-                return resp.data
-            })
-}
-
-export async function tqPut(paths: string[], params: object, auth: string): Promise<any> {
-    axios.put(path.join.apply(null,[tq_api_url].concat(paths)), {
-        data: params,
-        headers: {TQ_LOGIN: auth}}).then(
-            (resp) => {
-                return resp.data
-            })
-}
+};
