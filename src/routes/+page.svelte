@@ -1,7 +1,7 @@
 <script lang="ts">
 
     import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "$lib/components/ui/accordion";
-    import TessituraCard from "$lib/components/tessituraCard.svelte";
+    import TessituraCard from "$lib/apps/tessitura/tessituraCard.svelte";
     import { Card } from "$lib/components/ui/card";
     import Signup from "$lib/components/signup.svelte";
     import AppCard from "$lib/components/appCard.svelte";
