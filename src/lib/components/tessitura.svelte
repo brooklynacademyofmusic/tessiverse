@@ -9,7 +9,6 @@
     import { formSchema } from "./tessitura.schema"
     import logoLight from "$lib/assets/tessitura_logo_light.svg"
     import logoDark from "$lib/assets/tessitura_logo_dark.svg"
-	import { string } from 'zod';
     
     type formOption = {value: string, label: string}
 

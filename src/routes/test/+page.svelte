@@ -3,9 +3,9 @@
     import { superForm, type SuperForm, type Infer } from "sveltekit-superforms";
     import { zodClient } from "sveltekit-superforms/adapters";
     import { formSchema } from "$lib/components/tessitura.schema"
+    import * as config from "$lib/config"
 
-    let {servers = [{value: "https://tessi-db-prd1", label: "TESSI-DB-PRD1/Impresario"},
-                    {value: "https://tessi-test-b", label: "TESSI-TEST-B/Impresario"}],
+    let {servers = config.servers,
         groups = [{value: "PlanMem", label: "Membership (full-time)"}],
         user = {
             userid: "ssyzygy",

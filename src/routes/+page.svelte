@@ -1,7 +1,7 @@
 <script lang="ts">
 
     import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "$lib/components/ui/accordion";
-    import { Badge } from "$lib/components/ui/badge";
+    import TessituraCard from "$lib/components/tessituraCard.svelte";
     import { Card } from "$lib/components/ui/card";
     import Signup from "$lib/components/signup.svelte";
     import AppCard from "$lib/components/appCard.svelte";
@@ -9,7 +9,6 @@
     import Readme from "./readme.md"
     import { Ellipsis } from "lucide-svelte"
     import { fade } from "svelte/transition"
-    import * as errors from "$lib/errors"
     
     let { data }: {data: PageData} = $props()
     let error = $state()
@@ -36,21 +35,7 @@
 </article>
 <article class="grid md:grid-cols-2 grid-cols-1 gap-8 min-h-[10rem]">
     <AppCard title = "Tessitura integration">
-        {#await data.config}
-        <Badge class="w-min ml-auto animate-pulse">Loading...</Badge>
-        {:then name }
-        <Badge class="w-min ml-auto bg-green-600">Connected</Badge>
-        <p>Username: Username</p>
-        <p>Group: Group</p>
-        <p>API server: https://tessitura.api</p>
-        {:catch error }
-        <Badge class="w-min ml-auto bg-destructive">Error</Badge>
-        {#if error.id == errors.USER_NOT_FOUND.id}
-            New user!
-        {:else}
-            Ooops!
-        {/if}
-        {/await}
+        <TessituraCard />
     </AppCard>
     <AppCard title = "Plan Steps by Email" disabled={true}>
         Test another thing
