@@ -1,9 +1,9 @@
-import { findFirstString, planStep, Plan, Email } from '../src/functions/planStep'
-import { httpError, tqGet, tqPost } from '../src/functions/http'
-import { PlanStepConfig, UserConfig } from '../src/functions/config'
-import { test, expect, jest, describe, beforeEach } from '@jest/globals'
+import { findFirstString, planStep, type Plan, type Email } from '../src/routes/api/planStep/+server'
+import { tqGet, tqPost } from '$lib/tq'
+import { PlanStepConfig, UserConfig } from '$lib/userconfig'
+import { test, expect, vi, describe, beforeEach } from 'vitest'
 import { HttpRequest, InvocationContext } from '@azure/functions'
-jest.mock('../src/functions/http')
+vi.mock('../src/functions/http')
 
 describe("findFirstString", () => {
     test("findFirstString finds the first needle in a haystack",() => {
@@ -20,11 +20,11 @@ describe("findFirstString", () => {
 })
 
 describe("planStep", () => {
-    let tqGetMocked = jest.mocked(tqGet)
-    let tqPostMocked = jest.mocked(tqPost)
-    let httpErrorMocked = jest.mocked(httpError)
+    let tqGetMocked = vi.mocked(tqGet)
+    let tqPostMocked = vi.mocked(tqPost)
+    let httpErrorMocked = vi.mocked(httpError)
     
-    UserConfig.prototype.loadFromAzure = jest.fn(async () => {
+    UserConfig.prototype.loadFromAzure = vi.fn(async () => {
         let user = new UserConfig("me")
         user.apps.planstep = new PlanStepConfig()
         return user
@@ -130,7 +130,7 @@ describe("planStep", () => {
         planstep.plan.id = arg.id
         planstep.notes = arg.body
 
-        jest.useFakeTimers({now: planstep.stepdatetime})
+        vi.useFakeTimers({now: planstep.stepdatetime})
         await planStep(new HttpRequest({
             url: "http://test.example/",
             method: "get",
@@ -160,7 +160,7 @@ describe("planStep", () => {
         planstep.plan.id = arg.id
         planstep.notes = arg.body
 
-        jest.useFakeTimers({now: planstep.stepdatetime})
+        vi.useFakeTimers({now: planstep.stepdatetime})
         await planStep(new HttpRequest({
             url: "http://test.example/",
             method: "get",
@@ -199,7 +199,7 @@ describe("planStep", () => {
     planstep.plan.id = arg.id
     planstep.notes = arg.body
 
-    jest.useFakeTimers({now: planstep.stepdatetime})
+    vi.useFakeTimers({now: planstep.stepdatetime})
     await planStep(new HttpRequest({
         url: "http://test.example/",
         method: "get",

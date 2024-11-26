@@ -1,7 +1,8 @@
-import 'dotenv/config'
-import { PlanStepConfig, UserConfig } from "../src/functions/config";
-import { test, expect, describe, jest } from "@jest/globals";
+import { PlanStepConfig, UserConfig } from "$lib/userconfig";
+import { test, expect, describe, vi } from "vitest";
 import { SecretClient } from "@azure/keyvault-secrets"
+import { HttpResponse } from "@azure/functions";
+const TESSI_API_URL = process.env.TESSI_API_URL
 
 describe("UserConfig", () => {
     let user = new UserConfig("me@test.com")
@@ -11,14 +12,12 @@ describe("UserConfig", () => {
 
     test("UserConfig constructor can hold app config and returns auth info", () => {
         expect(user).toHaveProperty("apps")
-        expect(user.auth).toBe("|me|group|location")
+        expect(user.auth).toBe(TESSI_API_URL + "|me|group|location")
     })
 
     test("loadFromAzure throws error if data does not exist in Azure", async () => {
         let user = new UserConfig("not_me@test.com")
-        let error = await user.loadFromAzure().catch((e) => e)
-        expect(error).toBeInstanceOf(Error)
-        expect(error.details.error.code).toBe("SecretNotFound")
+        await expect(user.loadFromAzure()).rejects.toMatchObject({status: 404})
     })
 
     test("saveToAzure creates a new secret", async () => {
@@ -32,7 +31,7 @@ describe("UserConfig", () => {
     })
 
     test("loadFromAzure throws error if secret does not match identity", async () => {
-        SecretClient.prototype.getSecret = jest.fn(async () => 
+        SecretClient.prototype.getSecret = vi.fn(async () => 
              {return {
                 properties: {
                     tags: {identity: "bad_user@test.com"},
@@ -41,10 +40,10 @@ describe("UserConfig", () => {
                 },
                 name: ""
             }})
-        let error = await user.loadFromAzure().catch((e) => e)
-        expect(error).toBeInstanceOf(Error)
-        expect(error.message).toMatch("Hash collision")
-        return error
+        const consoleSpy = vi.spyOn(console, 'log')
+        await expect(user.loadFromAzure()).rejects.toMatchObject({status: 500})
+        expect(consoleSpy).toHaveBeenCalledOnce()
+        expect(consoleSpy.mock.calls[0].toString()).toMatch(/Hash collision/)
     })
 
 
