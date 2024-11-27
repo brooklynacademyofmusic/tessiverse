@@ -7,5 +7,6 @@ export var servers = [
 ]
 
 export var apps = [
-    {name: "Tessitura integration", card: TessituraCard, config: Tessitura}
+    {name: "Tessitura Integration", card: TessituraCard, config: Tessitura},
+    {name: "Plan Steps by Email", card: TessituraCard, config: Tessitura}
 ]

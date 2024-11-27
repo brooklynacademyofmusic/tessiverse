@@ -1,7 +1,7 @@
 <script lang="ts">
 
     import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "$lib/components/ui/accordion";
-    import TessituraCard from "$lib/apps/tessitura/tessituraCard.svelte";
+    import * as config from '$lib/config';
     import { Card } from "$lib/components/ui/card";
     import Signup from "$lib/components/signup.svelte";
     import AppCard from "$lib/components/appCard.svelte";
@@ -34,10 +34,9 @@
     </Card>
 </article>
 <article class="grid md:grid-cols-2 grid-cols-1 gap-8 min-h-[10rem]">
-    <AppCard title = "Tessitura integration">
-        <TessituraCard />
+    {#each config.apps as app}
+    <AppCard title = {app.name}>
+        <app.card/>
     </AppCard>
-    <AppCard title = "Plan Steps by Email" disabled={true}>
-        Test another thing
-    </AppCard>
+    {/each}
 </article>
