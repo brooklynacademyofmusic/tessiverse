@@ -1,5 +1,5 @@
-import TessituraCard from '$lib/components/tessituraCard.svelte'
-import Tessitura from '$lib/components/tessitura.svelte'
+import TessituraCard from '$lib/apps/tessitura/tessituraCard.svelte'
+import Tessitura from '$lib/apps/tessitura/tessitura.svelte'
 
 export var servers = [
     {value: "https://tessi-db-prd1", label: "TESSI-DB-PRD1/Impresario"},

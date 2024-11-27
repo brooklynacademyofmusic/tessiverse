@@ -1,7 +1,7 @@
 <script lang="ts">
     import * as Alert from '$lib/components/ui/alert-dialog'
     import * as Dialog from '$lib/components/ui/dialog'
-    import Tessitura from "$lib/components/tessitura.svelte"
+    import Tessitura from "$lib/apps/tessitura/tessitura.svelte"
 	import { ChevronRight } from 'lucide-svelte';
     let ok = $state(false);
     let data = $props();
@@ -27,6 +27,6 @@
             This action cannot be undone. This will permanently delete your account
             and remove your data from our servers.
           </Dialog.Description>
-          <Tessitura data={data.form}/>
+          <!-- <Tessitura /> -->
       </Dialog.Content>
 </Dialog.Root>
