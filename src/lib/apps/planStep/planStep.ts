@@ -2,7 +2,7 @@ import { HttpRequest, type HttpResponseInit, InvocationContext } from "@azure/fu
 import { UserConfig } from "$lib/userconfig"
 import { tq } from "$lib/tq"
 import { error as httpError } from "@sveltejs/kit"
-import type { Plan, Email, PlanScore, PlanStepConfig } from "./types.d.ts"
+import type { Plan, Email, PlanScore } from "./types"
 
 export async function planStep(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(context.functionName,`processed request for url`,request.url);
