@@ -5,6 +5,7 @@ import { error } from "@sveltejs/kit"
 import { tq } from "./tq";
 import { hash } from "crypto";
 import * as errors from "$lib/errors"
+import type { TessituraConfig } from "./apps/tessitura/tessitura.schema";
 
 const key_vault_url = env.AZURE_KEY_VAULT_URL || "";
 const admin_auth = env.TQ_ADMIN_LOGIN || "";
@@ -13,34 +14,11 @@ const tessi_api_url = env.TESSI_API_URL || "";
 
 export class UserConfig {
     readonly identity: string = ""
-    firstname: string = ""
-    lastname: string = ""
-    userid: string = ""
-    inactive: boolean = false
-    locked: boolean = false
-    constituentid: number = -1
-    group: string = ""
-    tessiApiUrl: string = tessi_api_url
-    location: string = ""
-    apps: any = {}
+    apps: Record<string, TessituraConfig> = {}
 
     constructor(identity: string) {
         this.identity = identity
         this.apps = {}
-    }
-
-    get auth() {
-        return this.tessiApiUrl+"|"+this.userid+"|"+this.group+"|"+this.location
-    }
-
-    async loadFromTessi() {
-        return tq("get","users",admin_auth,{"username":this.userid}).
-            then((tessi) => {
-                Object.assign(this, tessi)
-                return this
-            }).catch(() => 
-                error(500, errors.TQ)
-            )
     }
 
     async loadFromAzure() {
@@ -79,9 +57,6 @@ export class UserConfig {
         )
     }
 
-    addApp(appName: string, data: any) {
-        this.apps[appName] = data
-    }
 }
 
 
