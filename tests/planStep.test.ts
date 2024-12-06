@@ -1,6 +1,6 @@
 import { findFirstString, planStep, type Plan, type Email } from '../src/routes/api/planStep/+server'
 import { tqGet, tqPost } from '$lib/tq'
-import { PlanStepConfig, UserConfig } from '$lib/userconfig'
+import { PlanStepConfig, User } from '$lib/user'
 import { test, expect, vi, describe, beforeEach } from 'vitest'
 import { HttpRequest, InvocationContext } from '@azure/functions'
 vi.mock('../src/functions/http')
@@ -24,8 +24,8 @@ describe("planStep", () => {
     let tqPostMocked = vi.mocked(tqPost)
     let httpErrorMocked = vi.mocked(httpError)
     
-    UserConfig.prototype.loadFromAzure = vi.fn(async () => {
-        let user = new UserConfig("me")
+    User.prototype.load = vi.fn(async () => {
+        let user = new User("me")
         user.apps.planstep = new PlanStepConfig()
         return user
     })

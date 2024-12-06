@@ -1,27 +1,20 @@
 import { SecretClient } from "@azure/keyvault-secrets";
 import { DefaultAzureCredential } from "@azure/identity";
-import { env } from "$env/dynamic/private"
 import { error } from "@sveltejs/kit"
-import { tq } from "./tq";
 import { hash } from "crypto";
 import * as errors from "$lib/errors"
-import type { TessituraConfig } from "./apps/tessitura/tessitura.schema";
+import { apps, type App } from "$lib/config"
+import { key_vault_url } from "$lib/config";
 
-const key_vault_url = env.AZURE_KEY_VAULT_URL || "";
-const admin_auth = env.TQ_ADMIN_LOGIN || "";
-const tessi_api_url = env.TESSI_API_URL || "";
-
-
-export class UserConfig {
+export class User {
     readonly identity: string = ""
-    apps: Record<string, TessituraConfig> = {}
+    apps = apps
 
     constructor(identity: string) {
         this.identity = identity
-        this.apps = {}
     }
 
-    async loadFromAzure() {
+    async load() {
         const client = new SecretClient(
             key_vault_url,
             new DefaultAzureCredential()
@@ -43,7 +36,7 @@ export class UserConfig {
         })
     }
 
-    async saveToAzure() {
+    async save() {
         const client = new SecretClient(
             key_vault_url,
             new DefaultAzureCredential()

@@ -6,14 +6,14 @@
     import * as Select from '$lib/components/ui/select'
     import { mode } from 'mode-watcher';
     import { type SuperForm, type Infer } from "sveltekit-superforms";
-    import { formSchema } from "./tessitura.schema"
+    import { tessituraSchema } from "./tessitura.schema"
     import logoLight from "$lib/assets/tessitura_logo_light.svg"
     import logoDark from "$lib/assets/tessitura_logo_dark.svg"
     
     type formOption = {value: string, label: string}
 
     let {form, action, servers, groups}: {
-        form: SuperForm<Infer<typeof formSchema>>,
+        form: SuperForm<Infer<typeof tessituraSchema>>,
         action: string,
         servers: formOption[],
         groups: formOption[]

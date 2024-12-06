@@ -2,7 +2,7 @@
     import Tessitura from '$lib/apps/tessitura/tessitura.svelte'
     import { superForm, type SuperForm, type Infer } from "sveltekit-superforms";
     import { zodClient } from "sveltekit-superforms/adapters";
-    import { formSchema } from "$lib/apps/tessitura/tessitura.schema"
+    import { tessituraSchema } from "$lib/apps/tessitura/tessitura.schema"
     import * as config from "$lib/config"
 
     let {servers = config.servers,
@@ -14,8 +14,8 @@
             password: ""
         }} = $props();
 
-    const form: SuperForm<Infer<typeof formSchema>> = superForm(user, {
-		validators: zodClient(formSchema),
+    const form: SuperForm<Infer<typeof tessituraSchema>> = superForm(user, {
+		validators: zodClient(tessituraSchema),
 	});
     const {form: formData} = form
     $effect(() => {

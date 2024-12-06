@@ -1,11 +1,11 @@
-import { PlanStepConfig, UserConfig } from "$lib/userconfig";
+import { PlanStepConfig, User } from "$lib/user";
 import { test, expect, describe, vi } from "vitest";
 import { SecretClient } from "@azure/keyvault-secrets"
 import { HttpResponse } from "@azure/functions";
 const TESSI_API_URL = process.env.TESSI_API_URL
 
 describe("UserConfig", () => {
-    let user = new UserConfig("me@test.com")
+    let user = new User("me@test.com")
     user.group = "group"
     user.location = "location"
     user.userid = "me"
@@ -16,18 +16,18 @@ describe("UserConfig", () => {
     })
 
     test("loadFromAzure throws error if data does not exist in Azure", async () => {
-        let user = new UserConfig("not_me@test.com")
-        await expect(user.loadFromAzure()).rejects.toMatchObject({status: 404})
+        let user = new User("not_me@test.com")
+        await expect(user.load()).rejects.toMatchObject({status: 404})
     })
 
     test("saveToAzure creates a new secret", async () => {
         user.apps.planstep = new PlanStepConfig()
-        return expect(user.saveToAzure()).resolves.toBe(user)
+        return expect(user.save()).resolves.toBe(user)
     })
 
     test("loadFromAzure returns a matching secret", async () => {
-        let user2 = new UserConfig("me@test.com")
-        return expect(user2.loadFromAzure()).resolves.toEqual(user)
+        let user2 = new User("me@test.com")
+        return expect(user2.load()).resolves.toEqual(user)
     })
 
     test("loadFromAzure throws error if secret does not match identity", async () => {
@@ -41,7 +41,7 @@ describe("UserConfig", () => {
                 name: ""
             }})
         const consoleSpy = vi.spyOn(console, 'log')
-        await expect(user.loadFromAzure()).rejects.toMatchObject({status: 500})
+        await expect(user.load()).rejects.toMatchObject({status: 500})
         expect(consoleSpy).toHaveBeenCalledOnce()
         expect(consoleSpy.mock.calls[0].toString()).toMatch(/Hash collision/)
     })

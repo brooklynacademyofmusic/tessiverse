@@ -1,16 +1,15 @@
 import { HttpRequest, type HttpResponseInit, InvocationContext } from "@azure/functions";
-import { User } from "$lib/user"
-import { tq } from "$lib/tq"
+import { User, PlanStepConfig } from "$lib/user"
+import { tqGet, tqPost } from "$lib/tq"
 import { error as httpError } from "@sveltejs/kit"
-import type { Plan, Email, PlanScore } from "./types"
 
 export async function planStep(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(context.functionName,`processed request for url`,request.url);
     let config = await new User(request.params.from).load()
     let body = [request.params.to,request.params.cc,request.params.bcc,request.params.subject,request.params.body].join(" ")
-    let plans = await tq("get", "plans", "all", {workerconstituentid: config.constituentid}, config.auth) as Plan[]
+    let plans = await tqGet(["plans", "all"], {workerconstituentid: config.constituentid}, config.auth) as Plan[]
     let plans_emails = await Promise.all(plans.map((p) => {
-        return tq("get", "electronicaddresses", "all", {constituentids: p.constituent.id}, config.auth) as Promise<Email[]>
+        return tqGet(["electronicaddresses", "all"], {constituentids: p.constituent.id}, config.auth) as Promise<Email[]>
     }))
 
     let plans_filtered = [] as PlanScore[]
@@ -50,10 +49,10 @@ export async function planStep(request: HttpRequest, context: InvocationContext)
     // Found a plan!
     let plan = plans_filtered[0]
 
-    let planstepconfig = config.apps.planstep || {}
+    let planstepconfig = 'planstep' in config.apps ? config.apps.planstep : new PlanStepConfig()
 
     // Make a plan step
-    await tq("post","planstep","",
+    await tqPost(["planstep"],
         {
             plan: {id: plan.id},
             type: {id: planstepconfig?.steptypeid },
@@ -89,3 +88,20 @@ export function findFirstString(needle: string[], haystack: string): number {
     }) 
 }
 
+interface PlanScore extends Plan {
+    primary: number
+    secondary: number
+    tertiary: number
+}
+
+export interface Plan {
+    campaign: {description: string},
+    contributiondesignation: {description: string},
+    constituent: {id: number, displayname: string},
+    laststepdate: string,
+    id: number
+}
+
+export interface Email {
+    address: string
+}

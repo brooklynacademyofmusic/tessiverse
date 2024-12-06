@@ -1,7 +1,6 @@
 <script lang="ts">
 
     import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "$lib/components/ui/accordion";
-    import * as config from '$lib/config';
     import { Card } from "$lib/components/ui/card";
     import Signup from "$lib/components/signup.svelte";
     import AppCard from "$lib/components/appCard.svelte";
@@ -9,17 +8,17 @@
     import Readme from "./readme.md"
     import { Ellipsis } from "lucide-svelte"
     import { fade } from "svelte/transition"
-    
-    let { data }: {data: PageData} = $props()
-    let error = $state()
+	import { User } from "$lib/user";
+    import { apps } from '$lib/config';
+    let { userData, appData }: PageData = $props()
 </script>
 
 <article class="prose max-w-none font-extralight">
     <h1 class="text-foreground font-extralight text-6xl">Hi, 
-        {#await data.config}
+        {#await userData}
             <Ellipsis class="animate-pulse inline-block w-12 h-12 text-secondary"/>
-        {:then config }
-            <span transition:fade>{ config }!</span>
+        {:then user}
+            <span transition:fade>{ (user.apps.tessitura.data.firstname) }!</span>
         {:catch e }
             <Signup />
         {/await} 
@@ -34,9 +33,13 @@
     </Card>
 </article>
 <article class="grid md:grid-cols-2 grid-cols-1 gap-8 min-h-[10rem]">
-    {#each config.apps as app}
-    <AppCard title = {app.name}>
-        <app.card/>
-    </AppCard>
+    {#each Object.entries(appData) as [_, app]}
+        {#await app}
+            <Ellipsis class="animate-pulse inline-block w-12 h-12 text-secondary"/>
+        {:then app} 
+            <AppCard title = {app.title}>
+                <app.card {...app.data} />
+            </AppCard>            
+        {/await}
     {/each}
 </article>

@@ -2,7 +2,7 @@ import type { RequestHandler, RouteParams } from './$types';
 import { error } from '@sveltejs/kit';
 import * as ERRORS from '$lib/errors'
 import { tq } from '$lib/tq'
-import { UserConfig } from '$lib/userconfig'
+import { User } from '$lib/user'
 
 export const GET: RequestHandler = ({params, request, locals}) => {
   return tq_verb("get", params, request, locals)
@@ -18,7 +18,7 @@ async function tq_verb(verb: string, params: RouteParams, request: Request, loca
   if (!locals.user.userId) {
     error(401, ERRORS.AUTH)
   } 
-  let user = await new UserConfig(locals.user.userid).loadFromAzure()
+  let user = await new User(locals.user.userid).load()
 
   return (request.body || new ReadableStream()).getReader().read()
   .then((body) =>

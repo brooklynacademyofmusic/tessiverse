@@ -1,6 +1,6 @@
-import { env } from '$env/dynamic/private';
 import _ from 'lodash';
 import { spawnSync } from 'child_process'
+import { tq_login } from './config';
 
 export async function tq(verb: string, object: string, variant?: string, query?: any, login?: string): Promise<any> {
     let flag = "";
@@ -13,7 +13,7 @@ export async function tq(verb: string, object: string, variant?: string, query?:
         encoding: 'utf8', 
         input: JSON.stringify(query),
         env: _.extend(process.env, 
-            {"TQ_LOGIN": login || env.TQ_LOGIN}),
+            {"TQ_LOGIN": login || tq_login}),
         timeout: 30000
     });
 
