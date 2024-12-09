@@ -1,6 +1,7 @@
 import * as config from '$lib/config'
 import { type Component } from 'svelte'
 import { type Backend, type BackendKey } from '$lib/azure'
+import type { ActionFailure } from '@sveltejs/kit'
 
 
 // interface for establishing the contract between the main route and the individual cards/forms.
@@ -16,20 +17,17 @@ export interface App {
     // function to load data from the backend, with optional preloaded data
     load(backend: Backend<App>, key: BackendKey<AppBase>): Promise<App>
     // function to save data to the backend
-    save(backend: Backend<App>, key: BackendKey<AppBase>, data: this): Promise<void>
+    save(backend: Backend<App>, key: BackendKey<AppBase>, data: any): Promise<void | ActionFailure<any> | {form: any}>
 }
 
 const ComponentStub: Component<{}> = {} as Component<{}>
 export class AppBase implements App {
-    title: string = "Base" 
-    key: string
-    card: Component<any> = ComponentStub
-    form: Component<any> = ComponentStub
-    async load(backend: Backend<AppBase>, key: BackendKey<AppBase>) {return this}
-    async save(backend: Backend<AppBase>, key: BackendKey<AppBase>, data: any) {}
-    constructor(key: string) {
-        this.key = key
-    }
+    title = "Base" 
+    key = "base"
+    card = ComponentStub
+    form = ComponentStub
+    async load(backend: Backend<AppBase>, key: BackendKey<AppBase>) {return backend.load(key)}
+    async save(backend: Backend<AppBase>, key: BackendKey<AppBase>, data: any): Promise<void | ActionFailure<any> | {form: any}> {return backend.save(key, data)}
 }
 
 

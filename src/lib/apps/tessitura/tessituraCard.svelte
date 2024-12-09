@@ -2,7 +2,7 @@
     import { Badge } from '$lib/components/ui/badge'
     import * as ERRORS from '$lib/errors'
 	import type { TessituraApp } from './tessitura';
-    let data: TessituraApp = $props()
+    let data: Partial<TessituraApp> = $props()
 </script>
 
 {#await data}

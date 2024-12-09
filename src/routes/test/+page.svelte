@@ -3,9 +3,8 @@
     import { superForm, type SuperForm, type Infer } from "sveltekit-superforms";
     import { zodClient } from "sveltekit-superforms/adapters";
     import { tessituraSchema } from "$lib/apps/tessitura/tessitura.schema"
-    import * as config from "$lib/config"
 
-    let {servers = config.servers,
+    let {servers = [],
         groups = [{value: "PlanMem", label: "Membership (full-time)"}],
         user = {
             userid: "ssyzygy",

@@ -1,16 +1,16 @@
 import { tq } from '$lib/tq'
-import { error, fail, type Action } from '@sveltejs/kit'
-import { type App, AppBase } from '$lib/apps'
+import { error, type ActionFailure } from '@sveltejs/kit'
+import { type App } from '$lib/apps'
 import Tessitura from '$lib/apps/tessitura/tessitura.svelte' 
 import TessituraCard from '$lib/apps/tessitura/tessituraCard.svelte' 
 import * as errors from '$lib/errors'
-import { superValidate, message } from 'sveltekit-superforms'
+import { superValidate, message, fail, setError } from 'sveltekit-superforms'
 import { zod } from 'sveltekit-superforms/adapters'
 import { tessituraSchema } from './tessitura.schema'
 import { tessi_api_url } from '$lib/config'
 import type { Backend, BackendKey } from '$lib/azure'
 
-export class TessituraApp extends AppBase {
+export class TessituraApp implements App {
     title = "Tessitura Integration"
     key = "tessitura"
     card = TessituraCard
@@ -42,9 +42,7 @@ export class TessituraApp extends AppBase {
     async tessiValidate(): Promise<boolean> {
         return tq("auth","validate","",{},this.auth).
             then(() => true)
-            .catch(() => 
-                error(401, errors.TESSITURA)
-            )
+            .catch(() => false)
     }
 
     async tessiGroups(): Promise<any> {
@@ -57,23 +55,28 @@ export class TessituraApp extends AppBase {
 
     async load(backend: Backend<TessituraApp>, key: BackendKey<TessituraApp>): Promise<this> {
         Object.assign(this,await backend.load(key))
-        await this.tessiValidate()
+        let valid = await this.tessiValidate()
+        if (!valid) 
+            throw(errors.TESSITURA)
         return this 
     }
 
-    async save(backend: Backend<TessituraApp>, key: BackendKey<TessituraApp>, data: TessituraApp): Promise<void> {
-        const tessitura = new TessituraApp(this.key) 
+    async save(backend: Backend<TessituraApp>, key: BackendKey<TessituraApp>, data: any) {
+        const tessitura = new TessituraApp() 
     
         const form = await superValidate(data, zod(tessituraSchema));
         if (!form.valid) {
-            throw(form)
+            return fail(400, {form})
         }
     
         Object.assign(tessitura, data)
-        await tessitura.tessiValidate()
+        let valid = await tessitura.tessiValidate()
+        if (!valid) {
+            return setError(form, "password", "Invalid login")
+        }
         await tessitura.tessiLoad()
-       
         await backend.save(key, this)
+        return message(form, "Login updated successfully")
     }
 } 
 

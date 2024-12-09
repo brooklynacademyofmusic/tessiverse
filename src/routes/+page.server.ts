@@ -1,37 +1,52 @@
-import type { PageServerLoad, Actions } from './$types';
+import type { PageServerLoad, Action, Actions } from './$types';
+import { type App } from '$lib/apps'
 import { User } from '$lib/user';
 import { error } from '@sveltejs/kit'
 import * as errors from "$lib/errors"
 import * as config from '$lib/config'
+import { fail, message, type SuperValidated } from 'sveltekit-superforms';
+import { Azure } from '$lib/azure';
 
 //Typescript magic!
 function hasProperty<O extends object>(o: O, k: PropertyKey): k is keyof O {
     return k in o
 }
 
-export const load: PageServerLoad = async ( { locals }) => {
-    if (!locals.user.userId) {
-        error(401, errors.AUTH)
-    }
-    const userData = new User(locals.user.userDetails).load()
-    const appData = Object.fromEntries(Object.entries(config.apps).map(
-        ([key,app]) => [key, userData.then(
-            (user): Promise<typeof app.data> => {
-                if (hasProperty(user.apps,key)) {
-                    return app.load(user.apps[key].data)
-                } else {
-                    throw("App "+key+" not found!")
-                }
-            })]
-    ))
-  
-    return {userData: userData, appData: appData}
+function objectMap<In,Out>(o: Record<PropertyKey,In>, f: (a: In) => Out): Record<PropertyKey,Out> {
+    return Object.fromEntries(Object.entries(o).map(([key,val]) => [key,f(val)]))
 }
 
+export const load: PageServerLoad = async ( { locals }) => {
+    const userData = new User(locals.user.userDetails).load()
+    // const appData = objectMap(config.apps,
+    //     (app: App) => userData.then((user) => {
+    //         if (hasProperty(config.apps, app.key)) {
+    //             return {} //return app.load(user,{identity: user.identity, app: app.key})
+    //         } else {
+    //             throw("Don't know how to load app "+app.key)
+    //         }
+    //     })
+    // ) 
+    return {userData: userData, appData: {}}
+}
 
-export const actions = 
-    Object.fromEntries(
-        Object.entries(config.apps).map(
-            ([key,app]) => [key, app.save]
-        )
-    ) satisfies Actions
+export const actions = objectMap(config.apps,
+    (app: App): Action => {
+        let action: Action = async ({request, locals}) => {
+            if (!locals.user.userId) {
+                error(401, errors.AUTH)
+            }
+            if (hasProperty(config.apps, app.key)) {
+                const user = new User(locals.user.userDetails).load()
+                const data = await request.formData()
+                app.save(await user, {identity: (await user).identity, app: app.key}, data)
+                    .then((failure) => failure)
+            } else {
+                throw("Don't know how to save app "+app.key)
+            }
+        }
+        return action
+    }
+) satisfies Actions
+
+

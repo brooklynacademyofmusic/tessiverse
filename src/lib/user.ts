@@ -4,26 +4,25 @@ import type { App, AppNames } from '$lib/apps'
 
 export class User implements Backend<User> {
     readonly identity: string
-    firstname?: string
+    firstname: string = ""
     apps = config.apps
 
     constructor(identity: string) {
         this.identity = identity
     }
 
-    async load(key: {identity: string} = {identity: this.identity}): Promise<UserLoaded> {
-        let backend = new Azure()
-        return backend.load(key) 
+    async load(key: {identity: string} = {identity: this.identity}): Promise<User> {
+        return new Azure().load(key)
     }
 
-    async save(key: {identity: string} = {identity: this.identity}, data: User): Promise<void> {
-        let backend = new Azure()
-        this.firstname = data.apps.tessitura.firstname || data.firstname
-        backend.save(key, this as User)
+    async save(key: {identity: string} = {identity: this.identity}, data: Partial<User> = this): Promise<void> {
+        Object.assign(this,data)
+        this.firstname = this.apps.tessitura.firstname || this.firstname
+        return new Azure().save(key, this as User)
     }
 }
 
-class UserLoaded extends User implements Backend<User | App> {
+export class UserLoadedBackend implements Backend<User | App> {
     async load<T extends User | App>(key: BackendKey<T>): Promise<T> {
         if ("app" in key) {
             if (this.identity != key.identity) {

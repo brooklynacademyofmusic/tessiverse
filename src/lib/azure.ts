@@ -4,12 +4,12 @@ import { error } from "@sveltejs/kit"
 import { hash } from "crypto";
 import { User } from "$lib/user"
 import * as errors from "$lib/errors"
-import { key_vault_url } from "$lib/config";
+import { key_vault_url } from "./config";
 import type { App, Apps, AppNames } from '$lib/apps'
 
 type Model = User | App
 
-export type BackendKey<M extends Model> = M extends Apps ? {identity: string, app: AppNames} : {identity: string}
+export type BackendKey<M extends Model> = M extends Apps ? {identity: string, app: AppNames} : M extends User ? {identity: string} : never
 export interface Backend<M extends Model> {
     load(key: BackendKey<M>): Promise<M>
     save(key: BackendKey<M>, data: M): void
@@ -28,6 +28,7 @@ export class Azure implements Backend<Model> {
         return this.client.getSecret(
             hash("md5",["users",key.identity].join("."))
         ).then((response) => {
+            console.log(JSON.stringify(response.value))
             if (response.properties?.tags?.identity != key.identity) {
                 throw new Error("Hash collision PANIC!")
             }
@@ -46,7 +47,7 @@ export class Azure implements Backend<Model> {
         }) as Promise<M>
     }
 
-    async save<M extends Model>(key: BackendKey<M>, data: M) {
+    async save<M extends Model>(key: BackendKey<M>, data: M): Promise<void> {
         var user: User = new User(key.identity)
         if ("app" in key) {
             user = await this.load({identity: key.identity})
@@ -58,7 +59,7 @@ export class Azure implements Backend<Model> {
             hash("md5",["users",key.identity].join(".")),
             JSON.stringify(user),            
             { tags: {identity: key.identity} }
-        ).then(() => this).catch(() => 
+        ).then(() => {}).catch(() => 
             error(500, errors.AZURE_KEYVAULT)
         )
     }

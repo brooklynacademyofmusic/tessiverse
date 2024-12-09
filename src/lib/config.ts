@@ -1,11 +1,11 @@
 import { TessituraApp } from './apps/tessitura/tessitura'
+import { AppBase } from './apps';
 import { env } from '$env/dynamic/private'
-import { AppBase, type App } from './apps';
 
 export const key_vault_url = env.AZURE_KEY_VAULT_URL || "";
-export const admin_auth = env.TQ_ADMIN_LOGIN || "";
-export const tessi_api_url = env.TESSI_API_URL || "";
-export const tq_login = env.TQ_LOGIN || "";
+export const admin_auth = "";
+export const tessi_api_url = "";
+export const tq_login = "";
 
 export const servers = [
     {value: "https://tessi-db-prd1", label: "TESSI-DB-PRD1/Impresario"},
@@ -13,6 +13,5 @@ export const servers = [
 ]
 
 export const apps = {
-    tessitura: new TessituraApp("tessitura"), 
-    planSteps: new AppBase("planSteps")
+    tessitura: new TessituraApp(), 
 } 

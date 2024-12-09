@@ -1,4 +1,6 @@
-import type { Handle } from '@sveltejs/kit';
+import { type Handle, error } from '@sveltejs/kit';
+import * as errors from "$lib/errors"
+
 
 type clientPrincipal = {
     identityProvider: string,
@@ -14,10 +16,12 @@ export const handle: Handle = async ({ event, resolve }) => {
         event.cookies.get("StaticWebAppsAuthCookie") || 
         "", 'base64');
     
-    const user = JSON.parse(header.toString('ascii') || "{}") as clientPrincipal
-
+    let user = JSON.parse(header.toString('ascii') || "{}") as clientPrincipal
+    user = {identityProvider: "me", userId: "ssyzygy", userDetails: "ssyzygy", userRoles: ["admin"]}
     event.locals.user = user
-
+    if (!event.locals.user.userId) {
+        error(401, errors.AUTH)
+    }
 	const response = await resolve(event);
 	return response;
 };
