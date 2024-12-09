@@ -1,55 +1,51 @@
-import { SecretClient } from "@azure/keyvault-secrets";
-import { DefaultAzureCredential } from "@azure/identity";
-import { error } from "@sveltejs/kit"
-import { hash } from "crypto";
-import * as errors from "$lib/errors"
-import { apps, type App } from "$lib/config"
-import { key_vault_url } from "$lib/config";
+import { Azure, type Backend, type BackendKey } from '$lib/azure'
+import * as config from "$lib/config"
+import type { App, AppNames } from '$lib/apps'
 
-export class User {
-    readonly identity: string = ""
-    apps = apps
+export class User implements Backend<User> {
+    readonly identity: string
+    firstname?: string
+    apps = config.apps
 
     constructor(identity: string) {
         this.identity = identity
     }
 
-    async load() {
-        const client = new SecretClient(
-            key_vault_url,
-            new DefaultAzureCredential()
-        )
-        return client.getSecret(
-            hash("md5",["users",this.identity].join("."))
-        ).then((response) => {
-            if (response.properties?.tags?.identity != this.identity) {
-                throw new Error("Hash collision PANIC!")
-            }
-            Object.assign(this,JSON.parse(response.value || ""))
-            return this
-        }).catch((e) => {
-            if (e.code === "SecretNotFound") {
-                error(404, errors.USER_NOT_FOUND)
-            }
-            console.log(e)
-            error(500, errors.AZURE_KEYVAULT)
-        })
+    async load(key: {identity: string} = {identity: this.identity}): Promise<UserLoaded> {
+        let backend = new Azure()
+        return backend.load(key) 
     }
 
-    async save() {
-        const client = new SecretClient(
-            key_vault_url,
-            new DefaultAzureCredential()
-        )
-        return client.setSecret(
-            hash("md5",["users",this.identity].join(".")),
-            JSON.stringify(this),
-            {tags: {identity: this.identity} }
-        ).then(() => this).catch(() => 
-            error(500, errors.AZURE_KEYVAULT)
-        )
+    async save(key: {identity: string} = {identity: this.identity}, data: User): Promise<void> {
+        let backend = new Azure()
+        this.firstname = data.apps.tessitura.firstname || data.firstname
+        backend.save(key, this as User)
     }
-
 }
 
+class UserLoaded extends User implements Backend<User | App> {
+    async load<T extends User | App>(key: BackendKey<T>): Promise<T> {
+        if ("app" in key) {
+            if (this.identity != key.identity) {
+                throw("can't load data for "+key.identity+" from user "+this.identity)
+            } else {
+                return this.apps[key.app] as T
+            }
+        } else {
+            return this as User as T
+        } 
+    }
 
+    async save<T extends User | App>(key: BackendKey<T>, data: T) {
+        if ("app" in key) {
+            if (this.identity != key.identity) {
+                throw("can't save data for "+key.identity+" with user "+this.identity)
+            } else {
+                ;(this.apps[key.app] as T) = data
+                super.save({identity: this.identity}, this)
+            }
+        } else {
+            super.save(key, this)
+        }
+    }
+}

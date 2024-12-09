@@ -1,7 +1,6 @@
 import { tq } from '$lib/tq'
 import { error, fail, type Action } from '@sveltejs/kit'
-import { type App } from '$lib/config'
-import { User } from '$lib/user'
+import { type App, AppBase } from '$lib/apps'
 import Tessitura from '$lib/apps/tessitura/tessitura.svelte' 
 import TessituraCard from '$lib/apps/tessitura/tessituraCard.svelte' 
 import * as errors from '$lib/errors'
@@ -9,8 +8,13 @@ import { superValidate, message } from 'sveltekit-superforms'
 import { zod } from 'sveltekit-superforms/adapters'
 import { tessituraSchema } from './tessitura.schema'
 import { tessi_api_url } from '$lib/config'
+import type { Backend, BackendKey } from '$lib/azure'
 
-export class TessituraAppData {
+export class TessituraApp extends AppBase {
+    title = "Tessitura Integration"
+    key = "tessitura"
+    card = TessituraCard
+    form = Tessitura
     firstname?: string
     lastname?: string
     userid?: string
@@ -18,24 +22,17 @@ export class TessituraAppData {
     locked?: boolean 
     constituentid?: number
     group?: string 
-    tessiApiUrl?: string = tessi_api_url
+    tessiApiUrl: string = tessi_api_url
     location?: string
-}
 
-export class TessituraApp implements App<typeof TessituraCard, typeof Tessitura, TessituraAppData> {
-    title = "Tessitura Integration"
-    card = TessituraCard
-    form = Tessitura
-    data = new TessituraAppData()
-  
     get auth(): string {
-        return this.data.tessiApiUrl+"|"+this.data.userid+"|"+this.data.group+"|"+this.data.location
+        return this.tessiApiUrl+"|"+this.userid+"|"+this.group+"|"+this.location
     }
   
-    async tessiLoad(): Promise<TessituraApp> {
-      return tq("get","users","",{"username":this.data.userid},this.auth).
+    async tessiLoad(): Promise<typeof this> {
+      return tq("get","users","",{"username":this.userid},this.auth).
           then((tessi) => {
-              Object.assign(this.data, tessi)
+              Object.assign(this, tessi)
               return this
           }).catch(() => 
               error(500, errors.TQ)
@@ -58,32 +55,25 @@ export class TessituraApp implements App<typeof TessituraCard, typeof Tessitura,
             )
     }
 
-    async load(data: TessituraAppData): Promise<TessituraAppData> {
-        this.data = data
+    async load(backend: Backend<TessituraApp>, key: BackendKey<TessituraApp>): Promise<this> {
+        Object.assign(this,await backend.load(key))
         await this.tessiValidate()
-        return this.data
+        return this 
     }
 
-    save: Action = async ({ request, locals }) => {
-        if (!locals.user.userId) {
-            error(401, errors.AUTH)
-        }
+    async save(backend: Backend<TessituraApp>, key: BackendKey<TessituraApp>, data: TessituraApp): Promise<void> {
+        const tessitura = new TessituraApp(this.key) 
     
-        const user = new User(locals.user.userDetails)
-        const tessitura = new TessituraApp() 
-    
-        const form = await superValidate(request, zod(tessituraSchema));
+        const form = await superValidate(data, zod(tessituraSchema));
         if (!form.valid) {
-            return fail(400, { form });
+            throw(form)
         }
     
+        Object.assign(tessitura, data)
         await tessitura.tessiValidate()
         await tessitura.tessiLoad()
-    
-        user.apps.tessitura.data = tessitura.data
-        await user.save()
-    
-        return message(form, 'Form posted successfully!');
+       
+        await backend.save(key, this)
     }
-}  
+} 
 

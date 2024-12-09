@@ -1,8 +1,8 @@
 <script lang="ts">
     import { Badge } from '$lib/components/ui/badge'
     import * as ERRORS from '$lib/errors'
-	import type { TessituraAppData } from './tessitura';
-    let data: TessituraAppData = $props()
+	import type { TessituraApp } from './tessitura';
+    let data: TessituraApp = $props()
 </script>
 
 {#await data}
