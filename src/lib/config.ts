@@ -14,5 +14,5 @@ export const servers = [
 
 export const apps = {
     tessitura: new TessituraApp(), 
-    planSteps: new AppBase()
+    // planSteps: new AppBase()
 } 

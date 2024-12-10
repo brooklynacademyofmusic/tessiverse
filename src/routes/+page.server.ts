@@ -18,16 +18,17 @@ function objectMap<In,Out>(o: Record<PropertyKey,In>, f: (a: In) => Out): Record
 
 export const load: PageServerLoad = async ( { locals }) => {
     const userData = new User(locals.user.userDetails).load()
-    // const appData = objectMap(config.apps,
-    //     (app: App) => userData.then((user) => {
-    //         if (hasProperty(config.apps, app.key)) {
-    //             return {} //return app.load(user,{identity: user.identity, app: app.key})
-    //         } else {
-    //             throw("Don't know how to load app "+app.key)
-    //         }
-    //     })
-    // ) 
-    return {userData: userData, appData: {}}
+    const appData = objectMap(config.apps,
+        (app: App) => userData.then((user) => {
+            console.log("loading "+app.key)
+            if (hasProperty(config.apps, app.key)) {
+                return app.load(user,{identity: user.identity, app: app.key})
+            } else {
+                throw("Don't know how to load app "+app.key)
+            }
+        })
+    ) 
+    return {userData: userData, appData: appData}
 }
 
 export const actions = objectMap(config.apps,

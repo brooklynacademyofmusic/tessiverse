@@ -53,15 +53,15 @@ export class TessituraApp implements App {
             )
     }
 
-    async load(backend: Backend<TessituraApp>, key: BackendKey<TessituraApp>): Promise<this> {
-        Object.assign(this,await backend.load(key))
+    async load(backend: Backend<App>, key: {identity: string, app: "tessitura"}): Promise<TessituraApp> {
+        await backend.load(key, this)
         let valid = await this.tessiValidate()
         if (!valid) 
             throw(errors.TESSITURA)
         return this 
     }
 
-    async save(backend: Backend<TessituraApp>, key: BackendKey<TessituraApp>, data: any) {
+    async save(backend: Backend<App>, key: BackendKey<App>, data: Partial<TessituraApp>) {
         const tessitura = new TessituraApp() 
     
         const form = await superValidate(data, zod(tessituraSchema));

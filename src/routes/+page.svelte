@@ -8,11 +8,12 @@
     import { Ellipsis } from "lucide-svelte"
     import { fade } from "svelte/transition"
     let { data }: { data: PageData} = $props()
+    let { userData, appData } = data
 </script>
 
 <article class="prose max-w-none font-extralight">
     <h1 class="text-foreground font-extralight text-6xl">Hi, 
-        {#await data.userData}
+        {#await userData}
             <Ellipsis class="animate-pulse inline-block w-12 h-12 text-secondary"/>
         {:then user}
             <span transition:fade>{ JSON.stringify(user) }</span>
@@ -30,7 +31,7 @@
     </Card>
 </article>
 <article class="grid md:grid-cols-2 grid-cols-1 gap-8 min-h-[10rem]">
-    <!-- {#each Object.entries(appData) as [_, app]}
+    {#each Object.entries(appData) as [_, app]}
         {#await app}
             <Ellipsis class="animate-pulse inline-block w-12 h-12 text-secondary"/>
         {:then app} 
@@ -38,5 +39,5 @@
                 <app.card {...app} />
             </AppCard>            
         {/await}
-    {/each} -->
+    {/each}
 </article>

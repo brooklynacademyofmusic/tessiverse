@@ -15,9 +15,9 @@ export interface App {
     // a form element triggered by the configuration button on the card
     form: Component<any>
     // function to load data from the backend, with optional preloaded data
-    load(backend: Backend<App>, key: BackendKey<AppBase>): Promise<App>
+    load(backend: Backend<App>, key: BackendKey<App>): Promise<App>
     // function to save data to the backend
-    save(backend: Backend<App>, key: BackendKey<AppBase>, data: any): Promise<void | ActionFailure<any> | {form: any}>
+    save(backend: Backend<App>, key: BackendKey<App>, data: any): Promise<void | ActionFailure<any> | {form: any}>
 }
 
 const ComponentStub: Component<{}> = {} as Component<{}>
@@ -26,8 +26,8 @@ export class AppBase implements App {
     key = "base"
     card = ComponentStub
     form = ComponentStub
-    async load(backend: Backend<AppBase>, key: BackendKey<AppBase>) {return backend.load(key, this)}
-    async save(backend: Backend<AppBase>, key: BackendKey<AppBase>, data: any): Promise<void | ActionFailure<any> | {form: any}> {return backend.save(key, data)}
+    async load(backend: Backend<App>, key: BackendKey<App>) {return backend.load(key, this)}
+    async save(backend: Backend<App>, key: BackendKey<App>, data: any): Promise<void | ActionFailure<any> | {form: any}> {return backend.save(key, data)}
 }
 
 

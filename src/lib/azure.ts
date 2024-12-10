@@ -8,7 +8,7 @@ import { key_vault_url } from "./config";
 import type { App, Apps, AppNames } from '$lib/apps'
 
 type Model = User | App
-export type BackendKey<M extends Model> = M extends Apps ? {identity: string, app: AppNames} : {identity: string} 
+export type BackendKey<M extends Model> = M extends App ? {identity: string, app: AppNames} : {identity: string} 
 export interface Backend<M extends Model> {
     load(key: BackendKey<M>, target: M): Promise<M>
     save(key: BackendKey<M>, data: Partial<M>): void
