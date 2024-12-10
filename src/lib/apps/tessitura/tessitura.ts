@@ -7,7 +7,7 @@ import * as errors from '$lib/errors'
 import { superValidate, message, fail, setError } from 'sveltekit-superforms'
 import { zod } from 'sveltekit-superforms/adapters'
 import { tessituraSchema } from './tessitura.schema'
-import { tessi_api_url } from '$lib/config'
+import { servers } from '$lib/config'
 import type { Backend, BackendKey } from '$lib/azure'
 
 export class TessituraApp implements App {
@@ -22,8 +22,10 @@ export class TessituraApp implements App {
     locked?: boolean 
     constituentid?: number
     group?: string 
-    tessiApiUrl: string = tessi_api_url
+    tessiApiUrl: string = servers[0]["value"]
     location?: string
+    servers?: any 
+    groups?: any
 
     get auth(): string {
         return this.tessiApiUrl+"|"+this.userid+"|"+this.group+"|"+this.location
@@ -55,10 +57,14 @@ export class TessituraApp implements App {
 
     async load(backend: Backend<App>, key: {identity: string, app: "tessitura"}): Promise<TessituraApp> {
         await backend.load(key, this)
-        let valid = await this.tessiValidate()
-        if (!valid) 
-            throw(errors.TESSITURA)
-        return this 
+        this.servers = servers
+        this.groups = servers
+        if(this.userid) {
+            let valid = await this.tessiValidate()
+            if (!valid) 
+                throw(errors.TESSITURA)
+        }
+        return JSON.parse(JSON.stringify(this))
     }
 
     async save(backend: Backend<App>, key: BackendKey<App>, data: Partial<TessituraApp>) {
