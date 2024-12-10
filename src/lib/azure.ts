@@ -8,11 +8,10 @@ import { key_vault_url } from "./config";
 import type { App, Apps, AppNames } from '$lib/apps'
 
 type Model = User | App
-
-export type BackendKey<M extends Model> = M extends Apps ? {identity: string, app: AppNames} : M extends User ? {identity: string} : never
+export type BackendKey<M extends Model> = M extends Apps ? {identity: string, app: AppNames} : {identity: string} 
 export interface Backend<M extends Model> {
-    load(key: BackendKey<M>): Promise<M>
-    save(key: BackendKey<M>, data: M): void
+    load(key: BackendKey<M>, target: M): Promise<M>
+    save(key: BackendKey<M>, data: Partial<M>): void
 }
 
 export class Azure implements Backend<Model> {
@@ -24,7 +23,7 @@ export class Azure implements Backend<Model> {
         )
     }
 
-    async load<M extends Model>(key: BackendKey<M>): Promise<M> {
+    async load<M extends Model>(key: BackendKey<M>, target: M): Promise<M> {
         return this.client.getSecret(
             hash("md5",["users",key.identity].join("."))
         ).then((response) => {
@@ -34,9 +33,9 @@ export class Azure implements Backend<Model> {
             }
             let user: User = JSON.parse(response.value || "")
             if ("app" in key) {
-                return user.apps[key.app]
+                return Object.assign(target,user.apps[key.app])
             } else {
-                return user
+                return Object.assign(target,user)
             }    
         }).catch((e) => {
             if (e.code === "SecretNotFound") {
@@ -44,14 +43,14 @@ export class Azure implements Backend<Model> {
             }
             console.log(e)
             error(500, errors.AZURE_KEYVAULT)
-        }) as Promise<M>
+        })
     }
 
-    async save<M extends Model>(key: BackendKey<M>, data: M): Promise<void> {
+    async save<M extends Model>(key: BackendKey<M>, data: Partial<M>): Promise<void> {
         var user: User = new User(key.identity)
         if ("app" in key) {
-            user = await this.load({identity: key.identity})
-            ;(user.apps[key.app] as M) = data 
+            user = await this.load({identity: key.identity}, user)
+            Object.assign(user.apps[key.app], data)
         } else {
             Object.assign(user, data)
         } 

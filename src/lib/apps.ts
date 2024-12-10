@@ -26,7 +26,7 @@ export class AppBase implements App {
     key = "base"
     card = ComponentStub
     form = ComponentStub
-    async load(backend: Backend<AppBase>, key: BackendKey<AppBase>) {return backend.load(key)}
+    async load(backend: Backend<AppBase>, key: BackendKey<AppBase>) {return backend.load(key, this)}
     async save(backend: Backend<AppBase>, key: BackendKey<AppBase>, data: any): Promise<void | ActionFailure<any> | {form: any}> {return backend.save(key, data)}
 }
 

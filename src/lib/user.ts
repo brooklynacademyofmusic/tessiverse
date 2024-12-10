@@ -11,36 +11,36 @@ export class User implements Backend<User> {
         this.identity = identity
     }
 
-    async load(key: {identity: string} = {identity: this.identity}): Promise<User> {
-        return new Azure().load(key)
+    async load(key: BackendKey<User> = {identity: this.identity}, target: any = this): Promise<UserLoaded> {
+        return new Azure().load(key,target) as Promise<UserLoaded> 
     }
 
     async save(key: {identity: string} = {identity: this.identity}, data: Partial<User> = this): Promise<void> {
         Object.assign(this,data)
         this.firstname = this.apps.tessitura.firstname || this.firstname
-        return new Azure().save(key, this as User)
+        return new Azure().save(key, this)
     }
 }
 
-export class UserLoadedBackend implements Backend<User | App> {
-    async load<T extends User | App>(key: BackendKey<T>): Promise<T> {
+export class UserLoaded extends User implements Backend<User | App> {
+    async load<T extends User |  App>(key: BackendKey<T>, target: T): Promise<T> {
         if ("app" in key) {
             if (this.identity != key.identity) {
                 throw("can't load data for "+key.identity+" from user "+this.identity)
             } else {
-                return this.apps[key.app] as T
+                return Object.assign(target,this.apps[key.app])
             }
         } else {
-            return this as User as T
+            return Object.assign(target,this)
         } 
     }
 
-    async save<T extends User | App>(key: BackendKey<T>, data: T) {
+    async save<T extends User | App>(key: BackendKey<T>, data: Partial<T>) {
         if ("app" in key) {
             if (this.identity != key.identity) {
                 throw("can't save data for "+key.identity+" with user "+this.identity)
             } else {
-                ;(this.apps[key.app] as T) = data
+                Object.assign(this.apps[key.app],data)
                 super.save({identity: this.identity}, this)
             }
         } else {
