@@ -7,19 +7,17 @@
     import Readme from "./readme.md"
     import { Ellipsis } from "lucide-svelte"
     import { fade } from "svelte/transition"
-    let { userData }: PageData = $props()
+    let { data }: { data: PageData} = $props()
 </script>
 
 <article class="prose max-w-none font-extralight">
     <h1 class="text-foreground font-extralight text-6xl">Hi, 
-        {#await userData}
+        {#await data.userData}
             <Ellipsis class="animate-pulse inline-block w-12 h-12 text-secondary"/>
         {:then user}
-            {JSON.stringify(user)}
-            <!-- <span transition:fade>{ JSON.stringify(user) }</span> -->
+            <span transition:fade>{ JSON.stringify(user) }</span>
         {:catch e }
-            {JSON.stringify(e)}
-            <Signup />
+            <Signup /> 
         {/await} 
     </h1>
     <Card class="min-h-16 p-4 shadow-3xl shadow-primary dark:prose-headings:text-white">
