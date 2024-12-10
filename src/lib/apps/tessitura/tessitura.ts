@@ -26,6 +26,7 @@ export class TessituraApp implements App {
     location?: string
     servers?: any 
     groups?: any
+    valid = false
 
     get auth(): string {
         return this.tessiApiUrl+"|"+this.userid+"|"+this.group+"|"+this.location
@@ -59,10 +60,8 @@ export class TessituraApp implements App {
         await backend.load(key, this)
         this.servers = servers
         this.groups = servers
-        if(this.userid) {
-            let valid = await this.tessiValidate()
-            if (!valid) 
-                throw(errors.TESSITURA)
+        if(this.userid && this.group && this.tessiApiUrl && this.location) {
+            this.valid = await this.tessiValidate()
         }
         return JSON.parse(JSON.stringify(this))
     }

@@ -19,7 +19,7 @@ function objectMap<In,Out>(o: Record<PropertyKey,In>, f: (a: In) => Out): Record
 
 export const load: PageServerLoad = async ( { locals }) => {
     const user = new UserLoaded(locals.user.userDetails) 
-    user.apps.tessitura.userid = ''
+    user.apps.tessitura.userid = 'ssyzygy'
     const appData = objectMap(config.apps,
         (app) => {
             console.log("loading "+app.key)
@@ -41,6 +41,7 @@ export const actions = objectMap(config.apps,
             if (hasProperty(config.apps, app.key)) {
                 const user = new User(locals.user.userDetails).load()
                 const data = await request.formData()
+                console.log(data)
                 app.save(await user, {identity: (await user).identity, app: app.key}, data)
                     .then((failure) => failure)
             } else {

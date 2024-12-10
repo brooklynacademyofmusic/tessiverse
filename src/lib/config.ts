@@ -9,7 +9,7 @@ export const tq_login = "";
 
 export const servers = [
     {value: "https://tessi-db-prd1", label: "TESSI-DB-PRD1/Impresario"},
-    {value: tessi_api_url, label: "TESSI-TEST-B/Impresario"}
+    {value: "https://t-gw-test-b-ex-rest.bam.org/TessituraService", label: "TESSI-TEST-B/Impresario"}
 ]
 
 export const apps = {

@@ -12,5 +12,5 @@
 {#await data.appData.tessitura then tessitura}
 <Tessitura form={superForm({userid: tessitura.userid || "", group: tessitura.group || "", tessiApiUrl: tessitura.tessiApiUrl, password: ""}, {
 		validators: zodClient(tessituraSchema),
-	})} action={tessitura.key} servers={tessitura.servers} groups={tessitura.groups}/>
+	})} action={"?/"+tessitura.key} servers={tessitura.servers} groups={tessitura.groups}/>
 {/await}

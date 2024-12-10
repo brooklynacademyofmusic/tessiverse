@@ -2,7 +2,6 @@
     import * as Dialog from '$lib/components/ui/dialog'
     import * as Form from '$lib/components/ui/form'
     import { Input } from '$lib/components/ui/input'
-    import { Button } from '$lib/components/ui/button'
     import * as Select from '$lib/components/ui/select'
     import { mode } from 'mode-watcher';
     import { type SuperForm, type Infer } from "sveltekit-superforms";
@@ -78,7 +77,7 @@
             </Form.Control>
             <Form.FieldErrors />
         </Form.Field>
-        <Button class="mt-5 w-full">Log In</Button>
+        <Form.Button class="mt-5 w-full">Log In</Form.Button>
     </form>
 </Dialog.Content>
 </Dialog.Root>
