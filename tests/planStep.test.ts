@@ -1,9 +1,9 @@
-import { findFirstString, planStep, type Plan, type Email } from '../src/routes/api/planStep/+server'
-import { tqGet, tqPost } from '$lib/tq'
-import { PlanStepConfig, User } from '$lib/user'
+import { findFirstString, planStep, PlanStepApp } from '$lib/apps/planStep/planStep'
+import type { Plan, Email } from '$lib/apps/planStep/types'
+import { error } from '@sveltejs/kit'
+import { tq } from '$lib/tq'
+import { User, UserLoaded } from '$lib/user'
 import { test, expect, vi, describe, beforeEach } from 'vitest'
-import { HttpRequest, InvocationContext } from '@azure/functions'
-vi.mock('../src/functions/http')
 
 describe("findFirstString", () => {
     test("findFirstString finds the first needle in a haystack",() => {
@@ -20,14 +20,13 @@ describe("findFirstString", () => {
 })
 
 describe("planStep", () => {
-    let tqGetMocked = vi.mocked(tqGet)
-    let tqPostMocked = vi.mocked(tqPost)
-    let httpErrorMocked = vi.mocked(httpError)
+    let tqMocked = vi.mocked(tq)
+    let errorMocked = vi.mocked(error)
     
     User.prototype.load = vi.fn(async () => {
         let user = new User("me")
-        user.apps.planstep = new PlanStepConfig()
-        return user
+        user.apps.planStep = new PlanStepApp()
+        return user as UserLoaded
     })
     
     let email = {
@@ -78,38 +77,29 @@ describe("planStep", () => {
 
 
     beforeEach(() => {
-        httpErrorMocked.mockReset()
-        tqGetMocked.mockReset()
-        tqPostMocked.mockReset()
+        errorMocked.mockReset()
+        tqMocked.mockReset()
     })
 
     test("planStep returns an error if no plans are returned",async () => {
-        tqGetMocked.mockResolvedValue([])
+        tqMocked.mockResolvedValue([])
 
-        await planStep(new HttpRequest({
-            url: "http://test.example/",
-            method: "get",
-            params: email
-        }), new InvocationContext())
+        await planStep(email)
 
-        expect(httpErrorMocked).toBeCalledTimes(1)
-        expect(tqGetMocked).toBeCalledTimes(1)
-        expect(tqPostMocked).not.toBeCalled()
+        expect(errorMocked).toBeCalledTimes(1)
+        expect(tqMocked).toBeCalledTimes(1)
+        expect(tqMocked).not.toBeCalled()
     })
 
     test("planStep returns an error if no matching plans are returned",async () => {
-        tqGetMocked.mockResolvedValueOnce(plans).mockResolvedValue([emails[0]])
+        tqMocked.mockResolvedValueOnce(plans).mockResolvedValue([emails[0]])
 
-        await planStep(new HttpRequest({
-            url: "http://test.example/",
-            method: "get",
-            params: email
-        }), new InvocationContext())
+        await planStep(email)
 
-        expect(httpErrorMocked).toBeCalledTimes(1)
-        expect(httpErrorMocked).toBeCalledWith("couldn't find a matching plan")
-        expect(tqGetMocked).toBeCalledTimes(5)
-        expect(tqPostMocked).not.toBeCalled()
+        expect(errorMocked).toBeCalledTimes(1)
+        expect(errorMocked).toBeCalledWith("couldn't find a matching plan")
+        expect(tqMocked).toBeCalledTimes(5)
+        expect(tqMocked).not.toBeCalled()
     })
 
     test.each([
@@ -117,9 +107,9 @@ describe("planStep", () => {
         {body: "2000", id: 2},
         {body: "Christina Person", id: 3}
     ])("planStep identifies a matching plan by email address, constituentid, and name", async (arg) => {
-        tqPostMocked.mockReset()
+        tqMocked.mockReset()
 
-        tqGetMocked.mockReset().
+        tqMocked.mockReset().
             mockResolvedValueOnce(plans).
             mockResolvedValueOnce([emails[0]]).
             mockResolvedValueOnce([emails[1]]).
@@ -131,14 +121,10 @@ describe("planStep", () => {
         planstep.notes = arg.body
 
         vi.useFakeTimers({now: planstep.stepdatetime})
-        await planStep(new HttpRequest({
-            url: "http://test.example/",
-            method: "get",
-            params: email
-        }), new InvocationContext())
+        await planStep(email)
 
-        expect(tqPostMocked).toBeCalledTimes(1)
-        expect(tqPostMocked).toBeCalledWith(["planstep"], planstep, "|||")
+        expect(tqMocked).toBeCalledTimes(1)
+        expect(tqMocked).toBeCalledWith(["planstep"], planstep, "|||")
 
     })
 
@@ -147,9 +133,9 @@ describe("planStep", () => {
         {body: "2000 a@test.com Christina Person", id: 2},
         {body: "Christina 2000 a@test.com", id: 3}
     ])("planStep identifies a matching plan by the first email address, constituentid, and name", async (arg) => {
-        tqPostMocked.mockReset()
+        tqMocked.mockReset()
 
-        tqGetMocked.mockReset().
+        tqMocked.mockReset().
             mockResolvedValueOnce(plans).
             mockResolvedValueOnce([emails[0]]).
             mockResolvedValueOnce([emails[1]]).
@@ -161,14 +147,10 @@ describe("planStep", () => {
         planstep.notes = arg.body
 
         vi.useFakeTimers({now: planstep.stepdatetime})
-        await planStep(new HttpRequest({
-            url: "http://test.example/",
-            method: "get",
-            params: email
-        }), new InvocationContext())
+        await planStep(email)
 
-        expect(tqPostMocked).toBeCalledTimes(1)
-        expect(tqPostMocked).toBeCalledWith(["planstep"], planstep, "|||")
+        expect(tqMocked).toBeCalledTimes(1)
+        expect(tqMocked).toBeCalledWith(["planstep"], planstep, "|||")
 
     })
 
@@ -191,23 +173,19 @@ describe("planStep", () => {
     {body: "a@test.com opera", id: 2},
     {body: "a@test.com", id: 3}
     ])("planStep disambiguates plans using campaign, designation, and timestamp", async (arg) => {
-    tqPostMocked.mockReset()
+    tqMocked.mockReset()
 
-    tqGetMocked.mockReset().mockResolvedValueOnce(plans_ambiguous).mockResolvedValue([emails[0]])
+    tqMocked.mockReset().mockResolvedValueOnce(plans_ambiguous).mockResolvedValue([emails[0]])
 
     email.body = arg.body
     planstep.plan.id = arg.id
     planstep.notes = arg.body
 
     vi.useFakeTimers({now: planstep.stepdatetime})
-    await planStep(new HttpRequest({
-        url: "http://test.example/",
-        method: "get",
-        params: email
-    }), new InvocationContext())
+    await planStep(email)
 
-    expect(tqPostMocked).toBeCalledTimes(1)
-    expect(tqPostMocked).toBeCalledWith(["planstep"], planstep, "|||")
+    expect(tqMocked).toBeCalledTimes(1)
+    expect(tqMocked).toBeCalledWith(["planstep"], planstep, "|||")
 
     })
 

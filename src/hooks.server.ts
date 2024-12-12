@@ -1,8 +1,7 @@
 import { type Handle, error } from '@sveltejs/kit';
 import * as errors from "$lib/errors"
 
-
-type clientPrincipal = {
+export type ClientPrincipal = {
     identityProvider: string,
     userId: string,
     userDetails: string,
@@ -16,7 +15,7 @@ export const handle: Handle = async ({ event, resolve }) => {
         event.cookies.get("StaticWebAppsAuthCookie") || 
         "", 'base64');
     
-    let user = JSON.parse(header.toString('ascii') || "{}") as clientPrincipal
+    let user = JSON.parse(header.toString('ascii') || "{}") as ClientPrincipal
     user = {identityProvider: "me", userId: "ssyzygy", userDetails: "ssyzygy", userRoles: ["admin"]}
     event.locals.user = user
     if (!event.locals.user.userId) {

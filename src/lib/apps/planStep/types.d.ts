@@ -16,8 +16,4 @@ export interface Email {
     address: string
 }
 
-export interface PlanStepConfig {
-    steptypeid: number
-    closestep: boolean
-}
 

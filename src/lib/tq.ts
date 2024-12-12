@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { spawnSync } from 'child_process'
 import { tq_login } from './config';
 
@@ -8,12 +7,11 @@ export async function tq(verb: string, object: string, variant?: string, query?:
         flag = "--"+variant;
     }
     console.log(`running tq (${verb} ${object} ${variant} ${JSON.stringify(query)} ${login})`)
-    var tq = spawnSync('bin/tq', ["-c", "--no-highlight", verb, object, flag], 
+    var tq = spawnSync('$lib/bin/tq', ["-c", "--no-highlight", verb, object, flag], 
     {
         encoding: 'utf8', 
         input: JSON.stringify(query),
-        env: _.extend(process.env, 
-            {"TQ_LOGIN": login || tq_login}),
+        env: {"TQ_LOGIN": login || tq_login},
         timeout: 30000
     });
 
