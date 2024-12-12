@@ -15,8 +15,8 @@ import type { Component } from 'svelte'
 export class TessituraApp extends AppBase {
     title = "Tessitura Integration"
     key = "tessitura"
-    card: Component<any> = TessituraCard
-    form: Component<any> = Tessitura
+    card = TessituraCard
+    form = Tessitura
     firstname?: string
     lastname?: string
     userid?: string

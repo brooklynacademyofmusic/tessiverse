@@ -1,5 +1,5 @@
 import type { PageServerLoad, Action, Actions } from './$types';
-import { type App } from '$lib/apps'
+import { type App, type AppNames, type ConfiguredApps } from '$lib/apps'
 import { User } from '$lib/user';
 import { error } from '@sveltejs/kit'
 import * as errors from "$lib/errors"
@@ -15,11 +15,12 @@ function hasProperty<O extends object>(o: O, k: PropertyKey): k is keyof O {
 function objectMap<In,Out>(o: Record<PropertyKey,In>, f: (a: In) => Out): Record<PropertyKey,Out> {
     return Object.fromEntries(Object.entries(o).map(([key,val]) => [key,f(val)]))
 }
+type AppPromise = { [K in AppNames]: Promise<ConfiguredApps[K]> }
 
 export const load: PageServerLoad = async ( { locals }) => {
     const user = new User(locals.user.userDetails).load()
     const appData = objectMap(config.apps,async (app) => app.load(await user))
-    return {userData: user, appData: appData}
+    return {userData: user, appData: appData as AppPromise}
 }
 
 export const actions = objectMap(config.apps,

@@ -7,16 +7,15 @@ import TessituraCard from "../tessitura/tessituraCard.svelte"
 import { type Component } from 'svelte'
 import type { TessituraApp } from "../tessitura/tessitura"
 
-let PlanStep: Component<Partial<PlanStepApp>, {} , ""> = {} as Component<Partial<PlanStepApp>, {} , "">
+let PlanStep: Component<any> = {} as Component<any>
 
 export class PlanStepApp extends AppBase {
     title = "Email to plan step"
     key = "planStep"
-    card: Component<any> = PlanStep
-    form: Component<any> = PlanStep
+    card = PlanStep
+    form = PlanStep
     stepType = 0
     closeStep = true
-    async load(backend: UserLoaded): Promise<Partial<PlanStepApp>> { return super.load(backend) }
 }
 
 export type PlanStepEmail = {

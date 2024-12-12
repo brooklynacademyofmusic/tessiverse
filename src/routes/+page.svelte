@@ -36,7 +36,7 @@
             <Ellipsis class="animate-pulse inline-block w-12 h-12 text-secondary"/>
         {:then app} 
             <AppCard title = {app.title}>
-                <app.card {...app} />
+                <app.card data = {app as any} />
             </AppCard>            
         {/await}
     {/each}
