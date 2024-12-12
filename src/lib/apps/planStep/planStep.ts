@@ -1,22 +1,50 @@
-import { HttpRequest, type HttpResponseInit, InvocationContext } from "@azure/functions";
-import { User } from "$lib/user"
+import { User, UserLoaded } from "$lib/user"
 import { tq } from "$lib/tq"
-import { error as httpError } from "@sveltejs/kit"
-import type { Plan, Email, PlanScore } from "./types"
+import { error } from "@sveltejs/kit"
+import type { Email, PlanScore } from "./types"
+import { AppBase } from "$lib/apps"
+import TessituraCard from "../tessitura/tessituraCard.svelte"
+import { type Component } from 'svelte'
+import type { TessituraApp } from "../tessitura/tessitura"
 
-export async function planStep(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-    context.log(context.functionName,`processed request for url`,request.url);
-    let config = await new User(request.params.from).load()
-    let body = [request.params.to,request.params.cc,request.params.bcc,request.params.subject,request.params.body].join(" ")
-    let plans = await tq("get", "plans", "all", {workerconstituentid: config.constituentid}, config.auth) as Plan[]
-    let plans_emails = await Promise.all(plans.map((p) => {
-        return tq("get", "electronicaddresses", "all", {constituentids: p.constituent.id}, config.auth) as Promise<Email[]>
+let PlanStep: Component<Partial<PlanStepApp>, {} , ""> = {} as Component<Partial<PlanStepApp>, {} , "">
+
+export class PlanStepApp extends AppBase {
+    title = "Email to plan step"
+    key = "planStep"
+    card: Component<any> = PlanStep
+    form: Component<any> = PlanStep
+    stepType = 0
+    closeStep = true
+    async load(backend: UserLoaded): Promise<Partial<PlanStepApp>> { return super.load(backend) }
+}
+
+export type PlanStepEmail = {
+    from: string
+    to: string
+    cc: string
+    bcc: string
+    subject: string
+    body: string
+}
+
+export async function planStep(email: PlanStepEmail): Promise<null> {
+    let emailId: string = `${email.from} => ${email.to} (${email.subject})`
+    console.log(`Generating plan step for email ${emailId}`)
+
+    let user: UserLoaded = await new User(email.from).load()
+    let tessiUser: TessituraApp = user.apps.tessitura
+    let planStepUser: PlanStepApp = user.apps.planStep
+    let plans: PlanScore[] = await tq("get", "plans", "all", {workerconstituentid: tessiUser.constituentid || "1"}, tessiUser.auth)
+    let body: string = [email.to,email.cc,email.bcc,email.subject,email.body].join(" ")
+    let plans_emails: Email[][] = await Promise.all(plans.map((p) => {
+        return tq("get", "electronicaddresses", "all", {constituentids: p.constituent.id}, tessiUser.auth)
     }))
 
-    let plans_filtered = [] as PlanScore[]
+    let plans_filtered: PlanScore[] = []
 
     for (let i=0; i<plans.length; i++) {
-        let plan = plans[i] as PlanScore
+        let plan = plans[i]
 
         let constituentid = plan.constituent.id.toString()
         let emails = plans_emails[i]
@@ -40,7 +68,7 @@ export async function planStep(request: HttpRequest, context: InvocationContext)
     }
     
     if (plans_filtered.length == 0) {
-        return httpError(404, "couldn't find a matching plan")
+        error(404, `Couldn't find a matching plan for ${emailId}`)
     }
 
     plans_filtered = plans_filtered.sort((a,b) => {
@@ -50,24 +78,22 @@ export async function planStep(request: HttpRequest, context: InvocationContext)
     // Found a plan!
     let plan = plans_filtered[0]
 
-    let planstepconfig = config.apps.planstep || {}
-
     // Make a plan step
     await tq("post","planstep","",
         {
             plan: {id: plan.id},
-            type: {id: planstepconfig?.steptypeid },
-            notes: request.params.body,
+            type: {id: planStepUser.stepType },
+            notes: email.body,
             stepdatetime: new Date(),
-            completedondatetime: planstepconfig?.closestep ? new Date() : null,
-            description: request.params.subject
+            completedondatetime: planStepUser.closeStep ? new Date() : null,
+            description: email.subject
         },
-        config.auth)
+        tessiUser.auth)
 
-    return {}
+    return null
 };
 
-export function findFirstString(needle: string[], haystack: string): number {
+export function findFirstString(needle: Array<string | null | void>, haystack: string): number {
     needle = needle.filter((e) => e && e.length > 3)
     if (needle.length == 0)
         return -1
@@ -75,7 +101,7 @@ export function findFirstString(needle: string[], haystack: string): number {
     return needle
         .map((q) => {
             // escape special characters
-            q = q.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
+            q = (q || "").replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
             return haystack.search(new RegExp(`\\b${q}\\b`,"i"))
         })
         .reduce((a,b) => {

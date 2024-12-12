@@ -1,3 +1,5 @@
+import { ClientPrincipal } from "./hooks.server";
+
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 declare global {
@@ -7,7 +9,7 @@ declare global {
 			id?: number;
 		}
 		interface Locals {
-			user: clientPrincipal
+			user: ClientPrincipal
 		}
 		// interface PageData {}
 		// interface PageState {}

@@ -1,6 +1,7 @@
 import { TessituraApp } from './apps/tessitura/tessitura'
 import { AppBase } from './apps';
 import { env } from '$env/dynamic/private'
+import { PlanStepApp } from './apps/planStep/planStep';
 
 export const key_vault_url = env.AZURE_KEY_VAULT_URL || "";
 export const admin_auth = "";
@@ -14,5 +15,5 @@ export const servers = [
 
 export const apps = {
     tessitura: new TessituraApp(), 
-    // planSteps: new AppBase()
+    planStep: new PlanStepApp()
 } 

@@ -17,34 +17,17 @@ function objectMap<In,Out>(o: Record<PropertyKey,In>, f: (a: In) => Out): Record
 }
 
 export const load: PageServerLoad = async ( { locals }) => {
-    const userData = new User(locals.user.userDetails).load()
-    const appData = objectMap(config.apps,
-        (app: App) => userData.then((user) => {
-            console.log("loading "+app.key)
-            if (hasProperty(config.apps, app.key)) {
-                return app.load(user,{identity: user.identity, app: app.key})
-            } else {
-                throw("Don't know how to load app "+app.key)
-            }
-        })
-    ) 
-    return {userData: userData, appData: appData}
+    const user = new User(locals.user.userDetails).load()
+    const appData = objectMap(config.apps,async (app) => app.load(await user))
+    return {userData: user, appData: appData}
 }
 
 export const actions = objectMap(config.apps,
-    (app: App): Action => {
+    (app): Action => {
         let action: Action = async ({request, locals}) => {
-            if (!locals.user.userId) {
-                error(401, errors.AUTH)
-            }
-            if (hasProperty(config.apps, app.key)) {
-                const user = new User(locals.user.userDetails).load()
-                const data = await request.formData()
-                app.save(await user, {identity: (await user).identity, app: app.key}, data)
-                    .then((failure) => failure)
-            } else {
-                throw("Don't know how to save app "+app.key)
-            }
+            Promise.all([request.formData(), new User(locals.user.userDetails).load()])
+            .then(([data,user]) => app.save(user, data))
+            .then((failure) => failure)
         }
         return action
     }

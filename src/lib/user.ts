@@ -21,10 +21,13 @@ export class User implements Backend<User> {
         return new Azure().save(key, this)
     }
 }
-
+//Typescript magic!
+function hasProperty<O extends object>(o: O, k: PropertyKey): k is keyof O {
+    return k in o
+}
 export class UserLoaded extends User implements Backend<User | App> {
-    async load<T extends User |  App>(key: BackendKey<T>, target: T): Promise<T> {
-        if ("app" in key) {
+    async load<T extends User | App>(key: BackendKey<T>, target: T): Promise<T> {
+        if ("app" in key && hasProperty(this.apps, key.app)) {
             if (this.identity != key.identity) {
                 throw("can't load data for "+key.identity+" from user "+this.identity)
             } else {
@@ -36,7 +39,7 @@ export class UserLoaded extends User implements Backend<User | App> {
     }
 
     async save<T extends User | App>(key: BackendKey<T>, data: Partial<T>) {
-        if ("app" in key) {
+        if ("app" in key && hasProperty(this.apps, key.app)) {
             if (this.identity != key.identity) {
                 throw("can't save data for "+key.identity+" with user "+this.identity)
             } else {
