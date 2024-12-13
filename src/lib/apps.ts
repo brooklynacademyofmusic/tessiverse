@@ -46,6 +46,6 @@ export class AppBase implements App {
 }
 
 
-export type ConfiguredApps = typeof config.apps
+export type ConfiguredApps = typeof config.Apps
 export type AppNames = keyof ConfiguredApps
 export type Apps = ConfiguredApps[AppNames]

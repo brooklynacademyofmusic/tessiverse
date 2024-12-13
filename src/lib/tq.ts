@@ -1,5 +1,4 @@
-import { spawnSync } from 'child_process'
-import { tq_login } from './config';
+import child_process from 'child_process'
 
 export async function tq(verb: string, object: string, variant?: string, query?: any, login?: string): Promise<any> {
     let flag = "";
@@ -7,11 +6,11 @@ export async function tq(verb: string, object: string, variant?: string, query?:
         flag = "--"+variant;
     }
     console.log(`running tq (${verb} ${object} ${variant} ${JSON.stringify(query)} ${login})`)
-    var tq = spawnSync('$lib/bin/tq', ["-c", "--no-highlight", verb, object, flag], 
+    var tq = child_process.spawnSync('$lib/bin/tq', ["-c", "--no-highlight", verb, object, flag], 
     {
         encoding: 'utf8', 
         input: JSON.stringify(query),
-        env: {"TQ_LOGIN": login || tq_login},
+        env: {"TQ_LOGIN": login},
         timeout: 30000
     });
 
