@@ -1,8 +1,7 @@
 import { Azure, type Backend, type BackendKey } from '$lib/azure'
 import * as config from "$lib/config"
-import type { App } from '$lib/apps'
 
-export class User implements Backend<User> {
+export class User implements Backend {
     readonly identity: string
     firstname: string = ""
     apps = new config.Apps()
@@ -11,8 +10,8 @@ export class User implements Backend<User> {
         this.identity = identity
     }
 
-    async load(key: BackendKey<User> = {identity: this.identity}, target: any = this): Promise<UserLoaded> {
-        return new Azure().load(key,target) as Promise<UserLoaded> 
+    async load(key: BackendKey = {identity: this.identity}, target: any = this): Promise<UserLoaded> {
+        return new Azure().load(key) as Promise<UserLoaded> 
     }
 
     async save(key: {identity: string} = {identity: this.identity}, data: Partial<User> = this): Promise<void> {
@@ -25,21 +24,21 @@ export class User implements Backend<User> {
 function hasProperty<O extends object>(o: O, k: PropertyKey): k is keyof O {
     return k in o
 }
-export class UserLoaded extends User implements Backend<User | App> {
-    async load<T extends User | App>(key: BackendKey<T>, target: T): Promise<T> {
-        if ("app" in key && hasProperty(this.apps, key.app)) {
+export class UserLoaded extends User implements Backend {
+    async load(key: BackendKey): Promise<any> {
+        if (key.app && hasProperty(this.apps, key.app)) {
             if (this.identity != key.identity) {
                 throw("can't load data for "+key.identity+" from user "+this.identity)
             } else {
-                return Object.assign(target,this.apps[key.app])
+                return this.apps[key.app]
             }
         } else {
-            return Object.assign(target,this)
+            return this
         } 
     }
 
-    async save<T extends User | App>(key: BackendKey<T>, data: Partial<T>) {
-        if ("app" in key && hasProperty(this.apps, key.app)) {
+    async save(key: BackendKey, data: any) {
+        if (key.app && hasProperty(this.apps, key.app)) {
             if (this.identity != key.identity) {
                 throw("can't save data for "+key.identity+" with user "+this.identity)
             } else {

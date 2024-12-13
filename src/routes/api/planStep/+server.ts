@@ -1,4 +1,4 @@
-import type { RequestHandler, RouteParams } from './$types';
+import type { RequestHandler } from './$types';
 import { planStep, type PlanStepEmail } from '$lib/apps/planStep/planStep'
 import { error } from '@sveltejs/kit';
 import * as ERRORS from '$lib/errors'

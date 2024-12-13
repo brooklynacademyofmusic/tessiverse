@@ -9,9 +9,9 @@
     <Badge class="w-min ml-auto animate-pulse">Loading...</Badge>
 {:then tessi }
     <Badge class="w-min ml-auto bg-green-600">Connected</Badge>
-    <p>Username: {tessi.userid}</p>
+    <!-- <p>Username: {tessi.userid}</p>
     <p>Group: {tessi.group}</p>
-    <p>API server: {tessi.tessiApiUrl}</p>
+    <p>API server: {tessi.tessiApiUrl}</p> -->
 {:catch error }
 {#if error.id == ERRORS.USER_NOT_FOUND.id}
     <Badge class="w-min ml-auto bg-destructive">User not found</Badge>
