@@ -1,11 +1,11 @@
 import { Azure, type Backend, type BackendKey } from '$lib/azure'
 import * as config from "$lib/config"
-import type { App, AppNames } from '$lib/apps'
+import type { App } from '$lib/apps'
 
 export class User implements Backend<User> {
     readonly identity: string
     firstname: string = ""
-    apps = config.apps
+    apps = new config.Apps()
 
     constructor(identity: string) {
         this.identity = identity

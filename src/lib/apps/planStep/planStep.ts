@@ -3,7 +3,6 @@ import { tq } from "$lib/tq"
 import { error } from "@sveltejs/kit"
 import type { Email, PlanScore } from "./types"
 import { AppBase } from "$lib/apps"
-import TessituraCard from "../tessitura/tessituraCard.svelte"
 import { type Component } from 'svelte'
 import type { TessituraApp } from "../tessitura/tessitura"
 
@@ -33,7 +32,7 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
 
     let user: UserLoaded = await new User(email.from).load()
     let tessiUser: TessituraApp = user.apps.tessitura
-    let planStepUser: PlanStepApp = user.apps.planStep
+    let planStepUser: PlanStepApp = user.apps.planStep as PlanStepApp
     let plans: PlanScore[] = await tq("get", "plans", "all", {workerconstituentid: tessiUser.constituentid || "1"}, tessiUser.auth)
     let body: string = [email.to,email.cc,email.bcc,email.subject,email.body].join(" ")
     let plans_emails: Email[][] = await Promise.all(plans.map((p) => {
@@ -67,7 +66,7 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     }
     
     if (plans_filtered.length == 0) {
-        error(404, `Couldn't find a matching plan for ${emailId}`)
+        return error(404, `Couldn't find a matching plan for ${emailId}`)
     }
 
     plans_filtered = plans_filtered.sort((a,b) => {

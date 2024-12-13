@@ -1,11 +1,12 @@
 import { SecretClient } from "@azure/keyvault-secrets";
 import { DefaultAzureCredential } from "@azure/identity";
 import { error } from "@sveltejs/kit"
-import { hash } from "crypto";
+import crypto from "crypto";
 import { User } from "$lib/user"
 import * as errors from "$lib/errors"
-import { key_vault_url } from "./config";
-import type { App, Apps, AppNames } from '$lib/apps'
+import { env } from '$env/dynamic/private'
+
+export const key_vault_url = env.AZURE_KEY_VAULT_URL || "";
 
 type Model = object
 export type BackendKey<M extends Model> = M extends User ? {identity: string} : {identity: string, app: string} 
@@ -30,7 +31,7 @@ export class Azure implements Backend<Model> {
 
     async load<M extends Model>(key: BackendKey<M>, target: M): Promise<M> {
         return this.client.getSecret(
-            hash("md5",["users",key.identity].join("."))
+            crypto.hash("md5",["users",key.identity].join("."))
         ).then((response) => {
             // console.log(JSON.stringify(response.value))
             if (response.properties?.tags?.identity != key.identity) {
@@ -61,7 +62,7 @@ export class Azure implements Backend<Model> {
             Object.assign(user, data)
         } 
         return this.client.setSecret(
-            hash("md5",["users",key.identity].join(".")),
+            crypto.hash("md5",["users",key.identity].join(".")),
             JSON.stringify(user),            
             { tags: {identity: key.identity} }
         ).then(() => {}).catch(() => 
