@@ -20,8 +20,10 @@ describe("findFirstString", () => {
 })
 
 describe("planStep", () => {
-    let tqMocked = vi.mocked(tq)
-    let errorMocked = vi.mocked(error)
+    vi.mock('$lib/tq')
+    vi.mock('@sveltejs/kit')
+    var tqMocked = vi.mocked(tq)
+    var errorMocked = vi.mocked(error)
     
     User.prototype.load = vi.fn(async () => {
         let user = new User("me")
@@ -88,7 +90,8 @@ describe("planStep", () => {
 
         expect(errorMocked).toBeCalledTimes(1)
         expect(tqMocked).toBeCalledTimes(1)
-        expect(tqMocked).not.toBeCalled()
+        expect(tqMocked.mock.calls[0][0]).toBe("get")
+        expect(tqMocked.mock.calls[0][1]).toBe("plans")
     })
 
     test("planStep returns an error if no matching plans are returned",async () => {
@@ -97,9 +100,8 @@ describe("planStep", () => {
         await planStep(email)
 
         expect(errorMocked).toBeCalledTimes(1)
-        expect(errorMocked).toBeCalledWith("couldn't find a matching plan")
+        expect(errorMocked.mock.calls[0][1]).toMatch(`Couldn't find a matching plan for`)
         expect(tqMocked).toBeCalledTimes(5)
-        expect(tqMocked).not.toBeCalled()
     })
 
     test.each([
@@ -123,8 +125,10 @@ describe("planStep", () => {
         vi.useFakeTimers({now: planstep.stepdatetime})
         await planStep(email)
 
-        expect(tqMocked).toBeCalledTimes(1)
-        expect(tqMocked).toBeCalledWith(["planstep"], planstep, "|||")
+        expect(tqMocked).toBeCalledTimes(6)
+        expect(tqMocked.mock.calls[5][0]).toBe("post")
+        expect(tqMocked.mock.calls[5][1]).toBe("planstep")
+        expect(tqMocked.mock.calls[5][3]).toEqual(planstep)
 
     })
 
@@ -149,8 +153,10 @@ describe("planStep", () => {
         vi.useFakeTimers({now: planstep.stepdatetime})
         await planStep(email)
 
-        expect(tqMocked).toBeCalledTimes(1)
-        expect(tqMocked).toBeCalledWith(["planstep"], planstep, "|||")
+        expect(tqMocked).toBeCalledTimes(6)
+        expect(tqMocked.mock.calls[5][0]).toBe("post")
+        expect(tqMocked.mock.calls[5][1]).toBe("planstep")
+        expect(tqMocked.mock.calls[5][3]).toEqual(planstep)
 
     })
 
@@ -184,8 +190,10 @@ describe("planStep", () => {
     vi.useFakeTimers({now: planstep.stepdatetime})
     await planStep(email)
 
-    expect(tqMocked).toBeCalledTimes(1)
-    expect(tqMocked).toBeCalledWith(["planstep"], planstep, "|||")
+    expect(tqMocked).toBeCalledTimes(5)
+    expect(tqMocked.mock.calls[4][0]).toBe("post")
+    expect(tqMocked.mock.calls[4][1]).toBe("planstep")
+    expect(tqMocked.mock.calls[4][3]).toEqual(planstep)
 
     })
 
