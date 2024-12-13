@@ -9,6 +9,13 @@
     import { fade } from "svelte/transition"
     let { data }: { data: PageData} = $props()
     let { userData, appData } = data
+    import * as config from '$lib/config'
+
+    const apps = new config.AppComponents()
+    // for(let key in data.appData) {
+    //     data.appData[key] = Object.assign(data.appData[key],apps[key])
+    // }
+    appData = apps
 </script>
 
 <article class="prose max-w-none font-extralight">
@@ -31,12 +38,13 @@
     </Card>
 </article>
 <article class="grid md:grid-cols-2 grid-cols-1 gap-8 min-h-[10rem]">
-    {#each Object.entries(appData) as [_, app]}
+    {#each Object.entries(apps) as [_, app]}
         {#await app}
             <Ellipsis class="animate-pulse inline-block w-12 h-12 text-secondary"/>
         {:then app} 
             <AppCard title = {app.title}>
-                <app.card data = {app as any} />
+                test
+                <app.card data = {{...app}}/>
             </AppCard>            
         {/await}
     {/each}

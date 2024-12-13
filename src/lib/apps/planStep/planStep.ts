@@ -3,18 +3,12 @@ import { tq } from "$lib/tq"
 import { error } from "@sveltejs/kit"
 import type { Email, PlanScore } from "./types"
 import { AppBase } from "$lib/apps"
-import { type Component } from 'svelte'
-import type { TessituraApp } from "../tessitura/tessitura"
-
-let PlanStep: Component<any> = {} as Component<any>
+import { PlanStepAppComponents, PlanStepAppData } from "./planStepPublic"
+import { TessituraApp } from "../tessitura/tessitura"
 
 export class PlanStepApp extends AppBase {
-    title = "Email to plan step"
-    key = "planStep"
-    card = PlanStep
-    form = PlanStep
-    stepType = 0
-    closeStep = true
+    components = new PlanStepAppComponents()
+    data = new PlanStepAppData()
 }
 
 export type PlanStepEmail = {
@@ -31,9 +25,10 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     console.log(`Generating plan step for email ${emailId}`)
 
     let user: UserLoaded = await new User(email.from).load()
-    let tessiUser: TessituraApp = user.apps.tessitura
-    let planStepUser: PlanStepApp = user.apps.planStep as PlanStepApp
-    let plans: PlanScore[] = await tq("get", "plans", "all", {workerconstituentid: tessiUser.constituentid || "1"}, tessiUser.auth)
+    let tessiUser = new TessituraApp() 
+    tessiUser.data = user.apps.tessitura
+    let planStepUser: PlanStepAppData = user.apps.planStep as PlanStepAppData
+    let plans: PlanScore[] = await tq("get", "plans", "all", {workerconstituentid: tessiUser.data.constituentid || "1"}, tessiUser.auth)
     let body: string = [email.to,email.cc,email.bcc,email.subject,email.body].join(" ")
     let plans_emails: Email[][] = await Promise.all(plans.map((p) => {
         return tq("get", "electronicaddresses", "all", {constituentids: p.constituent.id}, tessiUser.auth)

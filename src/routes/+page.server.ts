@@ -1,37 +1,36 @@
 import type { PageServerLoad, Action, Actions } from './$types';
-import { type App, type AppNames, type ConfiguredApps } from '$lib/apps'
-import { User } from '$lib/user';
-import { error } from '@sveltejs/kit'
-import * as errors from "$lib/errors"
+import { User, UserLoaded } from '$lib/user';
 import * as config from '$lib/config'
-import { fail, message, type SuperValidated } from 'sveltekit-superforms';
 import { Azure } from '$lib/azure';
+
 
 //Typescript magic!
 function hasProperty<O extends object>(o: O, k: PropertyKey): k is keyof O {
     return k in o
 }
 
-function objectMap<In,Out>(o: Record<PropertyKey,In>, f: (a: In) => Out): Record<PropertyKey,Out> {
-    return Object.fromEntries(Object.entries(o).map(([key,val]) => [key,f(val)]))
-}
-type AppPromise = { [K in AppNames]: Promise<ConfiguredApps[K]> }
+type AppPromise = { [K in keyof config.Apps]: Promise<config.Apps[K]> }
+const apps = new config.Apps()
 
 export const load: PageServerLoad = async ( { locals }) => {
-    const user = new User(locals.user.userDetails).load()
-    const appData = objectMap(config.apps,async (app) => app.load(await user))
-    return {userData: user, appData: appData as AppPromise}
+    let backend = new Azure()
+    let user = new User("ssyzygy").load()
+    let appData: any = {} 
+    for(let key in apps) {
+        appData[key] = user.then((u) => u.load({identity: u.identity, app: key})).catch(()=>{})
+    }
+    // const appData = objectMap(new config.Apps(),(app) => (app.load(user)))
+    return {userData: JSON.parse(JSON.stringify(user)), appData: appData as AppPromise}
 }
 
-export const actions = objectMap(config.apps,
-    (app): Action => {
-        let action: Action = async ({request, locals}) => {
+export const actions: Actions = {}
+for(let key in apps) {
+    if (hasProperty(apps,key))
+        actions[key] = async ({request, locals}) => {
             Promise.all([request.formData(), new User(locals.user.userDetails).load()])
-            .then(([data,user]) => app.save(user, data))
+            .then(([data,user]) => apps[key].save(user, data))
             .then((failure) => failure)
-        }
-        return action
+        } 
     }
-) satisfies Actions
 
 

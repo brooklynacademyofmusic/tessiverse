@@ -2,25 +2,22 @@ import { SecretClient } from "@azure/keyvault-secrets";
 import { DefaultAzureCredential } from "@azure/identity";
 import { error } from "@sveltejs/kit"
 import crypto from "crypto";
-import { User } from "$lib/user"
 import * as errors from "$lib/errors"
 import { env } from '$env/dynamic/private'
+import { type User } from "$lib/user"
 
 export const key_vault_url = env.AZURE_KEY_VAULT_URL || "";
-
-type Model = object
-export type BackendKey<M extends Model> = M extends User ? {identity: string} : {identity: string, app: string} 
-export interface Backend<M extends Model> {
-    load(key: BackendKey<M>, target: M): Promise<M>
-    save(key: BackendKey<M>, data: Partial<M>): void
-}
 //Typescript magic!
 function hasProperty<O extends object>(o: O, k: PropertyKey): k is keyof O {
     return k in o
 }
+export type BackendKey = {identity: string, app?: string} 
+export interface Backend {
+    load(key: BackendKey): Promise<any>
+    save(key: BackendKey, data: any): void
+}
 
-
-export class Azure implements Backend<Model> {
+export class Azure implements Backend {
     client: SecretClient 
     constructor() {
         this.client = new SecretClient(
@@ -29,7 +26,7 @@ export class Azure implements Backend<Model> {
         )
     }
 
-    async load<M extends Model>(key: BackendKey<M>, target: M): Promise<M> {
+    async load(key: BackendKey): Promise<any>  {
         return this.client.getSecret(
             crypto.hash("md5",["users",key.identity].join("."))
         ).then((response) => {
@@ -38,10 +35,10 @@ export class Azure implements Backend<Model> {
                 error(500, {message: "Hash collision PANIC!"})
             }
             let user: User = JSON.parse(response.value || "")
-            if ("app" in key && hasProperty(user.apps, key.app)) {
-                return Object.assign(target,user.apps[key.app])
+            if (key.app && hasProperty(user.apps, key.app)) {
+                return user.apps[key.app]
             } else {
-                return Object.assign(target,user)
+                return user
             }    
         }).catch((e) => {
             console.log(e)
@@ -53,10 +50,10 @@ export class Azure implements Backend<Model> {
         })
     }
 
-    async save<M extends Model>(key: BackendKey<M>, data: Partial<M>): Promise<void> {
-        var user: User = new User(key.identity)
-        if ("app" in key && hasProperty(user.apps, key.app)) {
-            user = await this.load({identity: key.identity}, user)
+    async save(key: BackendKey, data: any): Promise<void> {
+        let user = await this.load({identity: key.identity}) 
+        if (key.app && hasProperty(user.apps, key.app)) {
+            user = await this.load({identity: key.identity})
             Object.assign(user.apps[key.app], data)
         } else {
             Object.assign(user, data)
