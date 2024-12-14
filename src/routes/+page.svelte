@@ -11,11 +11,10 @@
     let { userData, appData } = data
     import * as config from '$lib/config'
 
-    const apps = new config.AppComponents()
     // for(let key in data.appData) {
     //     data.appData[key] = Object.assign(data.appData[key],apps[key])
     // }
-    appData = apps
+    let apps = config.Apps
 </script>
 
 <article class="prose max-w-none font-extralight">
@@ -43,9 +42,14 @@
             <Ellipsis class="animate-pulse inline-block w-12 h-12 text-secondary"/>
         {:then app} 
             <AppCard title = {app.title}>
-                test
-                <app.card data = {{...app}}/>
+                {#if typeof app.card === "function"}
+                    <app.card data = {{...app}}/>
+                {:else}
+                    {app.title}
+                {/if}
             </AppCard>            
+        {:catch e }
+            Oops!
         {/await}
     {/each}
 </article>
