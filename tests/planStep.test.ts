@@ -1,4 +1,4 @@
-import { findFirstString, planStep, PlanStepApp } from '$lib/apps/planStep/planStep'
+import { findFirstString, planStep, PlanStepApp } from '$lib/apps/planStep/planStep.server'
 import type { Plan, Email } from '$lib/apps/planStep/types'
 import { error } from '@sveltejs/kit'
 import { tq } from '$lib/tq'

@@ -3,43 +3,38 @@ import { DefaultAzureCredential } from "@azure/identity";
 import { error } from "@sveltejs/kit"
 import crypto from "crypto";
 import * as errors from "$lib/errors"
-import { env } from '$env/dynamic/private'
-import { type User } from "$lib/user"
+import { User } from "$lib/user"
+import * as server from "$lib/config.server";
+import * as config from "$lib/config";
 
-export const key_vault_url = env.AZURE_KEY_VAULT_URL || "";
-//Typescript magic!
-function hasProperty<O extends object>(o: O, k: PropertyKey): k is keyof O {
-    return k in o
-}
+type ValidAppNames = keyof typeof config.Apps
+type ValidBackendKey<A extends ValidAppNames>  = {identity: string, app: A}
+type ValidBackendKeys = ValidBackendKey<ValidAppNames>
+type ValidApp<K extends ValidBackendKeys> =  K extends ValidBackendKey<infer A> ? typeof config.Apps[A] : never
+
 export type BackendKey = {identity: string, app?: string} 
-export interface Backend {
-    load(key: BackendKey): Promise<any>
-    save(key: BackendKey, data: any): void
+export interface Backend<T> {
+    load(key: BackendKey): Promise<T> | T
+    save(key: BackendKey, data: T): void
 }
 
-export class Azure implements Backend {
+export class Azure implements Backend<User> {
     client: SecretClient 
     constructor() {
         this.client = new SecretClient(
-            key_vault_url,
+            server.key_vault_url,
             new DefaultAzureCredential()
         )
     }
 
-    async load(key: BackendKey): Promise<any>  {
+    async load(key: BackendKey): Promise<UserLoaded>  {
         return this.client.getSecret(
             crypto.hash("md5",["users",key.identity].join("."))
         ).then((response) => {
-            // console.log(JSON.stringify(response.value))
             if (response.properties?.tags?.identity != key.identity) {
                 error(500, {message: "Hash collision PANIC!"})
             }
-            let user: User = JSON.parse(response.value || "")
-            if (key.app && hasProperty(user.apps, key.app)) {
-                return user.apps[key.app]
-            } else {
-                return user
-            }    
+            return JSON.parse(response.value || "") as UserLoaded
         }).catch((e) => {
             console.log(e)
             if (e.code === "SecretNotFound")
@@ -50,14 +45,9 @@ export class Azure implements Backend {
         })
     }
 
-    async save(key: BackendKey, data: any): Promise<void> {
+    async save(key: BackendKey, data: User): Promise<void> {
         let user = await this.load({identity: key.identity}) 
-        if (key.app && hasProperty(user.apps, key.app)) {
-            user = await this.load({identity: key.identity})
-            Object.assign(user.apps[key.app], data)
-        } else {
-            Object.assign(user, data)
-        } 
+        Object.assign(user, data)
         return this.client.setSecret(
             crypto.hash("md5",["users",key.identity].join(".")),
             JSON.stringify(user),            
@@ -66,4 +56,25 @@ export class Azure implements Backend {
             error(500, errors.AZURE_KEYVAULT)
         )
     }
+}
+
+function hasProperty<O extends object>(k: PropertyKey, o: O): k is keyof O {
+    return k in o
+}
+
+export class UserLoaded extends User implements Backend<ValidApp<ValidBackendKeys>> {
+    load<K extends ValidBackendKeys>(key: K): ValidApp<K> {
+        return this.apps[key.app] as ValidApp<K>
+    }
+
+    save<K extends ValidBackendKeys>(key: K, data: ValidApp<K>): Promise<void> {
+        if (key.app && key.app in this.apps) {
+            Object.assign(this.apps[key.app],data)
+        } else {
+            Object.assign(this,data)
+        }
+        let backend = new Azure()
+        return backend.save(key, this)
+    }
+
 }

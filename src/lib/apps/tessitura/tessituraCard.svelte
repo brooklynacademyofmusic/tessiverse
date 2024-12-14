@@ -1,8 +1,9 @@
 <script lang="ts">
+	import type { Serializable } from '$lib/apps';
     import { Badge } from '$lib/components/ui/badge'
     import * as ERRORS from '$lib/errors'
 	import type { TessituraApp } from './tessitura';
-    let { data } : { data: Partial<TessituraApp> } = $props()
+    let { data } : { data: Serializable<TessituraApp> } = $props()
 </script>
 
 {#await data}

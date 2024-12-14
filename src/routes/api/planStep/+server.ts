@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { planStep, type PlanStepEmail } from '$lib/apps/planStep/planStep'
+import { planStep, type PlanStepEmail } from '$lib/apps/planStep/planStep.server'
 import { error } from '@sveltejs/kit';
 import * as ERRORS from '$lib/errors'
 
