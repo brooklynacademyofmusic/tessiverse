@@ -9,7 +9,7 @@ describe("Azure", () => {
 
     test("loadFromAzure throws error if data does not exist in Azure", async () => {
         let azure = new Azure()
-        let user = azure.load({identity:"not_me@test.com"}, new User(""))
+        let user = azure.load({identity:"not_me@test.com"})
         await expect(user).rejects.toMatchObject({status: 404})
     })
 
