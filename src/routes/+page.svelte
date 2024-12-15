@@ -10,11 +10,10 @@
     let { data }: { data: PageData} = $props()
     let { userData, appData } = data
     import * as config from '$lib/config'
-
-    // for(let key in data.appData) {
-    //     data.appData[key] = Object.assign(data.appData[key],apps[key])
-    // }
     let apps = config.Apps
+    function hasProperty<O extends object>(o: O, k: PropertyKey): k is keyof O {
+        return k in o
+    }
 </script>
 
 <article class="prose max-w-none font-extralight">
@@ -37,19 +36,14 @@
     </Card>
 </article>
 <article class="grid md:grid-cols-2 grid-cols-1 gap-8 min-h-[10rem]">
-    {#each Object.entries(apps) as [_, app]}
-        {#await app}
-            <Ellipsis class="animate-pulse inline-block w-12 h-12 text-secondary"/>
-        {:then app} 
-            <AppCard title = {app.title}>
-                {#if typeof app.card === "function"}
-                    <app.card data = {{...app}}/>
-                {:else}
-                    {app.title}
-                {/if}
-            </AppCard>            
-        {:catch e }
-            Oops!
-        {/await}
+    {#each Object.entries(apps) as [key, app]}
+    <AppCard title = {app.title}>
+        {#if typeof app.card === "function" && hasProperty(appData,key)}
+            <app.card data = {appData[key]}/>
+        {:else}
+            {app.title}
+        {/if}
+    </AppCard>            
+
     {/each}
 </article>

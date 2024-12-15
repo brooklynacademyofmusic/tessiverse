@@ -3,8 +3,8 @@
     import * as Dialog from '$lib/components/ui/dialog'
     import Tessitura from "$lib/apps/tessitura/tessitura.svelte"
 	import { ChevronRight } from 'lucide-svelte';
+	import * as config from '$lib/const';
     let ok = $state(false);
-    let data = $props();
 </script>
 
 <!-- signup flow, rendered if no user exists 
@@ -27,6 +27,6 @@
             This action cannot be undone. This will permanently delete your account
             and remove your data from our servers.
           </Dialog.Description>
-          <!-- <Tessitura /> -->
+            <Tessitura data = {{ tessiApiUrl: config.servers[0].value, userid: "test", group: "", valid: false, groups: [] }}/>
       </Dialog.Content>
 </Dialog.Root>

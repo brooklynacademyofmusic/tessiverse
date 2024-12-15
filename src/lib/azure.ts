@@ -7,10 +7,10 @@ import { User } from "$lib/user"
 import * as server from "$lib/config.server";
 import * as config from "$lib/config";
 
-type ValidAppNames = keyof typeof config.Apps
+type ValidAppNames = keyof config.Apps
 type ValidBackendKey<A extends ValidAppNames>  = {identity: string, app: A}
 type ValidBackendKeys = ValidBackendKey<ValidAppNames>
-type ValidApp<K extends ValidBackendKeys> =  K extends ValidBackendKey<infer A> ? typeof config.Apps[A] : never
+type ValidApp<K extends ValidBackendKeys> =  K extends ValidBackendKey<infer A> ? config.Apps[A] : never
 
 export type BackendKey = {identity: string, app?: string} 
 export interface Backend<T> {

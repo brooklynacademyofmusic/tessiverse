@@ -4,10 +4,10 @@ import * as errors from '$lib/errors'
 import { superValidate, message, fail, setError } from 'sveltekit-superforms'
 import { zod } from 'sveltekit-superforms/adapters'
 import { tessituraSchema } from './tessitura.schema'
-import { servers } from '$lib/config'
-import { TessituraApp } from './tessitura'
+import { TessituraApp, type TessituraAppLoaded } from './tessitura'
 import type { UserLoaded } from '$lib/azure'
 import { BaseAppServer } from '$lib/apps.server'
+import type { Serializable } from '$lib/apps'
 
 export class TessituraAppServer extends BaseAppServer {
     data: TessituraApp
@@ -64,14 +64,13 @@ export class TessituraAppServer extends BaseAppServer {
             )
     }
 
-    async load(backend: UserLoaded): Promise<this> {
+    async load(backend: UserLoaded): TessituraAppLoaded {
         await super.load(backend)
-        this.data.servers = servers
-        this.data.groups = servers
         if(this.data.userid && this.data.group && this.data.tessiApiUrl && this.data.location) {
             this.valid = await this.tessiValidate()
         }
-        return this
+        let groups = await this.tessiGroups()
+        return {...this.data, valid: this.valid, groups: groups}
     }
 
     async save(backend: UserLoaded, data: any) {

@@ -1,23 +1,22 @@
-import type { App } from '$lib/apps'
+import type { App, Serializable } from '$lib/apps'
 import Tessitura from '$lib/apps/tessitura/tessitura.svelte' 
 import TessituraCard from '$lib/apps/tessitura/tessituraCard.svelte' 
+import * as config from '$lib/const'
 
 export class TessituraApp implements App {
     title = "Tessitura Integration"
     key = "tessitura"
     card = TessituraCard
     form = Tessitura
+    tessiApiUrl: config.ValidServerValues[any] = config.servers[0].value
+    userid: string = ""
+    group: string = ""
     firstname?: string
     lastname?: string
-    userid?: string
     inactive?: boolean
     locked?: boolean 
     constituentid?: number
-    group?: string 
-    tessiApiUrl?: string 
     location?: string
-    servers?: any 
-    groups?: any
-
-    
 }
+
+export type TessituraAppLoaded = Promise<Serializable<TessituraApp> & {valid: boolean, groups: string[]}>
