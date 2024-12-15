@@ -8,16 +8,20 @@ let servers = new server.AppServers()
 function hasProperty<O extends object>(o: O, k: PropertyKey): k is keyof O {
     return k in o
 }
+type AppPromises = {
+    [K in keyof server.AppServers]: Promise<server.AppServers[K]["data"]>
+}
 
 export const load: PageServerLoad = async ( { locals }) => {
     let backend = new Azure()
     let user = backend.load({identity: locals.user.userDetails})
-    let appData: any = {} 
-    // for(let key in servers) {
-    //     if (hasProperty(servers,key))
-    //     appData[key] = user.then((user) => servers[key].load(user) as any)
-    // }
-    // const appData = objectMap(new config.Apps(),(app) => (app.load(user)))
+    let appData = {} as AppPromises
+    for(let key in servers) {
+        if (hasProperty(servers,key))
+        appData[key] = 
+            user.then((user) => servers[key].load(user))
+            .then((app) => app.data).catch(()=>{})
+    }
     return {userData: user, appData: appData}
 }
 

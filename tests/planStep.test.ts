@@ -1,9 +1,11 @@
-import { findFirstString, planStep, PlanStepApp } from '$lib/apps/planStep/planStep.server'
+import { findFirstString, planStep, PlanStepAppServer } from '$lib/apps/planStep/planStep.server'
 import type { Plan, Email } from '$lib/apps/planStep/types'
 import { error } from '@sveltejs/kit'
 import { tq } from '$lib/tq'
-import { User, UserLoaded } from '$lib/user'
+import { User } from '$lib/user'
 import { test, expect, vi, describe, beforeEach } from 'vitest'
+import { PlanStepApp } from '$lib/apps/planStep/planStep'
+import { Azure, type UserLoaded } from '$lib/azure'
 
 describe("findFirstString", () => {
     test("findFirstString finds the first needle in a haystack",() => {
@@ -25,7 +27,7 @@ describe("planStep", () => {
     var tqMocked = vi.mocked(tq)
     var errorMocked = vi.mocked(error)
     
-    User.prototype.load = vi.fn(async () => {
+    Azure.prototype.load = vi.fn(async () => {
         let user = new User("me")
         user.apps.planStep = new PlanStepApp()
         return user as UserLoaded

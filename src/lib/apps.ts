@@ -19,4 +19,4 @@ export class BaseApp implements App {
     form = ComponentStub
 }
 
-export type Serializable<A extends App> = Omit<A, "card" | "form">
+export type Serializable<A extends App> = Omit<A, "card" | "form" | "title" | "key">

@@ -4,21 +4,26 @@
     import { Input } from '$lib/components/ui/input'
     import * as Select from '$lib/components/ui/select'
     import { mode } from 'mode-watcher';
-    import { type SuperForm, type Infer } from "sveltekit-superforms";
+    import { type SuperForm, type Infer, superForm } from "sveltekit-superforms";
     import { tessituraSchema } from "./tessitura.schema"
     import logoLight from "$lib/assets/tessitura_logo_light.svg"
     import logoDark from "$lib/assets/tessitura_logo_dark.svg"
+    import { zodClient } from "sveltekit-superforms/adapters";
+    import * as config from "$lib/const"
+	import type { TessituraApp } from './tessitura';
+	import type { Serializable } from '$lib/apps';
+	
+    let servers = config.servers
+    let groups = config.servers
+    let { data }: { data: Serializable<TessituraApp> & {valid: boolean, groups: string[]} } = $props()
     
-    type formOption = {value: string, label: string}
+    
+    let form: SuperForm<Infer<typeof tessituraSchema>> = 
+        superForm({tessiApiUrl: data.tessiApiUrl, userid: data.userid, group: data.group, password: ""}, 
+            {validators: zodClient(tessituraSchema)})
 
-    let {form, action, servers, groups}: {
-        form: SuperForm<Infer<typeof tessituraSchema>>,
-        action: string,
-        servers: formOption[],
-        groups: formOption[]
-    } = $props()
-    const { form: formData, enhance } = form;
-    
+    const { form: formData, enhance } = form
+
 </script>
 <Dialog.Root open={true}>
     <Dialog.Content>
@@ -28,7 +33,7 @@
             {/if}
         </Dialog.Header>
 
-    <form method="POST" use:enhance action="{action}">
+    <form method="POST" use:enhance action="?/tessitura">
         <Form.Field {form} name="tessiApiUrl">
             <Form.Control let:attrs>
                 <Form.Label>Server</Form.Label>

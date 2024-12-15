@@ -16,8 +16,9 @@ export const handle: Handle = async ({ event, resolve }) => {
         "", 'base64');
     
     let user = JSON.parse(header.toString('ascii') || "{}") as ClientPrincipal
-    user = {identityProvider: "me", userId: "ssyzygy", userDetails: "ssyzygy", userRoles: ["admin"]}
+    
     event.locals.user = user
+    
     if (!event.locals.user.userId) {
         error(401, errors.AUTH)
     }
