@@ -13,8 +13,8 @@ describe("tq", () => {
 
     test("tq returns an object", async () => {
         let constituent = await tq("get","constituents","",{constituentid: "1"},"")
-        expect(constituent).toHaveProperty("Id")
-        expect(constituent).toHaveProperty("DisplayName")
-        expect(constituent).toHaveProperty("LastName")
+        expect(constituent).toHaveProperty("id")
+        expect(constituent).toHaveProperty("displayname")
+        expect(constituent).toHaveProperty("lastname")
     })
 })
