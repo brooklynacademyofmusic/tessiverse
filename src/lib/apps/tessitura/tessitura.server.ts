@@ -4,12 +4,13 @@ import * as errors from '$lib/errors'
 import { superValidate, message, fail, setError } from 'sveltekit-superforms'
 import { zod } from 'sveltekit-superforms/adapters'
 import { tessituraSchema } from './tessitura.schema'
-import { TessituraApp, type TessituraAppLoaded } from './tessitura'
+import { TessituraApp, type TessituraAppLoad, type TessituraAppSave } from './tessitura'
 import type { UserLoaded } from '$lib/azure'
-import { BaseAppServer } from '$lib/apps.server'
-import type { Serializable } from '$lib/apps'
+import { BaseAppServer, type AppServer } from '$lib/apps.server'
+import { env } from '$env/dynamic/private'
 
-export class TessituraAppServer extends BaseAppServer {
+export class TessituraAppServer extends BaseAppServer implements 
+                AppServer<TessituraAppLoad, TessituraAppSave> {
     data: TessituraApp
     valid = false
 
@@ -37,7 +38,7 @@ export class TessituraAppServer extends BaseAppServer {
     }
 
     async tessiPassword(password:string): Promise<void> {
-        return tq("auth","add","",password)
+        return tq("auth","add","",password,this.auth)
         .catch(() => 
             error(500, errors.TQ))
     }
@@ -48,29 +49,28 @@ export class TessituraAppServer extends BaseAppServer {
             .catch(() => false)
     }
 
-    async tessiGroups(): Promise<string[]> {
-        return tq("get","groups","",{},this.auth).
+    static async tessiGroups(): Promise<string[]> {
+        return tq("get","groups","",{},env.TQ_ADMIN_LOGIN).
             then((tessi) => tessi)
             .catch(() => 
                 error(500, errors.TQ)
             )
     }
 
-    async tessiLocations(): Promise<string[]> {
-        return tq("get","machineLocations","",{},this.auth).
+    static async tessiLocations(): Promise<string[]> {
+        return tq("get","machineLocations","",{},env.TQ_ADMIN_LOGIN).
             then((tessi) => tessi)
             .catch(() => 
                 error(500, errors.TQ)
             )
     }
 
-    async load(backend: UserLoaded): TessituraAppLoaded {
+    async load(backend: UserLoaded): Promise<TessituraAppLoad & {password: string}> {
         await super.load(backend)
         if(this.data.userid && this.data.group && this.data.tessiApiUrl && this.data.location) {
             this.valid = await this.tessiValidate()
         }
-        let groups = await this.tessiGroups()
-        return {...this.data, valid: this.valid, groups: groups}
+        return {...this.data, valid: this.valid, password: ""}
     }
 
     async save(backend: UserLoaded, data: any) {
@@ -86,7 +86,7 @@ export class TessituraAppServer extends BaseAppServer {
         tessitura.tessiApiUrl = form.data.tessiApiUrl
         tessitura.userid = form.data.userid
         tessitura.group = form.data.group
-        tessitura.location = (await this.tessiLocations())[0]
+        tessitura.location = (await TessituraAppServer.tessiLocations())[0]
 
         let valid = await this.tessiValidate()
         if (!valid) {

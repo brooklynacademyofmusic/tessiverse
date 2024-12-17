@@ -8,12 +8,12 @@
 
 {#await data}
     <Badge class="mw-min ml-auto animate-pulse">Loading...</Badge>
-{:then tessi }
+{:then tessi}
     <Badge class="mw-min ml-auto bg-green-600">Connected</Badge>
+    <p>API server: {tessi.tessiApiUrl}</p>
     <p>Username: {tessi.userid}</p>
     <p>Group: {tessi.group}</p>
-    <p>API server: {tessi.tessiApiUrl}</p>
-{:catch error }
+{:catch error}
 {#if error.id == ERRORS.USER_NOT_FOUND.id}
     <Badge class="mw-min ml-auto bg-destructive">User not found</Badge>
 {:else}
