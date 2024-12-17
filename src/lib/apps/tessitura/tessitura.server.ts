@@ -6,18 +6,13 @@ import { zod } from 'sveltekit-superforms/adapters'
 import { tessituraSchema } from './tessitura.schema'
 import { TessituraApp, type TessituraAppLoad, type TessituraAppSave } from './tessitura'
 import type { UserLoaded } from '$lib/azure'
-import { BaseAppServer, type AppServer } from '$lib/apps.server'
+import { type AppServer } from '$lib/apps.server'
+import { BaseAppServer } from '$lib/baseapp.server'
 import { env } from '$env/dynamic/private'
 
-export class TessituraAppServer extends BaseAppServer implements 
+export class TessituraAppServer extends 
+                BaseAppServer<TessituraAppLoad,TessituraAppSave> implements 
                 AppServer<TessituraAppLoad, TessituraAppSave> {
-    data: TessituraApp
-    valid = false
-
-    constructor(data = new TessituraApp()) {
-        super()
-        this.data = data
-    }
     
     get auth(): string {
         return [
@@ -49,17 +44,11 @@ export class TessituraAppServer extends BaseAppServer implements
             .catch(() => false)
     }
 
-    static async tessiGroups(): Promise<string[]> {
-        return tq("get","groups","",{},env.TQ_ADMIN_LOGIN).
-            then((tessi) => tessi)
-            .catch(() => 
-                error(500, errors.TQ)
+    static async tessiGroups(): Promise<{value: string, label: string}[]> {
+        return tq("get","usergroups","all",{},env.TQ_ADMIN_LOGIN).
+            then((tessi: {Id: string, Name: string}[]) => 
+                tessi.map((t) => ({value: t.Id.trim(), label: t.Name.trim()}))
             )
-    }
-
-    static async tessiLocations(): Promise<string[]> {
-        return tq("get","machineLocations","",{},env.TQ_ADMIN_LOGIN).
-            then((tessi) => tessi)
             .catch(() => 
                 error(500, errors.TQ)
             )
@@ -67,15 +56,14 @@ export class TessituraAppServer extends BaseAppServer implements
 
     async load(backend: UserLoaded): Promise<TessituraAppLoad & {password: string}> {
         await super.load(backend)
+        let valid = false
         if(this.data.userid && this.data.group && this.data.tessiApiUrl && this.data.location) {
-            this.valid = await this.tessiValidate()
+            valid = await this.tessiValidate()
         }
-        return {...this.data, valid: this.valid, password: ""}
+        return {...this.data, valid: valid, password: ""}
     }
 
     async save(backend: UserLoaded, data: any) {
-        const tessitura = new TessituraApp()
-    
         const form = await superValidate(data, zod(tessituraSchema));
         if (!form.valid) {
             return fail(400, {form})
@@ -83,18 +71,18 @@ export class TessituraAppServer extends BaseAppServer implements
         
         this.tessiPassword(form.data.password)
 
-        tessitura.tessiApiUrl = form.data.tessiApiUrl
-        tessitura.userid = form.data.userid
-        tessitura.group = form.data.group
-        tessitura.location = (await TessituraAppServer.tessiLocations())[0]
+        this.data.tessiApiUrl = form.data.tessiApiUrl
+        this.data.userid = form.data.userid
+        this.data.group = form.data.group
+        this.data.location = (await TessituraAppServer.tessiLocations())[0]
 
-        let valid = await this.tessiValidate()
-        if (!valid) {
+        this.data.valid = await this.tessiValidate()
+        if (!this.data.valid) {
             return setError(form, "password", "Invalid login")
         }
-        
+
         await this.tessiLoad()
-        await super.save(backend, this)
+        await super.save(backend, this.data)
         return message(form, "Login updated successfully")
     }
 } 
