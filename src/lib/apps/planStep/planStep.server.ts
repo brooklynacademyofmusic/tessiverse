@@ -2,19 +2,17 @@ import { UserLoaded } from "$lib/azure"
 import { tq } from "$lib/tq"
 import { error } from "@sveltejs/kit"
 import type { Email, PlanScore } from "./types"
-import { BaseAppServer } from "$lib/apps.server"
-import { PlanStepApp } from "./planStep"
+import { type AppServer } from "$lib/apps.server"
+import { BaseAppServer } from '$lib/baseapp.server'
+import { PlanStepApp, type PlanStepAppLoad } from "./planStep"
 import { TessituraApp } from "../tessitura/tessitura"
 import { Azure } from "$lib/azure"
-import type { Serializable } from "$lib/apps"
+import { BaseApp, type Serializable } from "$lib/apps"
 import { TessituraAppServer } from "../tessitura/tessitura.server"
 
-export class PlanStepAppServer extends BaseAppServer {
-    data: PlanStepApp
-    constructor(data = new PlanStepApp()) {
-        super()
-        this.data = data
-    }
+export class PlanStepAppServer 
+    extends BaseAppServer<PlanStepAppLoad,PlanStepAppLoad>
+    implements AppServer<PlanStepAppLoad,PlanStepAppLoad> {
 }
 
 export type PlanStepEmail = {
@@ -31,8 +29,14 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     console.log(`Generating plan step for email ${emailId}`)
 
     let user: UserLoaded = await new Azure().load({identity: email.from})
-    let tessiUser: TessituraApp = user.apps.tessitura
-    let tessiApp = new TessituraAppServer(tessiUser)
+        .catch(() => 
+            error(400, `No user information found for ${email.from}`))
+    
+        let tessiUser: TessituraApp = user.apps.tessitura
+    let tessiApp = new TessituraAppServer({...tessiUser,valid:false})
+    await tessiApp.tessiValidate().catch(() =>
+        error(400, `Invalid Tessitura login for ${email.from}`))
+
     let planStepUser: Serializable<PlanStepApp> = user.apps.planStep
     let plans: PlanScore[] = await tq("get", "plans", "all", {workerconstituentid: tessiUser.constituentid || "1"}, tessiApp.auth)
     let body: string = [email.to,email.cc,email.bcc,email.subject,email.body].join(" ")
