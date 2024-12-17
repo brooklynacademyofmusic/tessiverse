@@ -39,6 +39,7 @@
 		"prettier-plugin-svelte": "^3.2.6",
 		"prettier-plugin-tailwindcss": "^0.6.5",
 		"svelte": "^5.0.0",
+		"svelte-adapter-azure-swa": "^0.20.1",
 		"svelte-check": "^4.0.0",
 		"sveltekit-superforms": "^2.20.1",
 		"tailwind-merge": "^2.5.4",
