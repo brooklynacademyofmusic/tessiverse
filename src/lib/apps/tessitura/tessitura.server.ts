@@ -74,7 +74,7 @@ export class TessituraAppServer extends
         this.data.tessiApiUrl = form.data.tessiApiUrl
         this.data.userid = form.data.userid
         this.data.group = form.data.group
-        this.data.location = (await TessituraAppServer.tessiLocations())[0]
+        this.data.location = ""
 
         this.data.valid = await this.tessiValidate()
         if (!this.data.valid) {
