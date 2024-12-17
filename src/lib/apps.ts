@@ -18,4 +18,4 @@ export class BaseApp implements App<any> {
     form = {} as Component<any>
 }
 
-export type Serializable<A extends App<any>> = Omit<A, "card" | "form" | "title" | "key">
+export type Serializable<A extends App<any>> = Omit<A, "card" | "form" | "title">
