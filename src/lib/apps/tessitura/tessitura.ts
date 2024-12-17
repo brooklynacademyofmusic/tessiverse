@@ -2,8 +2,10 @@ import type { App, Serializable } from '$lib/apps'
 import Tessitura from '$lib/apps/tessitura/tessitura.svelte' 
 import TessituraCard from '$lib/apps/tessitura/tessituraCard.svelte' 
 import * as config from '$lib/const'
+import type { Infer } from 'sveltekit-superforms'
+import type { tessituraSchema } from './tessitura.schema'
 
-export class TessituraApp implements App {
+export class TessituraApp implements App<TessituraAppLoad,TessituraAppSave> {
     title = "Tessitura Integration"
     key = "tessitura"
     card = TessituraCard
@@ -19,4 +21,5 @@ export class TessituraApp implements App {
     location?: string
 }
 
-export type TessituraAppLoaded = Promise<Serializable<TessituraApp> & {valid: boolean, groups: string[]}>
+export type TessituraAppLoad = Serializable<TessituraApp> & {valid: boolean}
+export type TessituraAppSave = Infer<typeof tessituraSchema>
