@@ -5,7 +5,7 @@ import * as config from '$lib/const'
 import type { Infer } from 'sveltekit-superforms'
 import type { tessituraSchema } from './tessitura.schema'
 
-export class TessituraApp implements App<TessituraAppLoad,TessituraAppSave> {
+export class TessituraApp implements App<TessituraAppLoad> {
     title = "Tessitura Integration"
     key = "tessitura"
     card = TessituraCard

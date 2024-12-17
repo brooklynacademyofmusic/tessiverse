@@ -27,6 +27,8 @@
             This action cannot be undone. This will permanently delete your account
             and remove your data from our servers.
           </Dialog.Description>
-            <Tessitura data = {{ tessiApiUrl: config.servers[0].value, userid: "test", group: "", valid: false, groups: [] }}/>
+            <Tessitura data = {{ 
+                tessiApiUrl: config.servers[0].value, 
+                userid: "test", group: "", valid: false }}/>
       </Dialog.Content>
 </Dialog.Root>

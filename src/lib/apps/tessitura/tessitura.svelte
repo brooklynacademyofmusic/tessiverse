@@ -10,20 +10,17 @@
     import logoDark from "$lib/assets/tessitura_logo_dark.svg"
     import { zodClient } from "sveltekit-superforms/adapters";
     import * as config from "$lib/const"
-	import type { TessituraApp } from './tessitura';
-	import type { Serializable } from '$lib/apps';
+	import type { TessituraAppLoad } from './tessitura';
 	
     let servers = config.servers
     let groups = config.servers
-    let { data }: { data: Serializable<TessituraApp> & {valid: boolean, groups: string[]} } = $props()
-    
+    let { data }: { data: TessituraAppLoad} = $props()
     
     let form: SuperForm<Infer<typeof tessituraSchema>> = 
         superForm({tessiApiUrl: data.tessiApiUrl, userid: data.userid, group: data.group, password: ""}, 
             {validators: zodClient(tessituraSchema)})
-
+            
     const { form: formData, enhance } = form
-
 </script>
 <Dialog.Root open={true}>
     <Dialog.Content>
@@ -35,9 +32,8 @@
 
     <form method="POST" use:enhance action="?/tessitura">
         <Form.Field {form} name="tessiApiUrl">
-            <Form.Control >
-                {#snippet children({ attrs })}
-                                        <Form.Label>Server</Form.Label>
+            <Form.Control let:attrs>
+                <Form.Label>Server</Form.Label>
                     <Select.Root {...attrs} selected={servers.filter((e: any) => e.value === $formData.tessiApiUrl)[0]} items={servers}>
                         <Select.Trigger>
                             <Select.Value placeholder="Choose a server" />
@@ -49,32 +45,26 @@
                         </Select.Content>
                         <Select.Input bind:value={$formData.tessiApiUrl} />
                       </Select.Root>
-                                                    {/snippet}
-                                </Form.Control>
+                </Form.Control>
             <Form.FieldErrors />
         </Form.Field>
         <Form.Field {form} name="userid">
-            <Form.Control >
-                {#snippet children({ attrs })}
-                                        <Form.Label>User ID</Form.Label>
+            <Form.Control let:attrs >
+                <Form.Label>User ID</Form.Label>
                     <Input {...attrs} bind:value={$formData.userid}/>
-                                                    {/snippet}
-                                </Form.Control>
+                </Form.Control>
             <Form.FieldErrors />
         </Form.Field>
         <Form.Field {form} name="password" >
-            <Form.Control >
-                {#snippet children({ attrs })}
-                                        <Form.Label>Password</Form.Label>
+            <Form.Control let:attrs>
+                <Form.Label>Password</Form.Label>
                     <Input {...attrs} type="password" bind:value={$formData.password} />
-                                                    {/snippet}
-                                </Form.Control>
+                </Form.Control>
             <Form.FieldErrors />
         </Form.Field>
         <Form.Field {form} name="group">
-            <Form.Control >
-                {#snippet children({ attrs })}
-                                        <Form.Label>User Group</Form.Label>
+            <Form.Control let:attrs>
+                <Form.Label>User Group</Form.Label>
                     <Select.Root {...attrs} selected={groups.filter((e) => e.value === $formData.group)[0]} items={groups}>
                         <Select.Trigger>
                             <Select.Value placeholder="Choose a group" />
@@ -86,8 +76,7 @@
                         </Select.Content>
                         <Select.Input bind:value={$formData.group} />
                       </Select.Root>
-                                                    {/snippet}
-                                </Form.Control>
+                </Form.Control>
             <Form.FieldErrors />
         </Form.Field>
         <Form.Button class="mt-5 w-full">Log In</Form.Button>
