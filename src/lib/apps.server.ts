@@ -3,12 +3,12 @@ import { type ActionFailure } from '@sveltejs/kit'
 import { BaseApp, type App } from './apps'
 import type { Apps } from './config'
 
-export interface AppServer<Card extends object, Form extends object> {
-    data: App<Card,Form> 
+export interface AppServer<In extends object, Out extends object> {
+    data: App<In>
     // function to load and process data from the backend
-    load(backend: Backend<any>): Card & Form | Promise<Card & Form>
+    load(backend: Backend<any>): Promise<In>
     // function to save data to the backend
-    save(backend: Backend<any>, data: Form): Promise<void | ActionFailure<any> | {form: any}>    
+    save(backend: Backend<any>, data: Out): Promise<void | ActionFailure<any> | {form: any}>    
 }
 
 export abstract class BaseAppServer implements AppServer<any,any> {

@@ -2,8 +2,8 @@
 	import type { Serializable } from '$lib/apps';
     import { Badge } from '$lib/components/ui/badge'
     import * as ERRORS from '$lib/errors'
-	import type { TessituraApp } from './tessitura';
-    let { data } : { data: Promise<Serializable<TessituraApp>> } = $props()
+	import type { TessituraAppLoad } from './tessitura';
+    let { data } : { data: Promise<TessituraAppLoad> } = $props()
 </script>
 
 {#await data}

@@ -22,7 +22,7 @@
             <Ellipsis class="animate-pulse inline-block w-12 h-12 text-secondary"/>
         {:then user}
             <span transition:fade>{ JSON.stringify(user) }</span>
-        {:catch e }
+        {:catch e}
             <Signup /> 
         {/await} 
     </h1>
