@@ -22,4 +22,4 @@ export class TessituraApp implements App<TessituraAppLoad> {
 }
 
 export type TessituraAppLoad = Serializable<TessituraApp> & {valid: boolean}
-export type TessituraAppSave = Infer<typeof tessituraSchema>
+export type TessituraAppSave = Infer<typeof tessituraSchema> & {key: string}
