@@ -6,6 +6,7 @@ import * as errors from "$lib/errors"
 import { User } from "$lib/user"
 import * as server from "$lib/config.server";
 import * as config from "$lib/config";
+import type { Serializable } from "$lib/apps";
 
 type ValidAppNames = keyof config.Apps
 type ValidBackendKey<A extends ValidAppNames>  = {identity: string, app: A}
@@ -67,7 +68,7 @@ export class UserLoaded extends User implements Backend<ValidApp<ValidBackendKey
         return this.apps[key.app] as ValidApp<K>
     }
 
-    save<K extends ValidBackendKeys>(key: K, data: ValidApp<K>): Promise<void> {
+    save<K extends ValidBackendKeys>(key: K, data: Serializable<ValidApp<K>>): Promise<void> {
         if (key.app && key.app in this.apps) {
             Object.assign(this.apps[key.app],data)
         } else {
