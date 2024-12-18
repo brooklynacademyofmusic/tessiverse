@@ -16,9 +16,9 @@ export class TessituraAppServer extends
     
     get auth(): string {
         return [
-            this.data.tessiApiUrl || "", 
-            this.data.userid || "",
-            this.data.group || "",
+            this.data.tessiApiUrl, 
+            this.data.userid,
+            this.data.group,
             this.data.location || ""].join("|")
     }
 
@@ -46,8 +46,8 @@ export class TessituraAppServer extends
 
     static async tessiGroups(): Promise<{value: string, label: string}[]> {
         return tq("get","usergroups","all",undefined,env.TQ_ADMIN_LOGIN).
-            then((tessi: {Id: string, Name: string}[]) => 
-                tessi.map((t) => ({value: t.Id.trim(), label: t.Name.trim()}))
+            then((tessi: {id: string, name: string}[]) => 
+                tessi.map((t) => ({value: t.id.trim(), label: t.name.trim()}))
             )
             .catch(() => 
                 error(500, errors.TQ)
