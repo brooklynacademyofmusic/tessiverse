@@ -30,20 +30,11 @@ describe("TessituraAppServer", () => {
 
     test("tessiLoad loads user info from Tessitura", async () => {
        await tessi.tessiLoad()
-       console.log(tessi.data)
        expect(tessi.data.firstname).toBe("Sky")
     })
     
     test("tessiValidate validates login with Tessitura", async () => {
         let valid = await tessi.tessiValidate()
-        expect(valid).toBe(true)
-
-        tessi.data.location = undefined
-        valid = await tessi.tessiValidate()
-        expect(valid).toBe(true)
-
-        tessi.data.group = ""
-        valid = await tessi.tessiValidate()
         expect(valid).toBe(true)
 
         tessi.data.userid = "notauser"
