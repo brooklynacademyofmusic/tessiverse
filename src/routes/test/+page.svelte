@@ -6,5 +6,5 @@
 
 </script>
 {#await data.appData.tessitura then tessitura}
-<Tessitura data={{userid: tessitura.userid, group: tessitura.group, tessiApiUrl: tessitura.tessiApiUrl, valid: true}} />
+<Tessitura data={{userid: tessitura.userid, group: tessitura.group, tessiApiUrl: tessitura.tessiApiUrl, valid: true, key: "tessitura"}} />
 {/await}
