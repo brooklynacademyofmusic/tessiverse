@@ -20,7 +20,7 @@ export const PUT: RequestHandler = ({params, request, locals}) => {
 async function tq_verb(verb: string, params: RouteParams, request: Request, locals: App.Locals): Promise<Response> {
   let azure = new Azure()
   let user = await azure.load({identity: locals.user.userId})
-  let tessiApp = new TessituraAppServer(user.apps.tessitura)
+  let tessiApp = new TessituraAppServer(Object.assign(user.apps.tessitura,{valid: false}))
 
   return (request.body || new ReadableStream()).getReader().read()
   .then((body) =>
