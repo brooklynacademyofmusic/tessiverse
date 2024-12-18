@@ -7,7 +7,7 @@ import { BaseAppServer } from '$lib/baseapp.server'
 import { PlanStepApp, type PlanStepAppLoad } from "./planStep"
 import { TessituraApp } from "../tessitura/tessitura"
 import { Azure } from "$lib/azure"
-import { BaseApp, type Serializable } from "$lib/apps"
+import { type Serializable } from "$lib/apps"
 import { TessituraAppServer } from "../tessitura/tessitura.server"
 
 export class PlanStepAppServer 
@@ -29,13 +29,13 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     console.log(`Generating plan step for email ${emailId}`)
 
     let user: UserLoaded = await new Azure().load({identity: email.from})
-        .catch(() => 
-            error(400, `No user information found for ${email.from}`))
+        .catch(() => {throw(error(400, `User configuration not found for ${email.from}`))})
     
-        let tessiUser: TessituraApp = user.apps.tessitura
+    let tessiUser: TessituraApp = user.apps.tessitura
     let tessiApp = new TessituraAppServer({...tessiUser,valid:false})
-    await tessiApp.tessiValidate().catch(() =>
-        error(400, `Invalid Tessitura login for ${email.from}`))
+    if ( !await tessiApp.tessiValidate() ) {
+        throw(error(400, `Invalid Tessitura login for ${email.from}`))
+    }
 
     let planStepUser: Serializable<PlanStepApp> = user.apps.planStep
     let plans: PlanScore[] = await tq("get", "plans", "all", {workerconstituentid: tessiUser.constituentid || "1"}, tessiApp.auth)
@@ -71,7 +71,7 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     }
     
     if (plans_filtered.length == 0) {
-        return error(404, `Couldn't find a matching plan for ${emailId}`)
+        throw(error(404, `Couldn't find a matching plan for ${emailId}`))
     }
 
     plans_filtered = plans_filtered.sort((a,b) => {

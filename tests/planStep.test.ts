@@ -1,11 +1,12 @@
 import { findFirstString, planStep, PlanStepAppServer } from '$lib/apps/planStep/planStep.server'
 import type { Plan, Email } from '$lib/apps/planStep/types'
-import { error } from '@sveltejs/kit'
+import * as kit from '@sveltejs/kit'
 import { tq } from '$lib/tq'
 import { User } from '$lib/user'
-import { test, expect, vi, describe, beforeEach } from 'vitest'
+import { test, expect, vi, describe, beforeEach, expectTypeOf } from 'vitest'
 import { PlanStepApp } from '$lib/apps/planStep/planStep'
 import { Azure, type UserLoaded } from '$lib/azure'
+import { TessituraAppServer } from '$lib/apps/tessitura/tessitura.server'
 
 describe("findFirstString", () => {
     test("findFirstString finds the first needle in a haystack",() => {
@@ -23,16 +24,24 @@ describe("findFirstString", () => {
 
 describe("planStep", () => {
     vi.mock('$lib/tq')
-    vi.mock('@sveltejs/kit')
+    vi.spyOn(kit,"error")
     var tqMocked = vi.mocked(tq)
-    var errorMocked = vi.mocked(error)
-    
+    var errorMocked = vi.mocked(kit.error)
+
+    let valid = true
+    TessituraAppServer.prototype.tessiValidate = vi.fn(async () => {
+        return valid
+    })
+
+    let azure_valid = true
     Azure.prototype.load = vi.fn(async () => {
+        if (!azure_valid) 
+            throw("whoops!")
         let user = new User("me")
         user.apps.planStep = new PlanStepApp()
         return user as UserLoaded
     })
-    
+
     let email = {
         from: "me@test.com",
         to: "planStep@test.com",
@@ -78,17 +87,39 @@ describe("planStep", () => {
         "type": {"id": 0}
     }
 
-
-
     beforeEach(() => {
         errorMocked.mockReset()
         tqMocked.mockReset()
+        valid = true
+        azure_valid = true
+    })
+
+    test("planStep returns an error if the user does not have a configuration",async () => {
+        azure_valid = false
+        
+        await planStep(email).catch((e) => e)
+
+        expect(errorMocked).toBeCalledTimes(1)
+        expect(tqMocked).toBeCalledTimes(0)
+        expect(TessituraAppServer.prototype.tessiValidate).toBeCalledTimes(0)
+        expect(errorMocked.mock.calls[0][1]).toMatch("User configuration not found")
+    })
+
+    test("planStep returns an error if the user is not valid",async () => {
+        valid = false
+        
+        await planStep(email).catch(() => {})
+        expect(errorMocked).toBeCalledTimes(1)
+        expect(tqMocked).toBeCalledTimes(0)
+
+        expect(TessituraAppServer.prototype.tessiValidate).toBeCalledTimes(1)
+        expect(errorMocked.mock.calls[0][1]).toMatch("Invalid Tessitura login")
     })
 
     test("planStep returns an error if no plans are returned",async () => {
         tqMocked.mockResolvedValue([])
 
-        await planStep(email)
+        await planStep(email).catch(() => {})
 
         expect(errorMocked).toBeCalledTimes(1)
         expect(tqMocked).toBeCalledTimes(1)
@@ -99,7 +130,7 @@ describe("planStep", () => {
     test("planStep returns an error if no matching plans are returned",async () => {
         tqMocked.mockResolvedValueOnce(plans).mockResolvedValue([emails[0]])
 
-        await planStep(email)
+        await planStep(email).catch(() => {})
 
         expect(errorMocked).toBeCalledTimes(1)
         expect(errorMocked.mock.calls[0][1]).toMatch(`Couldn't find a matching plan for`)
