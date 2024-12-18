@@ -1,11 +1,12 @@
 import { env } from '$env/dynamic/private';
+import { kMaxLength } from 'buffer';
 import child_process from 'child_process'
 import { Key } from 'lucide-svelte';
 import { cwd } from 'process';
 
 export async function tq(verb: string, object: string, variant?: string, query?: any, login?: string): Promise<any> {
     let flag = "";
-    if (variant != undefined) {
+    if (variant) {
         flag = "--"+variant;
     }
     console.log(`running tq (${verb} ${object} ${variant} ${JSON.stringify(query)} ${login})`)
@@ -25,10 +26,7 @@ export async function tq(verb: string, object: string, variant?: string, query?:
     } else {
         let out: any
         try {
-            // lowercase keys
-            out = Object.fromEntries(
-                Object.entries(JSON.parse(tq.stdout)).map(
-                    ([k,v]) => [k.toLowerCase(),v]))
+            out = lowercaseKeys(JSON.parse(tq.stdout))
         } catch {
             out = tq.stdout
         }
@@ -36,3 +34,15 @@ export async function tq(verb: string, object: string, variant?: string, query?:
     }
 
 };
+
+export function lowercaseKeys(o: object): object {
+    if (Array.isArray(o)) {
+        return o.map(lowercaseKeys)
+    } else {
+        return Object.fromEntries(Object.entries(o).map(([k,v]) => {
+            if (typeof v === "object" && !Array.isArray(v))
+                v = lowercaseKeys(v)
+            return [k.toLocaleLowerCase(),v]
+        }))
+    }
+}
