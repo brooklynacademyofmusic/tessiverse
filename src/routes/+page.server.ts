@@ -1,39 +1,32 @@
-import type { PageServerLoad, Action, Actions } from './$types';
+import type { PageServerLoad, Actions } from './$types';
 import * as server from '$lib/config.server'
 import { Azure } from '$lib/azure';
+import type { AppServer } from '$lib/apps.server';
 
 let servers = new server.AppServers()
 
-//Typescript magic!
-function hasProperty<O extends object>(o: O, k: PropertyKey): k is keyof O {
-    return k in o
-}
 type AppPromises = {
     [K in keyof server.AppServers]: Promise<server.AppServers[K]["data"]>
+}
+
+function objectMap<I extends any,O extends any>(o: {[k: string]: I},f: (i: I) => O): {[k: string]: O} {
+    return Object.fromEntries(Object.entries(o).map(([k,v]) => [k,f(v)]))
 }
 
 export const load: PageServerLoad = async ( { locals }) => {
     let backend = new Azure()
     let user = backend.load({identity: locals.user.userDetails})
-    let appData = {} as AppPromises
-    for(let key in servers) {
-        if (hasProperty(servers,key))
-        appData[key] = 
-            user.then((user) => servers[key].load(user))
-            .then((app) => app.data).catch(()=>{})
-    }
+    let appData = objectMap(servers, (server: AppServer<any,any>) => user.then((user) => server.load(user))) as AppPromises
     return {userData: user, appData: appData}
 }
 
-export const actions: Actions = {}
-for(let key in servers) {
-    if (hasProperty(servers,key))
-        actions[key] = async ({request, locals}) => {
+export const actions: Actions = 
+    objectMap(servers, (server) => async ({request, locals}) => {
             let backend = new Azure()
             Promise.all([request.formData(), backend.load({identity: locals.user.userDetails})])
-            .then(([data,user]) => servers[key].save(user, data))
+            .then(([data,user]) => server.save(user, data))
             .then((failure) => failure)
         } 
-    }
+    )
 
 
