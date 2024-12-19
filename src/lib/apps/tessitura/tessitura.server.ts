@@ -11,7 +11,7 @@ import { BaseAppServer } from '$lib/baseapp.server'
 import { env } from '$env/dynamic/private'
 
 export class TessituraAppServer extends 
-                BaseAppServer implements 
+                BaseAppServer<"tessitura", TessituraAppLoad, TessituraAppSave> implements 
                 AppServer<"tessitura", TessituraAppLoad, TessituraAppSave> {
 
     key: "tessitura" = "tessitura"
