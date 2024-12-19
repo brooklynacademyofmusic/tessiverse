@@ -11,8 +11,10 @@ import { type Serializable } from "$lib/apps"
 import { TessituraAppServer } from "../tessitura/tessitura.server"
 
 export class PlanStepAppServer 
-    extends BaseAppServer<PlanStepAppLoad,PlanStepAppLoad>
-    implements AppServer<PlanStepAppLoad,PlanStepAppLoad> {
+    extends BaseAppServer
+    implements AppServer<"planStep",PlanStepAppLoad,PlanStepAppLoad> {
+    
+    key: "planStep" = "planStep"
 }
 
 export type PlanStepEmail = {

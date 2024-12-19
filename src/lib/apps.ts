@@ -1,6 +1,6 @@
 import { type Component } from 'svelte'
 
-export interface App<Data extends object> {
+export interface App<Key extends string, Data extends object> {
     // human readable name, will appear as the title of the card
     title: string 
     // a dashboard coard, which will be rendered inside of a <Card></Card>
@@ -8,14 +8,14 @@ export interface App<Data extends object> {
     // a form element triggered by the configuration button on the card
     form: Component<{data: Data}>
     // machine readable name, must be the same as the key in `apps`
-    key: string
+    key: Key
 }
 
-export class BaseApp implements App<any> {
+export class BaseApp implements App<string, any> {
     key = "base"
     title = "Base"
     card = {} as Component<any>
     form = {} as Component<any>
 }
 
-export type Serializable<A extends App<any>> = Omit<A, "card" | "form" | "title">
+export type Serializable<A extends App<string, any>> = Omit<A, "card" | "form" | "title" | "key">

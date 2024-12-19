@@ -11,9 +11,11 @@ import { BaseAppServer } from '$lib/baseapp.server'
 import { env } from '$env/dynamic/private'
 
 export class TessituraAppServer extends 
-                BaseAppServer<TessituraAppLoad,TessituraAppSave> implements 
-                AppServer<TessituraAppLoad, TessituraAppSave> {
-    
+                BaseAppServer implements 
+                AppServer<"tessitura", TessituraAppLoad, TessituraAppSave> {
+
+    key: "tessitura" = "tessitura"
+
     get auth(): string {
         return [
             this.data.tessiApiUrl, 
@@ -63,7 +65,7 @@ export class TessituraAppServer extends
         return {...this.data, valid: valid, password: ""}
     }
 
-    async save(backend: UserLoaded, data: any) {
+    async save(backend: UserLoaded, data: TessituraAppSave) {
         const form = await superValidate(data, zod(tessituraSchema));
         if (!form.valid) {
             return fail(400, {form})
@@ -82,7 +84,7 @@ export class TessituraAppServer extends
         }
 
         await this.tessiLoad()
-        await super.save(backend, this.data)
+        await backend.save({identity: backend.identity, app: this.key}, this.data)
         return message(form, "Login updated successfully")
     }
 } 

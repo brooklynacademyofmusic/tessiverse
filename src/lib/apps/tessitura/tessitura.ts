@@ -5,9 +5,9 @@ import * as config from '$lib/const'
 import type { Infer } from 'sveltekit-superforms'
 import type { tessituraSchema } from './tessitura.schema'
 
-export class TessituraApp implements App<TessituraAppLoad> {
+export class TessituraApp implements App<"tessitura", TessituraAppLoad> {
     title = "Tessitura Integration"
-    key = "tessitura"
+    key: "tessitura" = "tessitura"
     card = TessituraCard
     form = Tessitura
     tessiApiUrl: config.ValidServerValues[any] = config.servers[0].value
@@ -22,4 +22,4 @@ export class TessituraApp implements App<TessituraAppLoad> {
 }
 
 export type TessituraAppLoad = Serializable<TessituraApp> & {valid: boolean}
-export type TessituraAppSave = Infer<typeof tessituraSchema> & {key: string}
+export type TessituraAppSave = Infer<typeof tessituraSchema>

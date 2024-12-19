@@ -1,8 +1,11 @@
+import type { App } from './apps';
 import { PlanStepApp } from './apps/planStep/planStep';
 import { TessituraApp } from './apps/tessitura/tessitura';
 
-export class Apps {
+type AppConstraint<T> = {
+    [K in keyof T]: K extends infer S ? S extends string ? App<S,any> : never : never
+}
+export class Apps implements AppConstraint<Apps> {
     tessitura = new TessituraApp()
     planStep = new PlanStepApp()
 } 
-
