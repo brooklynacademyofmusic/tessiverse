@@ -23,7 +23,7 @@ const config = {
 						rewrite: "/.auth/login/aad"
 					},
 					{ 	route: "/logout",
-						rewrite: "/.auth/logout?post_logout_redirect_uri=about:blank"
+						rewrite: "/.auth/logout"
 					}
 				]
 			}
