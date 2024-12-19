@@ -1,15 +1,11 @@
 import type { RequestHandler, RouteParams } from './$types';
 import { error } from '@sveltejs/kit';
-import * as ERRORS from '$lib/errors'
 import { tq } from '$lib/tq'
-import { User } from '$lib/user'
 import { Azure } from '$lib/azure';
-import { TessituraApp } from '$lib/apps/tessitura/tessitura';
 import { TessituraAppServer } from '$lib/apps/tessitura/tessitura.server';
 
 export const GET: RequestHandler = ({params, request, locals}) => {
-  return tq_verb("get", params, request, locals)
-}
+  return tq_verb("get", params, request, locals)}
 
 export const POST: RequestHandler = ({params, request, locals}) => {
   return tq_verb("post", params, request, locals)}
