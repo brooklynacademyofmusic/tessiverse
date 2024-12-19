@@ -1,8 +1,5 @@
 import { env } from '$env/dynamic/private';
-import { kMaxLength } from 'buffer';
 import child_process from 'child_process'
-import { Key } from 'lucide-svelte';
-import { cwd } from 'process';
 
 export async function tq(verb: string, object: string, variant?: string, query?: any, login?: string): Promise<any> {
     let flag = "";
