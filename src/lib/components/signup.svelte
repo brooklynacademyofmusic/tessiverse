@@ -28,7 +28,6 @@
             and remove your data from our servers.
           </Dialog.Description>
             <Tessitura data = {{ 
-                key: "tessitura",
                 tessiApiUrl: config.servers[0].value, 
                 userid: "test", group: "", valid: false }}/>
       </Dialog.Content>
