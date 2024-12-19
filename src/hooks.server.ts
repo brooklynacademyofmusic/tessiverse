@@ -19,7 +19,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     
     event.locals.user = user
     
-    if (! ("authenticated" in event.locals.user.userRoles)) {
+    if (!event.locals.user.userRoles.includes("authenticated")) {
         if (!event.request.url.match(/\/login$/)) {
             redirect(302, "/login")
         } else {
