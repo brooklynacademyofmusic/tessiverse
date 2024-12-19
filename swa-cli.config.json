@@ -9,6 +9,8 @@
       "resourceGroup": "tessiverse-rg",
       "outputLocation": "./build/static",
       "apiLocation": "./build/server",
+      "apiVersion": "18",
+      "apiLanguage": "node",
       "appLocation": ".",
       "apiBuildCommand": ""
     }
