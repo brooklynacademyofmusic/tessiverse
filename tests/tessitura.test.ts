@@ -1,6 +1,8 @@
 import { env } from '$env/dynamic/private'
 import { TessituraAppServer } from '$lib/apps/tessitura/tessitura.server'
-import { test, expect, describe, beforeEach } from 'vitest'
+import { tq } from '$lib/tq'
+import { test, expect, describe, beforeEach, vi } from 'vitest'
+import child_process from 'child_process'
 
 describe("TessituraAppServer", () => {
     let user: string[]
@@ -42,8 +44,21 @@ describe("TessituraAppServer", () => {
         expect(valid).toBe(false)
     })
 
-    test("tessiPassword saves password to Auth backend", () => {
+    test("tessiPassword saves password to Auth backend", async () => {
+        let list = await tq("auth","list")
+        expect(list).not.toMatch("notauser")
 
+        tessi.data.userid = "notauser"
+        tessi.tessiPassword("pAsSw0rD")
+
+        list = await tq("auth","list")
+        expect(list).toMatch("notauser")
+       
+        let ss = child_process.spawnSync.bind({})
+        child_process.spawnSync = (command: string) => ss(command, ["auth","delete",
+            "-H",tessi.data.tessiApiUrl,"-U",tessi.data.userid,"-G",tessi.data.group,"-L",tessi.data.location || ""]) as any
+
+        await tq("auth","delete").catch(() => {})
     })
         
 })
