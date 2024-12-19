@@ -4,7 +4,13 @@
     "app": {
       "appBuildCommand": "npm run build",
       "run": "npm run dev",
-      "appDevserverUrl": "http://localhost:5173"
+      "appDevserverUrl": "http://localhost:5173",
+      "appName": "tessiverse",
+      "resourceGroup": "tessiverse-rg",
+      "outputLocation": "./build/static",
+      "apiLocation": "./build/server",
+      "appLocation": ".",
+      "apiBuildCommand": ""
     }
   }
 }
