@@ -3,21 +3,21 @@ import { Apps } from "$lib/config"
 import { UserLoaded } from "$lib/azure"
 import type { ActionFailure } from "@sveltejs/kit"
 
-export abstract class BaseAppServer<In extends {key: string}, Out extends object> implements AppServer<In,Out> {
-    data: In = {} as In
-    key: string
+export abstract class BaseAppServer implements AppServer<string,any,any> {
+    data: any
+    key = "base"
 
-    constructor(data: In = {} as In) {
+    constructor(data: any = {}) {
         this.data = data
-        this.key = this.data.key
     }
 
-    async load(backend: UserLoaded): Promise<In> {
+    async load(backend: UserLoaded): Promise<any> {
         Object.assign(this.data,backend.load({identity: backend.identity, app: this.key as keyof Apps}))
         return this.data
     }
 
-    async save(backend: UserLoaded, data: In): Promise<void | ActionFailure<any> | {form: any}> {
-        return backend.save({identity: backend.identity, app: this.key as keyof Apps}, data)
+    async save(backend: UserLoaded, data: any): Promise<void | ActionFailure<any> | {form: any}> {
+        Object.assign(this.data, data)
+        return backend.save({identity: backend.identity, app: this.key as keyof Apps}, this.data)
     }
 }
