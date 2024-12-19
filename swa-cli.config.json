@@ -2,7 +2,7 @@
   "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
   "configurations": {
     "app": {
-      "appBuildCommand": "npm run build && cd tq && git submodule update && GOOS=linux GOARCH=amd64 go build -o ../build/server/bin/tq .",
+      "appBuildCommand": "bash -c 'npm run build && cd tq && git submodule update && GOOS=linux GOARCH=amd64 go build -o ../build/server/bin/tq .'",
       "appName": "tessiverse",
       "resourceGroup": "tessiverse-rg",
       "outputLocation": "./build/static",
