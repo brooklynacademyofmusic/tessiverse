@@ -8,7 +8,7 @@ export async function tq(verb: string, object: string, variant?: string, query?:
     }
     console.log(`running tq (${verb} ${object} ${variant} ${JSON.stringify(query)} ${login})`)
 
-    const tqExecutable = env.OS.match(/Windows/i) ? 'src/lib/bin/tq.exe' : 'src/lib/bin/tq'
+    const tqExecutable = (env.OS || "").match(/Windows/i) ? 'bin/tq.exe' : 'bin/tq'
     var tq = child_process.spawnSync(tqExecutable, ["-c", "--no-highlight", verb, object, flag], 
     {
         encoding: 'utf8', 
