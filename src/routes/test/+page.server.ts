@@ -1,10 +1,18 @@
-export const load = async () => {
+import type { PageServerLoad } from "./$types"
+
+type TestResult = {
+    status: boolean
+    error: any
+}
+
+export const load: PageServerLoad = async () => {
     return {
-        "Key vault access": false,
-        "tq": false,
-        "tq Admin": false,
-        "Tessitura connection": false,
-        "tq Admin valid": false,
-        "Tessitura query": false
-    }
+        "Azure key vault access": true,
+        "tq exists": false,
+        "tq is executable": false,
+        "tq admin is configured": false,
+        "can reach Tessitura": false,
+        "tq admin is valid": false,
+        "can query Tessitura": false
+    } as Record<string,TestResult>
 }
