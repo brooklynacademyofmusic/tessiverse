@@ -21,6 +21,9 @@ const config = {
 				"routes": [
 					{ 	route: "/login",
 						rewrite: "/.auth/login/aad"
+					},
+					{ 	route: "/logout",
+						rewrite: "/.auth/logout?post_logout_redirect_uri=about:blank"
 					}
 				]
 			}
