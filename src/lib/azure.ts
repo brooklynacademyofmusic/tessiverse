@@ -28,10 +28,13 @@ export class Azure implements Backend<User> {
         )
     }
 
+    hash(s: string): string {
+        return crypto.createHash("md5").update(["users",s].join(".")).digest("hex").toString()
+    }
+
     async load(key: BackendKey): Promise<UserLoaded>  {
-        return this.client.getSecret(
-            crypto.createHash("md5").update(["users",key.identity].join(".")).digest().toString()
-        ).then((response) => {
+        return this.client.getSecret(this.hash(key.identity))
+        .then((response) => {
             if (response.properties?.tags?.identity != key.identity) {
                 error(500, {message: "Hash collision PANIC!"})
             }
@@ -47,10 +50,9 @@ export class Azure implements Backend<User> {
     }
 
     async save(key: BackendKey, data: User): Promise<void> {
-        let user = await this.load({identity: key.identity}) 
+        let user = await this.load({identity: key.identity})
         Object.assign(user, data)
-        return this.client.setSecret(
-            crypto.createHash("md5").update(["users",key.identity].join(".")).digest().toString(),
+        return this.client.setSecret(this.hash(key.identity),
             JSON.stringify(user),            
             { tags: {identity: key.identity} }
         ).then(() => {}).catch(() => 
