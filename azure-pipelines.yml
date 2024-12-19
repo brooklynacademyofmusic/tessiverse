@@ -1,0 +1,3 @@
+app_location: ./
+api_location: build/server
+output_location: build/static
