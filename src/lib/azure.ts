@@ -30,7 +30,7 @@ export class Azure implements Backend<User> {
 
     async load(key: BackendKey): Promise<UserLoaded>  {
         return this.client.getSecret(
-            crypto.hash("md5",["users",key.identity].join("."))
+            crypto.createHash("md5").update(["users",key.identity].join(".")).digest().toString()
         ).then((response) => {
             if (response.properties?.tags?.identity != key.identity) {
                 error(500, {message: "Hash collision PANIC!"})
@@ -40,7 +40,7 @@ export class Azure implements Backend<User> {
             console.log(e)
             if (e.code === "SecretNotFound")
                 error(404, errors.USER_NOT_FOUND)
-            if (e.body.message)
+            if (e.body?.message)
                 error(500, e.body)
             error(500, errors.AZURE_KEYVAULT)
         })
@@ -50,17 +50,13 @@ export class Azure implements Backend<User> {
         let user = await this.load({identity: key.identity}) 
         Object.assign(user, data)
         return this.client.setSecret(
-            crypto.hash("md5",["users",key.identity].join(".")),
+            crypto.createHash("md5").update(["users",key.identity].join(".")).digest().toString(),
             JSON.stringify(user),            
             { tags: {identity: key.identity} }
         ).then(() => {}).catch(() => 
             error(500, errors.AZURE_KEYVAULT)
         )
     }
-}
-
-function hasProperty<O extends object>(k: PropertyKey, o: O): k is keyof O {
-    return k in o
 }
 
 export class UserLoaded extends User implements Backend<ValidApp<ValidBackendKeys>> {
