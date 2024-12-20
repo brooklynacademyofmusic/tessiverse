@@ -10,7 +10,7 @@
     let { data }: { data: PageData} = $props()
     let { userData, appData } = data
     import * as config from '$lib/config'
-    let apps = config.Apps
+    let apps = new config.Apps()
     function hasProperty<O extends object>(o: O, k: PropertyKey): k is keyof O {
         return k in o
     }
