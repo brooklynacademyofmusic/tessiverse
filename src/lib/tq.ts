@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
 import child_process from 'child_process'
+import { tq_key_vault_url } from './config.server';
 
 export async function tq(verb: string, object: string, variant?: string, query?: any, login?: string): Promise<any> {
     let flag = "";
@@ -13,7 +13,9 @@ export async function tq(verb: string, object: string, variant?: string, query?:
     {
         encoding: 'utf8', 
         input: JSON.stringify(query),
-        env: {"TQ_LOGIN": login},
+        env: {"TQ_LOGIN": login,
+              "AZURE_KEY_VAULT": tq_key_vault_url
+        },
         timeout: 30000
     });
 
