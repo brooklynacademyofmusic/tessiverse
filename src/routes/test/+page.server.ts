@@ -5,8 +5,6 @@ import fs from 'node:fs/promises'
 import child_process from 'node:child_process'
 import * as config from '$lib/const'
 import { tq } from "$lib/tq"
-import { User } from "$lib/user"
-import { TessituraAppServer } from "$lib/apps/tessitura/tessitura.server"
 
 export const load: PageServerLoad = ({fetch}) => {
 
