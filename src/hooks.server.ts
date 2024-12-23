@@ -12,7 +12,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
     const header = Buffer.from(
         event.request.headers.get('x-ms-client-principal') || 
-        event.cookies.get("StaticWebAppsAuthCookie") || 
+//        event.cookies.get("StaticWebAppsAuthCookie") || 
         "", 'base64');
     
     let user = JSON.parse(header.toString('ascii') || "{}") as ClientPrincipal
@@ -23,7 +23,7 @@ export const handle: Handle = async ({ event, resolve }) => {
         if (!event.request.url.match(/\/login$/)) {
             redirect(302, "/login")
         } else {
-            error(401, errors.AUTH)
+            error(401, errors.LOGIN)
         }
     }
 	const response = await resolve(event);
