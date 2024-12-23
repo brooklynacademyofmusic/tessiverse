@@ -65,7 +65,7 @@ export class TessituraAppServer extends
         return {...this.data, valid: valid, password: ""}
     }
 
-    async save(backend: UserLoaded, data: TessituraAppSave) {
+    async save(data: TessituraAppSave, backend: UserLoaded) {
         const form = await superValidate(data, zod(tessituraSchema));
         if (!form.valid) {
             return fail(400, {form})
