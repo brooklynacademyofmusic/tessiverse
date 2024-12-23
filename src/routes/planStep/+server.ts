@@ -5,7 +5,7 @@ import * as ERRORS from '$lib/errors'
 
 export const POST: RequestHandler = async ({ request, locals }) => {
     if (! ("admin" in locals.user.userRoles)) {
-        error(403, ERRORS.AUTH)
+        error(403, ERRORS.LOGIN)
     }
     return (request.body || new ReadableStream()).getReader().read()
     .then((body) => JSON.parse(body.value?.toString() || "null") as PlanStepEmail)
