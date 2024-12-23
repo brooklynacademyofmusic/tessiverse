@@ -28,8 +28,8 @@ export const load: PageServerLoad = ({fetch}) => {
     console.log(serverTestsObj)
 
     return {
-        "AZURE_KEY_VAULT_URL defined": env.AZURE_KEY_VAULT_URL ? true : 
-            "The AZURE_KEY_VAULT_URL environment variable must be set",
+        "AZURE_KEY_VAULT defined": env.AZURE_KEY_VAULT ? true : 
+            "The AZURE_KEY_VAULT environment variable must be set",
         "Azure key vault access": (async () => new Azure().client.listPropertiesOfSecrets().next())()
             .then(() => true)
             .catch((e) => JSON.parse(JSON.stringify(e))),
@@ -42,7 +42,7 @@ export const load: PageServerLoad = ({fetch}) => {
         "TQ_ADMIN_LOGIN defined": env.TQ_ADMIN_LOGIN ? true : 
             "The TQ_ADMIN_LOGIN environment variable must be set",        
         "TQ_ADMIN_LOGIN is defined in the key store": tq("auth","list")
-            .then((l: string) => l.includes(env.TQ_ADMIN_LOGIN))
+            .then((l: string) => l.match(env.TQ_ADMIN_LOGIN || "not defined"))
             .catch((e) => e),
         ...serverTestsObj
         }
