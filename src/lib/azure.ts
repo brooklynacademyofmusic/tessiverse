@@ -23,7 +23,7 @@ export class Azure implements Backend<User> {
     client: SecretClient 
     constructor() {
         this.client = new SecretClient(
-            server.key_vault_url,
+            (server.key_vault_url.startsWith("https") ? "" : "https://") + server.key_vault_url,
             new DefaultAzureCredential()
         )
     }
