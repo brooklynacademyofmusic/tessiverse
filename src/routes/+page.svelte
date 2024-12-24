@@ -41,7 +41,10 @@
         {#if typeof app.card === "function" && hasProperty(appData,key)}
             <app.card data = {appData[key]}/>
         {:else}
-            {app.title}
+            {app.title} does not have a card!
+            {#await appData[key] catch e}
+            <div class="text-destructive">{e.message}</div>
+            {/await}
         {/if}
     </AppCard>            
 
