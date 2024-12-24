@@ -1,7 +1,7 @@
 import { test, expect, vi, describe, beforeEach } from 'vitest'
 import { lowercaseKeys, tq } from '$lib/tq'
 import { env } from '$env/dynamic/private'
-import { TQ_ADMIN_LOGIN } from '$env/static/private'
+const dev_server = JSON.parse(env.DEV_SERVER)
 
 describe("lowercaseKeys", () => {
     let o = {"An":1,"oBjEcT":"A","CAN":[1,2,3],"BE!":true} as Record<string,any>
@@ -35,7 +35,7 @@ describe("tq", () => {
     })
 
     test("tq returns an object", async () => {
-        let constituent = await tq("get","constituents","",{constituentid: "1"},TQ_ADMIN_LOGIN)
+        let constituent = await tq("get","constituents","",{constituentid: "1"},dev_server[0].value + "|" + env.TQ_ADMIN_LOGIN)
         expect(constituent).toHaveProperty("id")
         expect(constituent).toHaveProperty("displayname")
         expect(constituent).toHaveProperty("lastname")

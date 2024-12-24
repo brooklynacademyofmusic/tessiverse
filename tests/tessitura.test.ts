@@ -3,6 +3,10 @@ import { TessituraAppServer } from '$lib/apps/tessitura/tessitura.server'
 import { tq } from '$lib/tq'
 import { test, expect, describe, beforeEach, vi } from 'vitest'
 import child_process from 'child_process'
+import { Azure } from '$lib/azure'
+import { SecretClient } from '@azure/keyvault-secrets'
+import { DefaultAzureCredential } from '@azure/identity'
+const dev_server = JSON.parse(env.DEV_SERVER)
 
 describe("TessituraAppServer", () => {
     let user: string[]
@@ -10,21 +14,21 @@ describe("TessituraAppServer", () => {
     beforeEach(() => {
         user = env.TQ_ADMIN_LOGIN.split("|")
         tessi = new TessituraAppServer({
-            tessiApiUrl: user[0],
-            userid: user[1],
-            group: user[2],
-            location: user[3],
-            key: "",
+            tessiApiUrl: dev_server[0].value,
+            userid: user[0],
+            group: user[1],
+            location: user[2],
             valid: false
         })
     })
 
     test("auth returns a valid auth", async () => {
-        expect(tessi.auth).toBe(env.TQ_ADMIN_LOGIN)
+        expect(tessi.auth).toBe(dev_server[0].value+"|"+env.TQ_ADMIN_LOGIN)
+        console.log(env.DEV_SERVER)
     })
 
     test("tessiGroups gets valid groups from Tessitura", async () => {
-        let groups = await TessituraAppServer.tessiGroups()
+        let groups = await TessituraAppServer.tessiGroups(tessi.auth)
         expect(groups.length).greaterThan(1)
         expect(groups[0]).toHaveProperty("label")
         expect(groups[0]).toHaveProperty("value")
@@ -54,11 +58,19 @@ describe("TessituraAppServer", () => {
         list = await tq("auth","list")
         expect(list).toMatch("notauser")
        
-        let ss = child_process.spawnSync.bind({})
-        child_process.spawnSync = (command: string) => ss(command, ["auth","delete",
-            "-H",tessi.data.tessiApiUrl,"-U",tessi.data.userid,"-G",tessi.data.group,"-L",tessi.data.location || ""]) as any
-
-        await tq("auth","delete").catch(() => {})
+        // cleanup
+        let client = new SecretClient(
+            `https://${env.TQ_KEY_VAULT}.vault.azure.net`,
+            new DefaultAzureCredential()
+        )
+        let secrets = client.listPropertiesOfSecrets()
+        for await (let secret of secrets) {
+            if(secret.name.includes("notauser")) {
+                let deletePoller = await client.beginDeleteSecret(secret.name)
+                await deletePoller.pollUntilDone()
+                await client.purgeDeletedSecret(secret.name)
+            }
+        }
     })
         
 })

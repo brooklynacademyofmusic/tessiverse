@@ -7,5 +7,6 @@ export default defineConfig({
 	test: {
 		include: ['**/*.{test,spec}.{js,ts}'],
 		env: loadEnv('', process.cwd(), ''),
+		testTimeout: 15000
 	}
 });
