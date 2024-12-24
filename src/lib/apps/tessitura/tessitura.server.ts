@@ -9,6 +9,7 @@ import type { UserLoaded } from '$lib/azure'
 import { type AppServer } from '$lib/apps.server'
 import { BaseAppServer } from '$lib/baseapp.server'
 import { env } from '$env/dynamic/private'
+import { servers } from '$lib/const'
 
 export class TessituraAppServer extends 
                 BaseAppServer<"tessitura", TessituraAppLoad, TessituraAppSave> implements 
@@ -46,8 +47,8 @@ export class TessituraAppServer extends
             .catch(() => false)
     }
 
-    static async tessiGroups(): Promise<{value: string, label: string}[]> {
-        return tq("get","usergroups","all",undefined,env.TQ_ADMIN_LOGIN).
+    static async tessiGroups(login: string = servers[0].value + "|" + env.TQ_ADMIN_LOGIN): Promise<{value: string, label: string}[]> {
+        return tq("get","usergroups","all",undefined,login).
             then((tessi: {id: string, name: string}[]) => 
                 tessi.map((t) => ({value: t.id.trim(), label: t.name.trim()}))
             )
