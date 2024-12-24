@@ -1,5 +1,6 @@
 import { error, type Handle, redirect } from '@sveltejs/kit';
 import * as errors from "$lib/errors"
+import { env } from "$env/dynamic/private"
 
 export type ClientPrincipal = {
     identityProvider: string,
@@ -12,6 +13,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
     const header = Buffer.from(
         event.request.headers.get('x-ms-client-principal') || 
+        env.DEV_USER ||
 //        event.cookies.get("StaticWebAppsAuthCookie") || 
         "", 'base64');
     
