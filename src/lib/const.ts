@@ -1,8 +1,7 @@
+import { env } from "$env/dynamic/public"
 
-export const servers = [
-    {value: "https://tessi-rest-prd1-ex.bam.org/TessituraService", label: "TESSI-DB-PRD1/Impresario"},
-    {value: "https://t-gw-test-b-ex-rest.bam.org/TessituraService", label: "TESSI-TEST-B/Impresario"}
-]  
+export const servers = JSON.parse(env.PUBLIC_SERVERS || "[]") as ServerArray
+type ServerArray = Array<{value: string, label: string}>
 export type ValidServerValues = {
     [K in keyof typeof servers]: typeof servers[K] extends {value: infer I} ? I : never
 }
