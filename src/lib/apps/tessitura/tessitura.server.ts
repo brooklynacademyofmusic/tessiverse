@@ -26,7 +26,7 @@ export class TessituraAppServer extends
     }
 
     async tessiLoad(): Promise<Partial<TessituraApp>> {
-      return tq("get","users",undefined,{"username":this.data.userid},this.auth).
+      return tq("get","users",{query: {"username":this.data.userid},login: this.auth}).
           then((tessi) => {
               Object.assign(this.data, tessi)
               return this
@@ -36,19 +36,19 @@ export class TessituraAppServer extends
     }
 
     async tessiPassword(password:string): Promise<void> {
-        return tq("auth","add",undefined,password,this.auth)
+        return tq("auth","add",{query: password,login: this.auth})
         .catch(() => 
             error(500, errors.TQ))
     }
 
     async tessiValidate(): Promise<boolean> {
-        return tq("auth","validate",undefined,undefined,this.auth).
+        return tq("auth","validate",{login: this.auth}).
             then(() => true)
             .catch(() => false)
     }
 
     static async tessiGroups(login: string = servers[0].value + "|" + env.TQ_ADMIN_LOGIN): Promise<{value: string, label: string}[]> {
-        return tq("get","usergroups","all",undefined,login).
+        return tq("get","usergroups",{variant: "all", login: login}).
             then((tessi: {id: string, name: string}[]) => 
                 tessi.map((t) => ({value: t.id.trim(), label: t.name.trim()}))
             )

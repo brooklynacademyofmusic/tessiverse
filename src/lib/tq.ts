@@ -2,19 +2,19 @@ import child_process from 'child_process'
 import { tq_key_vault_url } from './config.server';
 import { env } from '$env/dynamic/private'
 
-export async function tq(verb: string, object: string, variant?: string, query?: any, login?: string): Promise<any> {
+export async function tq(verb: string, object: string, options?: {variant?: string, query?: any, login?: string, headers?: any}): Promise<any> {
     let flag = "";
-    if (variant) {
-        flag = "--"+variant;
+    if (options?.variant) {
+        flag = "--"+options.variant;
     }
-    console.log(`running tq (${verb} ${object} ${variant} ${JSON.stringify(query)} ${login})`)
+    console.log(`running tq (${verb} ${object} ${JSON.stringify(options)})`)
 
     const tqExecutable = (env.OS || "").match(/Windows/i) ? 'bin/tq.exe' : 'bin/tq'
     var tq = child_process.spawnSync(tqExecutable, ["-c", "--no-highlight", verb, object, flag], 
     {
         encoding: 'utf8', 
-        input: JSON.stringify(query),
-        env: {"TQ_LOGIN": login,
+        input: JSON.stringify(options?.query ?? "{}"),
+        env: {"TQ_LOGIN": options?.login ?? "",
               "AZURE_KEY_VAULT": tq_key_vault_url
         },
         timeout: 30000
