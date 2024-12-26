@@ -13,7 +13,8 @@
 	import type { TessituraAppLoad } from './tessitura';
 	
     let servers = config.servers
-    let groups = config.servers
+    let groups = fetch("/tessitura/groups")
+        .then((res) => res.json())
     let { data }: { data: TessituraAppLoad} = $props()
     
     let form: SuperForm<Infer<typeof tessituraSchema>> = 
@@ -65,6 +66,7 @@
         <Form.Field {form} name="group">
             <Form.Control let:attrs>
                 <Form.Label>User Group</Form.Label>
+                    {#await groups then groups: {value: string, label:string}[]}
                     <Select.Root {...attrs} selected={groups.filter((e) => e.value === $formData.group)[0]} items={groups}>
                         <Select.Trigger>
                             <Select.Value placeholder="Choose a group" />
@@ -75,7 +77,10 @@
                         {/each}
                         </Select.Content>
                         <Select.Input bind:value={$formData.group} />
-                      </Select.Root>
+                    </Select.Root>
+                    {:catch}
+                        Error loading groups
+                    {/await}
                 </Form.Control>
             <Form.FieldErrors />
         </Form.Field>
