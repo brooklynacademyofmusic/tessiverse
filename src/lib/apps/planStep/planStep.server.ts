@@ -40,10 +40,16 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     }
 
     let planStepUser: Serializable<PlanStepApp> = user.apps.planStep
-    let plans: PlanScore[] = await tq("get", "plans", "all", {workerconstituentid: tessiUser.constituentid || "1"}, tessiApp.auth)
+    let plans: PlanScore[] = await tq("get", "plans", 
+        {variant: "all",
+            query: {workerconstituentid: tessiUser.constituentid || "1"}, 
+            login: tessiApp.auth})
     let body: string = [email.to,email.cc,email.bcc,email.subject,email.body].join(" ")
     let plans_emails: Email[][] = await Promise.all(plans.map((p) => {
-        return tq("get", "electronicaddresses", "all", {constituentids: p.constituent.id}, tessiApp.auth)
+        return tq("get", "electronicaddresses", 
+            {variant: "all", 
+                query: {constituentids: p.constituent.id}, 
+                login:tessiApp.auth})
     }))
 
     let plans_filtered: PlanScore[] = []
@@ -84,8 +90,8 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     let plan = plans_filtered[0]
 
     // Make a plan step
-    await tq("post","planstep","",
-        {
+    await tq("post","planstep",
+        {query:{
             plan: {id: plan.id},
             type: {id: planStepUser.stepType },
             notes: email.body,
@@ -93,7 +99,7 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
             completedondatetime: planStepUser.closeStep ? new Date() : null,
             description: email.subject
         },
-        tessiApp.auth)
+        login:tessiApp.auth})
 
     return null
 };
