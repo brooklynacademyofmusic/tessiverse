@@ -12,7 +12,7 @@
 
 {#snippet error(e: any)}
     <span class="text-red-500">error</span>
-    <br/><code>{JSON.stringify(e)}</code>
+    <br/><pre>{@html JSON.stringify(e,null,5)}</pre>
 {/snippet}
 
 {#each Object.entries(data) as [key,value]}

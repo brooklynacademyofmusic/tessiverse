@@ -11,6 +11,8 @@ import { URL } from "node:url"
 
 const stringify = function(o: any): any {
     console.log(o)
+    if (typeof o === "string")
+        o = o.split("\n")
     return JSON.parse(JSON.stringify(o))
 }
 
