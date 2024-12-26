@@ -10,29 +10,43 @@ export async function tq(verb: string, object: string, options?: {variant?: stri
     console.log(`running tq (${verb} ${object} ${JSON.stringify(options)})`)
 
     const tqExecutable = (env.OS || "").match(/Windows/i) ? 'bin/tq.exe' : 'bin/tq'
-    var tq = child_process.spawnSync(tqExecutable, ["-c", "--no-highlight", verb, object, flag], 
+    var tq = child_process.spawn(tqExecutable, ["-c", "--no-highlight", verb, object, flag], 
     {
-        encoding: 'utf8', 
-        input: JSON.stringify(options?.query ?? "{}"),
         env: {"TQ_LOGIN": options?.login ?? "",
               "AZURE_KEY_VAULT": tq_key_vault_url
         },
         timeout: 30000
     });
 
-    if (tq.status != 0) {
-        console.log(`error in tq (error: ${tq.error}, status: ${tq.status}, output: ${tq.stdout}, error: ${tq.stderr})`)
-        throw(tq.stderr)
-    } else {
-        let out: any
-        try {
-            out = lowercaseKeys(JSON.parse(tq.stdout))
-        } catch {
-            out = tq.stdout
-        }
-        return out
-    }
+    let stdout: string = ""
+    let stderr: string = ""
 
+    tq.stdout.setEncoding("utf8")
+    tq.stderr.setEncoding("utf8")
+    tq.stdout.on("data", (chunk) => {stdout += chunk})
+    tq.stderr.on("data", (chunk) => {stderr += chunk})
+
+    tq.stdin.write(JSON.stringify(options?.query ?? "{}"))
+    tq.stdin.end()
+
+    return new Promise((res,rej) => {
+        let error: Error
+        tq.on("error",(e) => error = e)
+        tq.on("exit",(code) => {
+            if (error || code !=0 ) {
+                console.log(`error in tq (error: ${error}, status: ${code}, output: ${stdout}, error: ${stderr})`)
+                rej(error || stderr)
+            } else {
+                let out: any
+                try {
+                    out = lowercaseKeys(JSON.parse(stdout))
+                } catch {
+                    out = stdout
+                }
+                res(out)
+            }
+        })
+    })    
 };
 
 export function lowercaseKeys(o: object): object {
