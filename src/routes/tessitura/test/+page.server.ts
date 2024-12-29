@@ -16,7 +16,6 @@ const stringify = function(o: any): any {
 }
 
 export const load: PageServerLoad = async ({fetch}) => {
-    process.env.DEBUG="1"
     const token = (await new DefaultAzureCredential().getToken(relay_aad_audience)).token
 
     let serverTests = config.servers.map((s) => {return{

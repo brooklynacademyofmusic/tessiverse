@@ -4,7 +4,7 @@ import { env } from '$env/dynamic/private'
 import { DefaultAzureCredential } from '@azure/identity'
 export const relay_aad_audience = "https://relay.azure.net//.default"
 
-export async function tq(verb: string, object: string, options?: {variant?: string, query?: any, login?: string, headers?: Record<string,string>}): Promise<any> {
+export async function tq(verb: string, object: string, options?: {variant?: string, query?: any, login?: string, headers?: Record<string,string>, env?: Record<string,string>}): Promise<any> {
     let flag = ""
     options = Object.assign({query: {}},options)
     if (options?.variant) {
@@ -18,11 +18,11 @@ export async function tq(verb: string, object: string, options?: {variant?: stri
     const tqExecutable = (env.OS || "").match(/Windows/i) ? 'bin/tq.exe' : 'bin/tq'
     var tq = child_process.spawn(tqExecutable, [verb, object, flag], 
     {
-        env: {"TQ_LOGIN": options.login ?? "",
+        env: {...options.env,
+              "TQ_LOGIN": options.login ?? "",
               "AZURE_KEY_VAULT": "https://"+tq_key_vault_url,
               "TQ_HEADERS": options.headers ? JSON.stringify(options.headers) : "",
-              "TQ_COMPACT": "1",
-              ...process.env
+              "TQ_COMPACT": "1"
             },
         timeout: 30000
     });
