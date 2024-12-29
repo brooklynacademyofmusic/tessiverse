@@ -1,25 +1,29 @@
 import child_process from 'child_process'
 import { tq_key_vault_url } from './config.server';
 import { env } from '$env/dynamic/private'
+import { DefaultAzureCredential } from '@azure/identity'
+const relay_aad_audience = "https://relay.azure.net//.default"
 
 export async function tq(verb: string, object: string, options?: {variant?: string, query?: any, login?: string, headers?: Record<string,string>}): Promise<any> {
     let flag = ""
-    let headersString = ""
+    options = Object.assign({query: {}},options)
     if (options?.variant) {
         flag = "--"+options.variant;
     }
-    if (options?.headers) {
-        headersString = "--headers "+Object.entries(options.headers).map((key,val) => `${key}=${val}`).join(",")
-    }
+    if (options.login?.split("|")[0].match("servicebus.windows.net/"))
+        Object.assign(options,{ headers: { ServiceBusAuthorization: (await new DefaultAzureCredential().getToken(relay_aad_audience)).token } })
 
     console.log(`running tq (${verb} ${object} ${JSON.stringify(options)})`)
 
     const tqExecutable = (env.OS || "").match(/Windows/i) ? 'bin/tq.exe' : 'bin/tq'
-    var tq = child_process.spawn(tqExecutable, ["-c", "--no-highlight", headersString, verb, object, flag], 
+    var tq = child_process.spawn(tqExecutable, [verb, object, flag], 
     {
-        env: {"TQ_LOGIN": options?.login ?? "",
-              "AZURE_KEY_VAULT": "https://"+tq_key_vault_url
-        },
+        env: {"TQ_LOGIN": options.login ?? "",
+              "AZURE_KEY_VAULT": "https://"+tq_key_vault_url,
+              "TQ_HEADERS": options.headers ? JSON.stringify(options.headers) : "",
+              "TQ_COMPACT": "1",
+              "DEBUG": "1"
+            },
         timeout: 30000
     });
 
@@ -31,7 +35,7 @@ export async function tq(verb: string, object: string, options?: {variant?: stri
     tq.stdout.on("data", (chunk) => {stdout += chunk})
     tq.stderr.on("data", (chunk) => {stderr += chunk})
 
-    tq.stdin.write(JSON.stringify(options?.query ?? "{}"))
+    tq.stdin.write(JSON.stringify(options.query))
     tq.stdin.end()
 
     return new Promise((res,rej) => {
