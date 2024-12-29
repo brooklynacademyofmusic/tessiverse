@@ -7,7 +7,6 @@ import fs from 'node:fs/promises'
 import child_process from 'node:child_process'
 import * as config from '$lib/const'
 import { tq } from "$lib/tq"
-import { URL } from "node:url"
 
 const stringify = function(o: any): any {
     console.log(o)
