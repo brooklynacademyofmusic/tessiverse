@@ -6,7 +6,6 @@ export default defineConfig({
 	plugins: [sveltekit()],
 	test: {
 		include: ['**/*.{test,spec}.{js,ts}'],
-		env: loadEnv('', process.cwd(), ''),
-		testTimeout: 15000
+		env: loadEnv('', process.cwd(), '')
 	}
 });
