@@ -18,7 +18,7 @@ export async function tq(verb: string, object: string, options?: {variant?: stri
     var tq = child_process.spawn(tqExecutable, ["-c", "--no-highlight", headersString, verb, object, flag], 
     {
         env: {"TQ_LOGIN": options?.login ?? "",
-              "AZURE_KEY_VAULT": tq_key_vault_url
+              "AZURE_KEY_VAULT": "https://"+tq_key_vault_url
         },
         timeout: 30000
     });
