@@ -2,7 +2,7 @@ import child_process from 'child_process'
 import { tq_key_vault_url } from './config.server';
 import { env } from '$env/dynamic/private'
 import { DefaultAzureCredential } from '@azure/identity'
-const relay_aad_audience = "https://relay.azure.net//.default"
+export const relay_aad_audience = "https://relay.azure.net//.default"
 
 export async function tq(verb: string, object: string, options?: {variant?: string, query?: any, login?: string, headers?: Record<string,string>}): Promise<any> {
     let flag = ""
@@ -22,7 +22,7 @@ export async function tq(verb: string, object: string, options?: {variant?: stri
               "AZURE_KEY_VAULT": "https://"+tq_key_vault_url,
               "TQ_HEADERS": options.headers ? JSON.stringify(options.headers) : "",
               "TQ_COMPACT": "1",
-              "DEBUG": "1"
+              ...process.env
             },
         timeout: 30000
     });
