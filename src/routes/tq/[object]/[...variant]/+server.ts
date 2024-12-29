@@ -23,7 +23,7 @@ async function tq_verb(verb: string, params: RouteParams, request: Request, loca
 
   return (request.body || new ReadableStream()).getReader().read()
   .then((body) =>
-    tq(verb, params.object, params.variant, body.value?.toString(), tessiApp.auth))
+    tq(verb, params.object, {variant: params.variant, query: body.value?.toString(), login: tessiApp.auth}))
   .then((result) => json(result))
   .catch((e) => error(500, {message: e.message}))
 }

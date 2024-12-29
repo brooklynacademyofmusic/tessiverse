@@ -161,7 +161,7 @@ describe("planStep", () => {
         expect(tqMocked).toBeCalledTimes(6)
         expect(tqMocked.mock.calls[5][0]).toBe("post")
         expect(tqMocked.mock.calls[5][1]).toBe("planstep")
-        expect(tqMocked.mock.calls[5][3]).toEqual(planstep)
+        expect(tqMocked.mock.calls[5][2]?.query).toEqual(planstep)
 
     })
 
@@ -189,7 +189,7 @@ describe("planStep", () => {
         expect(tqMocked).toBeCalledTimes(6)
         expect(tqMocked.mock.calls[5][0]).toBe("post")
         expect(tqMocked.mock.calls[5][1]).toBe("planstep")
-        expect(tqMocked.mock.calls[5][3]).toEqual(planstep)
+        expect(tqMocked.mock.calls[5][2]?.query).toEqual(planstep)
 
     })
 
@@ -226,7 +226,7 @@ describe("planStep", () => {
     expect(tqMocked).toBeCalledTimes(5)
     expect(tqMocked.mock.calls[4][0]).toBe("post")
     expect(tqMocked.mock.calls[4][1]).toBe("planstep")
-    expect(tqMocked.mock.calls[4][3]).toEqual(planstep)
+    expect(tqMocked.mock.calls[4][2]?.query).toEqual(planstep)
 
     })
 
