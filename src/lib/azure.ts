@@ -1,7 +1,7 @@
 import { SecretClient } from "@azure/keyvault-secrets";
 import { DefaultAzureCredential } from "@azure/identity";
 import { error } from "@sveltejs/kit"
-import crypto from "crypto";
+import crypto from "node:crypto";
 import * as errors from "$lib/errors"
 import { User } from "$lib/user"
 import * as server from "$lib/config.server";
