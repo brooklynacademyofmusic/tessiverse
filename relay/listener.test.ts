@@ -37,8 +37,8 @@ function endpointServer(port: number, endpointRes: any): Promise<http.Server> {
 
 describe("listener with http endpoint", async () => {
     let relay: hyco_https.Server
-    let server = "tessiverse.servicebus.windows.net"
-    let path = "tessi-db-prd1"
+    let server = "tessiverse-test.servicebus.windows.net"
+    let path = "test-relay"
     let endpoint: http.Server
     let serverURI = new URL("http://localhost")
     let relayURI = "https://"+server+"/"+path
@@ -130,8 +130,8 @@ function endpointServerHttps(port: number, endpointRes: any): Promise<https.Serv
 
 describe("listener with https endpoint", async () => {
     let relay: hyco_https.Server
-    let server = "tessiverse.servicebus.windows.net"
-    let path = "tessi-db-prd1"
+    let server = "tessiverse-test.servicebus.windows.net"
+    let path = "test-relay"
     let endpoint: https.Server
     let serverURI = new URL("https://localhost")
     let relayURI = "https://"+server+"/"+path
