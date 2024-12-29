@@ -1,12 +1,12 @@
 import type { PageServerLoad } from "./$types"
 import { env } from '$env/dynamic/private'
 import { env as env_public } from '$env/dynamic/public'
-
+import { DefaultAzureCredential } from '@azure/identity'
 import { Azure } from "$lib/azure"
 import fs from 'node:fs/promises'
 import child_process from 'node:child_process'
 import * as config from '$lib/const'
-import { tq } from "$lib/tq"
+import { tq, relay_aad_audience } from "$lib/tq"
 
 const stringify = function(o: any): any {
     console.log(o)
@@ -15,10 +15,12 @@ const stringify = function(o: any): any {
     return JSON.parse(JSON.stringify(o))
 }
 
-export const load: PageServerLoad = ({fetch}) => {
+export const load: PageServerLoad = async ({fetch}) => {
+    process.env.DEBUG="1"
+    const token = (await new DefaultAzureCredential().getToken(relay_aad_audience)).token
 
     let serverTests = config.servers.map((s) => {return{
-        ["Can reach "+s.label]: fetch("https://"+s.value,{ signal: AbortSignal.timeout(15000) })
+        ["Can reach "+s.label]: fetch("https://"+s.value,{ signal: AbortSignal.timeout(15000), headers: { ServiceBusAuthorization: token } })
             .then((res) => {if(res.status >= 300) throw(res)})
             .then(() => true)
             .catch((e) => stringify(e)),
