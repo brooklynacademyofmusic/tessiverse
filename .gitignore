@@ -7,6 +7,7 @@ dist
 .vercel
 **/.svelte-kit
 /build
+relay/build
 /bin
 
 # OS
