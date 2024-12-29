@@ -2,8 +2,8 @@
   "name": "tessiverse-relay",
   "version": "0.1.0",
   "description": "Azure relay listener for tessiverse",
-  "exports": {
-    "tessiverse-relay": "./index.js"
+  "bin": {
+    "tessiverse-listener": "./build/index.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

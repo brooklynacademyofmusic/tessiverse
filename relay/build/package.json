@@ -1,0 +1,28 @@
+{
+    "name": "tessiverse-relay",
+    "version": "0.1.0",
+    "description": "Azure relay listener for tessiverse",
+    "bin": {
+        "tessiverse-listener": "./build/index.js"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "github.com/brooklynacademyofmusic/tessiverse/relay"
+    },
+    "author": "",
+    "license": "MIT",
+    "type": "module",
+    "dependencies": {
+        "@azure/identity": "^4.5.0",
+        "axios": "^1.7.9",
+        "commander": "^12.1.0",
+        "hyco-https": "^1.4.5"
+    },
+    "devDependencies": {
+        "@types/moment": "^2.11.29",
+        "greenlock": "^2.8.9"
+    }
+}
