@@ -1,7 +1,8 @@
-import { test, expect, vi, describe, beforeEach } from 'vitest'
+import { test, expect, vi, describe, beforeEach, afterAll, beforeAll } from 'vitest'
 import { lowercaseKeys, tq } from '$lib/tq'
 import { env } from '$env/dynamic/private'
-const dev_server = JSON.parse(env.DEV_SERVER)
+var dev_server = JSON.parse(env.DEV_SERVER)
+
 
 describe("lowercaseKeys", () => {
     let o = {"An":1,"oBjEcT":"A","CAN":[1,2,3],"BE!":true} as Record<string,any>
@@ -24,18 +25,27 @@ describe("lowercaseKeys", () => {
 
 })
 
-describe("tq", () => {
 
+
+describe("tq", () => {
+    
     test("tq runs the tq executable", async () => {
         expect(await tq("","")).toMatch("tq is a wrapper around")
     })
 
-    test("tq has access to the auth backend", async () => {
+    test("tq has access to the Azure auth backend", async () => {
         expect(await tq("auth","list")).toMatch(env.TQ_ADMIN_LOGIN || "The TQ_ADMIN_LOGIN variable isn't defined!")
     })
 
-    test("tq returns an object", async () => {
+    test("tq returns an object (vpn)", async () => {
         let constituent = await tq("get","constituents",{query: {constituentid: "1"}, login: dev_server[0].value + "|" + env.TQ_ADMIN_LOGIN})
+        expect(constituent).toHaveProperty("id")
+        expect(constituent).toHaveProperty("displayname")
+        expect(constituent).toHaveProperty("lastname")
+    })
+
+    test("tq returns an object (relay)", async () => {
+        let constituent = await tq("get","constituents",{query: {constituentid: "1"}, login: dev_server[1].value + "|" + env.TQ_ADMIN_LOGIN})
         expect(constituent).toHaveProperty("id")
         expect(constituent).toHaveProperty("displayname")
         expect(constituent).toHaveProperty("lastname")

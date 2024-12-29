@@ -36,7 +36,7 @@ describe("TessituraAppServer", () => {
 
     test("tessiLoad loads user info from Tessitura", async () => {
        await tessi.tessiLoad()
-       expect(tessi.data.firstname).toBe("Syzygy")
+       expect(tessi.data.firstname).toBe("Sky")
     })
     
     test("tessiValidate validates login with Tessitura", async () => {
@@ -48,14 +48,11 @@ describe("TessituraAppServer", () => {
         expect(valid).toBe(false)
     })
 
-    test("tessiPassword saves password to Auth backend", async () => {
-        let list = await tq("auth","list")
-        // expect(list).not.toMatch("notauser")
-
+    test("tessiPassword saves password to Auth backend",  {timeout: 15000}, async () => {
         tessi.data.userid = "notauser"
         tessi.tessiPassword("pAsSw0rD")
 
-        list = await tq("auth","list")
+        let list = await tq("auth","list")
         expect(list).toMatch("notauser")
        
         // cleanup
@@ -71,6 +68,9 @@ describe("TessituraAppServer", () => {
                 await client.purgeDeletedSecret(secret.name)
             }
         }
-    }, {timeout: 15000})
+
+        list = await tq("auth","list")
+        expect(list).not.toMatch("notauser")
+    })
         
 })
