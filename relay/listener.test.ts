@@ -19,10 +19,11 @@ const axiosInstance = axios.create({
 })
 
 function endpointServer(port: number, endpointRes: any): Promise<http.Server> {
-    let server = http.createServer((_req, _res) => {
+    let server = http.createServer(async (_req, _res) => {
         request = _req as any
         _req.setEncoding("utf8")
-        _req.on("data", (d) => request.data = d)
+        request.data = ""
+        await new Promise((res) => _req.on("data", (data) => request.data += data).on("close",() => res(true)))
         _res.setHeader("content-type","application/json")
         _res.setHeader("endpoint","this is an endpoint header")
         _res.write(endpointRes)
@@ -99,10 +100,10 @@ describe("listener with http endpoint", async () => {
         expect(response.data).toBe("I'm an endpoint")
     })
 
-    test("listener is transparent to http POST from client => endpoint and endpoint => client", async () => {
-        let endpointBody = {"I'm an endpoint":"but completely different"}
+    test("listener is transparent to http POST data from client => endpoint and endpoint => client", async () => {
+        let endpointBody = {"I'm an endpoint":"but completely different","array":Array.from({length:2**20},() => 0)}
         endpoint = await endpointServer(serverPort,JSON.stringify(endpointBody))
-        const requestBody = {"payload":"some stuff"}
+        const requestBody = {"payload":"some stuff","array":Array.from({length:2**20},() => 0)}
         let response = await axiosInstance.post(relayURI,requestBody)
         expect(request.method).toBe("POST")
         expect(request.url).toBe("/")
@@ -113,10 +114,11 @@ describe("listener with http endpoint", async () => {
 })
 
 function endpointServerHttps(port: number, endpointRes: any): Promise<https.Server> {
-    let server = https.createServer(certs,(_req, _res) => {
+    let server = https.createServer(certs,async (_req, _res) => {
         request = _req as any
         _req.setEncoding("utf8")
-        _req.on("data", (d) => request.data = d)
+        request.data = ""
+        await new Promise((res) => _req.on("data", (data) => request.data += data).on("close",() => res(true)))
         _res.setHeader("content-type","application/json")
         _res.write(endpointRes)
         _res.end()
@@ -163,9 +165,9 @@ describe("listener with https endpoint", async () => {
     })
 
     test("listener is transparent to https POST from client => endpoint and endpoint => client", async () => {
-        let endpointBody = {"I'm an endpoint":"but completely different"}
+        let endpointBody = {"I'm an endpoint":"but completely different","array":Array.from({length:2**20},() => 0)}
         endpoint = await endpointServerHttps(serverPort,JSON.stringify(endpointBody))
-        const requestBody = {"payload":"some stuff"}
+        const requestBody = {"payload":"some stuff","array":Array.from({length:2**20},() => 0)}
         let response = await axiosInstance.post(relayURI,requestBody)
         expect(request.method).toBe("POST")
         expect(request.url).toBe("/")

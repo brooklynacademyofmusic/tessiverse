@@ -39,8 +39,8 @@ declare module 'hyco-https' {
     }
 
     type ServerOptions = {
-        server?: string
-        token?: string
+        server: string
+        token: string | (() => string)
         path?: string
         id?: string
         keepAliveTimeout?: moment.duration
