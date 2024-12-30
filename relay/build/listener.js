@@ -3,33 +3,29 @@ import https from 'hyco-https';
 import { DefaultAzureCredential } from "@azure/identity";
 import axios from 'axios';
 export const relay_aad_audience = "https://relay.azure.net//.default"; // this constant is the url of Azure Relay as a resource provider to authorize the token against.
+// update token asynchronously every 10 minutes
+let token = "";
+function getToken() { return token; }
+async function getTokenAsync() { token = (await new DefaultAzureCredential().getToken(relay_aad_audience)).token; }
+await getTokenAsync();
+setTimeout(getTokenAsync, 1000 * 60 * 10);
 export async function createListener(namespace, relay, server) {
     var listenUri = https.createRelayListenUri(namespace, relay);
     var listener = https.createRelayedServer({
         server: listenUri,
-        token: (await new DefaultAzureCredential().getToken(relay_aad_audience)).token
+        token: getToken
     }, async (relayReq, relayRes) => {
         console.log('request accepted: ' + relayReq.method + ' on ' + relayReq.url);
         console.log('- headers: ' + JSON.stringify(relayReq.headers));
-        // read from the request
-        let body = await new Promise((res, rej) => {
-            relayReq.setEncoding("utf-8");
-            let out = "";
-            relayReq.on('data', (data) => {
-                out += data;
-            });
-            relayReq.on('error', (err) => rej(err));
-            relayReq.on('end', () => res(out));
-        });
-        console.log(`- body: ${body}`);
         let relativePath = (relayReq.url || "").replace(new RegExp(`/*${relay}/*`), "");
         let relativeUrl = `${server.replace(/\/$/, "")}/${relativePath}`;
-        // send the request to the local server
+        // stream the request to the local server
         await axios({
             method: relayReq.method,
             url: relativeUrl.toString(),
             headers: Object.fromEntries(Object.entries(relayReq.headers).filter(([key]) => !key.match(forbiddenHeaders))),
-            data: body
+            data: relayReq,
+            responseType: "arraybuffer"
         })
             // relay the server response back the requester
             .then((axiosRes) => axiosToServerResponse(axiosRes, relayRes))
@@ -59,14 +55,14 @@ export async function createListener(namespace, relay, server) {
             // whew!
             .finally(() => relayRes.end());
     });
+    listener.on('error', (err) => {
+        if (err.message.includes("401")) {
+            console.error("Invalid login token, did you forget to provide credentials?");
+        }
+        console.error(err.message);
+    });
     // promise for waiting until server is listening and to fail on error
-    return new Promise((res, rej) => {
-        listener.on('error', (err) => {
-            if (err.message.includes("401")) {
-                rej("Invalid login token, did you forget to provide credentials?");
-            }
-            rej(err.message);
-        });
+    return new Promise((res) => {
         listener.on('listening', () => {
             console.log(`server is listening to ${listener.listenUri}`);
             res(listener);
@@ -80,7 +76,7 @@ function axiosToServerResponse(incoming, outgoing) {
         Object.entries(incoming.headers)
             .filter(([key]) => !key.match(forbiddenHeaders))
             .map(([key, val]) => outgoing.setHeader(key, val));
-    outgoing.write(JSON.stringify(incoming.data));
+    outgoing.write(incoming.data);
     outgoing.statusCode = incoming.status;
 }
 const forbiddenHeaders = new RegExp("^(Accept-Encoding|Access-Control-Request-Headers|Access-Control-Request-Method|Connection|Content-Length|" +
