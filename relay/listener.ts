@@ -10,9 +10,8 @@ export const relay_aad_audience = "https://relay.azure.net//.default"; // this c
 // update token asynchronously every 10 minutes
 let token = ""
 function getToken() { return token }
-async function getTokenAsync() { token = (await new DefaultAzureCredential().getToken(relay_aad_audience)).token }
+async function getTokenAsync() { setTimeout(getTokenAsync,1000 * 60 * 10); token = (await new DefaultAzureCredential().getToken(relay_aad_audience)).token }
 await getTokenAsync()
-setTimeout(getTokenAsync,1000 * 60 * 10)
 
 export async function createListener(namespace: string, relay: string, server: string): Promise<https.Server> {  
     var listenUri = https.createRelayListenUri(namespace, relay);
