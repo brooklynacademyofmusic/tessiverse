@@ -11,19 +11,23 @@
     import { zodClient } from "sveltekit-superforms/adapters";
     import * as config from "$lib/const"
 	import type { TessituraAppLoad } from './tessitura';
+	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
+	import { Ellipsis, LoaderCircle } from 'lucide-svelte';
 	
     let servers = config.servers
+    
     let groups = fetch("/tessitura/groups")
-        .then((res) => res.json())
-    let { data }: { data: TessituraAppLoad} = $props()
+                        .then((res) => res.json())
+
+    let { data, open = $bindable(true) }: { data: TessituraAppLoad, open?: boolean} = $props()
     
     let form: SuperForm<Infer<typeof tessituraSchema>> = 
-        superForm({tessiApiUrl: data.tessiApiUrl, userid: data.userid, group: data.group, password: ""}, 
+        superForm(data.form,
             {validators: zodClient(tessituraSchema)})
-            
-    const { form: formData, enhance } = form
+    
+    const { form: formData, message, submitting, enhance } = form
 </script>
-<Dialog.Root open={true}>
+<Dialog.Root bind:open={open} closeOnEscape={false} closeOnOutsideClick={false}>
     <Dialog.Content>
         <Dialog.Header class="flex w-full h-48 items-center justify-center">
             {#if $mode === "light"}<img src={logoLight} class="w-1/2" alt="Tessitura Logo"/>
@@ -35,7 +39,8 @@
         <Form.Field {form} name="tessiApiUrl">
             <Form.Control let:attrs>
                 <Form.Label>Server</Form.Label>
-                    <Select.Root {...attrs} selected={servers.filter((e: any) => e.value === $formData.tessiApiUrl)[0]} items={servers}>
+                    <Select.Root {...attrs} selected={servers.filter((e: any) => e.value === $formData.tessiApiUrl)[0]}
+                            onSelectedChange={(v: {value: string} | undefined) => { $formData.tessiApiUrl = v ? v.value : ""}}>
                         <Select.Trigger>
                             <Select.Value placeholder="Choose a server" />
                         </Select.Trigger>
@@ -44,7 +49,7 @@
                           <Select.Item value={server.value} label={server.label}></Select.Item>
                         {/each}
                         </Select.Content>
-                        <Select.Input bind:value={$formData.tessiApiUrl} />
+                        <Select.Input {...attrs} bind:value={$formData.tessiApiUrl} />
                       </Select.Root>
                 </Form.Control>
             <Form.FieldErrors />
@@ -66,25 +71,39 @@
         <Form.Field {form} name="group">
             <Form.Control let:attrs>
                 <Form.Label>User Group</Form.Label>
-                    {#await groups then groups: {value: string, label:string}[]}
-                    <Select.Root {...attrs} selected={groups.filter((e) => e.value === $formData.group)[0]} items={groups}>
+                    <Select.Root {...attrs} onSelectedChange={(v: {value: string} | undefined) => { $formData.group = v ? v.value : ""}}>
+                        {#await groups}
+                        <Select.Trigger>
+                            <Select.Value placeholder="Loading groups..." />
+                        </Select.Trigger>
+                        {:then groups}
                         <Select.Trigger>
                             <Select.Value placeholder="Choose a group" />
                         </Select.Trigger>
                         <Select.Content>
+                            <ScrollArea class="h-64">
                         {#each groups as group}
                           <Select.Item value={group.value} label={group.label}></Select.Item>
                         {/each}
+                            </ScrollArea>   
                         </Select.Content>
-                        <Select.Input bind:value={$formData.group} />
+                        {:catch}
+                        <Select.Trigger>
+                            <Select.Value placeholder="Error loading groups!" />
+                        </Select.Trigger>
+                        {/await}
+                        <Select.Input bind:value={$formData.group}/>
                     </Select.Root>
-                    {:catch}
-                        Error loading groups
-                    {/await}
                 </Form.Control>
             <Form.FieldErrors />
         </Form.Field>
-        <Form.Button class="mt-5 w-full">Log In</Form.Button>
+            <div class="text-foreground">{$message}</div>
+        <Form.Button class="mt-5 w-full relative">
+            Log In
+            {#if $submitting}            
+                <LoaderCircle class="animate-spin absolute right-4 h-4"/>
+            {/if}
+            </Form.Button>
     </form>
 </Dialog.Content>
 </Dialog.Root>
