@@ -4,7 +4,7 @@ import { env } from '$env/dynamic/private'
 import { DefaultAzureCredential } from '@azure/identity'
 export const relay_aad_audience = "https://relay.azure.net//.default"
 
-export async function tq(verb: string, object: string, options?: {variant?: string, query?: any, login?: string, headers?: Record<string,string>, env?: Record<string,string>}): Promise<any> {
+export async function tq(verb: string, object: string, options?: {variant?: string, query?: string | object, login?: string, headers?: Record<string,string>, env?: Record<string,string>}): Promise<any> {
     let flag = ""
     options = Object.assign({query: {}},options)
     if (options?.variant) {
@@ -35,7 +35,7 @@ export async function tq(verb: string, object: string, options?: {variant?: stri
     tq.stdout.on("data", (chunk) => {stdout += chunk})
     tq.stderr.on("data", (chunk) => {stderr += chunk})
 
-    tq.stdin.write(JSON.stringify(options.query))
+    tq.stdin.write(typeof options.query === "string" ? options.query : JSON.stringify(options.query))
     tq.stdin.end()
 
     return new Promise((res,rej) => {
