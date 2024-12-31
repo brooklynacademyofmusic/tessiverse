@@ -19,7 +19,8 @@ async function tq_verb(verb: string, params: RouteParams, request: Request, loca
     error(400,errors.AUTH)
   let azure = new Azure()
   let user = await azure.load({identity: locals.user.userDetails})
-  let tessiApp = new TessituraAppServer(Object.assign(user.apps.tessitura,{valid: false}))
+  let tessiApp = new TessituraAppServer()
+  Object.assign(tessiApp,user.apps.tessitura)
 
   return (request.body || new ReadableStream()).getReader().read()
   .then((body) =>

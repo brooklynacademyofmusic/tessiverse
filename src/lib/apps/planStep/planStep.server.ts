@@ -34,7 +34,8 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
         .catch(() => {throw(error(400, `User configuration not found for ${email.from}`))})
     
     let tessiUser: TessituraApp = user.apps.tessitura
-    let tessiApp = new TessituraAppServer({...tessiUser,valid:false})
+    let tessiApp = new TessituraAppServer()
+    Object.assign(tessiApp,tessiUser)
     if ( !await tessiApp.tessiValidate() ) {
         throw(error(400, `Invalid Tessitura login for ${email.from}`))
     }
