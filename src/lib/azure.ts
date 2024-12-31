@@ -50,7 +50,7 @@ export class Azure implements Backend<User> {
     }
 
     async save(key: BackendKey, data: User): Promise<void> {
-        let user = await this.load({identity: key.identity})
+        let user = await this.load({identity: key.identity}).catch(() => new User(key.identity))
         Object.assign(user, data)
         return this.client.setSecret(this.hash(key.identity),
             JSON.stringify(user),            
