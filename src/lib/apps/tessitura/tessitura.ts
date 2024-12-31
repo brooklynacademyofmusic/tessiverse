@@ -2,7 +2,7 @@ import type { App, Serializable } from '$lib/apps'
 import Tessitura from '$lib/apps/tessitura/tessitura.svelte' 
 import TessituraCard from '$lib/apps/tessitura/tessituraCard.svelte' 
 import * as config from '$lib/const'
-import type { Infer } from 'sveltekit-superforms'
+import type { Infer, SuperValidated } from 'sveltekit-superforms'
 import type { tessituraSchema } from './tessitura.schema'
 
 export class TessituraApp implements App<"tessitura", TessituraAppLoad> {
@@ -21,5 +21,5 @@ export class TessituraApp implements App<"tessitura", TessituraAppLoad> {
     location?: string
 }
 
-export type TessituraAppLoad = Serializable<TessituraApp> & {valid: boolean}
+export type TessituraAppLoad = Serializable<TessituraApp> & {valid: boolean} & {form: SuperValidated<Infer<typeof tessituraSchema>>}
 export type TessituraAppSave = Infer<typeof tessituraSchema>

@@ -1,7 +1,7 @@
 import { tq } from '$lib/tq'
 import { error } from '@sveltejs/kit'
 import * as errors from '$lib/errors'
-import { superValidate, message, fail, setError } from 'sveltekit-superforms'
+import { superValidate, message, fail, setError, type SuperValidated } from 'sveltekit-superforms'
 import { zod } from 'sveltekit-superforms/adapters'
 import { tessituraSchema } from './tessitura.schema'
 import { TessituraApp, type TessituraAppLoad, type TessituraAppSave } from './tessitura'
@@ -47,10 +47,11 @@ export class TessituraAppServer extends
             .catch(() => false)
     }
 
-    static async tessiGroups(login: string = servers[0].value + "|" + env.TQ_ADMIN_LOGIN): Promise<{value: string, label: string}[]> {
+    static async tessiGroups(login: string = servers[1].value + "|" + env.TQ_ADMIN_LOGIN): Promise<{value: string, label: string}[]> {
         return tq("get","usergroups",{variant: "summaries", login: login}).
             then((tessi: {id: string, name: string}[]) => 
                 tessi.map((t) => ({value: t.id.trim(), label: t.name.trim()}))
+                     .sort((a,b) => a.label > b.label ? 1 : -1)
             )
             .catch(() => 
                 error(500, errors.TQ)
@@ -58,27 +59,30 @@ export class TessituraAppServer extends
     }
 
     async load(backend: UserLoaded): Promise<TessituraAppLoad & {password: string}> {
-        await super.load(backend)
+        await super.load(backend).catch(() => {})
         let valid = false
+        let form: SuperValidated<any>
         if(this.data.userid && this.data.group && this.data.tessiApiUrl && this.data.location) {
             valid = await this.tessiValidate()
+            form = await superValidate(this.data, zod(tessituraSchema))
+        } else {
+            form = await superValidate(zod(tessituraSchema))
         }
-        return {...this.data, valid: valid, password: ""}
+        return {...this.data, valid: valid, password: "", form: form}
     }
 
     async save(data: TessituraAppSave, backend: UserLoaded) {
-        const form = await superValidate(data, zod(tessituraSchema));
+        const form = await superValidate(data, zod(tessituraSchema))
         if (!form.valid) {
             return fail(400, {form})
         }
         
-        this.tessiPassword(form.data.password)
-
         this.data.tessiApiUrl = form.data.tessiApiUrl
         this.data.userid = form.data.userid
         this.data.group = form.data.group
-        this.data.location = ""
+        this.data.location = form.data.userid+"-14"
 
+        await this.tessiPassword(form.data.password)
         this.data.valid = await this.tessiValidate()
         if (!this.data.valid) {
             return setError(form, "password", "Invalid login")
