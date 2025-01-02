@@ -5,6 +5,12 @@
 	import type { TessituraAppLoad } from './tessitura';
     let { data } : { data: Promise<TessituraAppLoad> } = $props()
     import { servers } from '$lib/const';
+	import { onMount } from 'svelte';
+    let groups: Promise<{value: string, label: string}[]> = $state(new Promise(() => {}))
+    onMount(() => 
+        groups = fetch("/tessitura/groups")
+                .then((res) => res.json())
+    )
 </script>
 
 {#await data}
@@ -16,7 +22,13 @@
         {/if}
         <p><span>API server:</span> <span class="text-primary">{servers.filter((v) => v.value === tessi.tessiApiUrl)[0].label}</span></p>
         <p><span>Username:</span> <span class="text-primary">{tessi.userid}</span></p>
-        <p><span>Group:</span> <span class="text-primary">{tessi.group}</span></p>
+        <p><span>Group:</span> <span class="text-primary">
+            {#await groups then groups} 
+                {groups.filter((g) => g.value === tessi.group)[0].label}
+            {:catch e}
+                {tessi.group}
+            {/await}
+        </span></p>
     {:else}
         <Signup data={tessi}/>
     {/if}
