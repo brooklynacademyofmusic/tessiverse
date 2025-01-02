@@ -13,8 +13,10 @@
 	import type { TessituraAppLoad } from './tessitura';
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 	import { LoaderCircle } from 'lucide-svelte';
+	import { tick } from 'svelte';
 	
     let servers = config.servers
+    let select
     
     let groups = fetch("/tessitura/groups").then((res) => res.json())
     let selectedGroup = $state({value: "", label: ""})
@@ -26,6 +28,7 @@
         superForm(data.form,
             {
                 validators: zodClient(tessituraSchema),
+                delayMs: 3000,
                 onResult: async ( {result} ) => {
                     if (result.type === "success") {
                         $message = ""
@@ -34,7 +37,12 @@
                 }
             })
 
-    const { form: formData, message, submitting, enhance } = form
+    const { form: formData, message, submitting, delayed, enhance } = form
+    let buttonText = $derived($delayed ? "Saving..." : $submitting ? "Validating..." : "Log In")
+
+    const scroll = function() {
+
+    }
 
 </script>
 <Dialog.Root bind:open={open} closeOnEscape={false} closeOnOutsideClick={false}>
@@ -81,9 +89,18 @@
         <Form.Field {form} name="group">
             <Form.Control let:attrs>
                 <Form.Label>User Group</Form.Label>
+                    <div {...attrs}>
                     <Select.Root {...attrs} 
-                    selected = {selectedGroup}
-                    onSelectedChange={(v: {value: string} | undefined) => { $formData.group = v ? v.value : ""}}>
+                        onOpenChange={() => {
+                            tick().then(() => {
+                                let el = document.querySelector(`div[id="${attrs.id}"] *[data-selected]`)
+                                if(el)
+                                    el.scrollIntoView({block: "center"})
+                            })
+                        }}
+
+                        selected = {selectedGroup}
+                        onSelectedChange={(v: {value: string} | undefined) => { $formData.group = v ? v.value : ""}}>
                         {#await groups}
                         <Select.Trigger>
                             <Select.Value placeholder="Loading groups..." />
@@ -106,12 +123,13 @@
                         {/await}
                         <Select.Input bind:value={$formData.group}/>
                     </Select.Root>
+                    </div>
                 </Form.Control>
             <Form.FieldErrors />
         </Form.Field>
             <div class="text-foreground">{$message}</div>
         <Form.Button class="mt-5 w-full relative">
-            Log In
+            {buttonText}
             {#if $submitting}            
                 <LoaderCircle class="animate-spin absolute right-4 h-4"/>
             {/if}
