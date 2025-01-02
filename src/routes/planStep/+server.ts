@@ -4,7 +4,8 @@ import { error } from '@sveltejs/kit';
 import * as ERRORS from '$lib/errors'
 
 export const POST: RequestHandler = async ({ request, locals }) => {
-    if (! ("admin" in locals.user.userRoles)) {
+    // needs admin because this is transacting as app users
+    if (! locals.user.userRoles.includes("admin") ) {
         error(403, ERRORS.LOGIN)
     }
     return (request.body || new ReadableStream()).getReader().read()
