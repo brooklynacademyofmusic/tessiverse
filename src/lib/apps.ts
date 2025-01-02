@@ -1,4 +1,5 @@
 import { type Component } from 'svelte'
+import { Card } from './components/ui/card'
 
 export interface App<Key extends string, Data extends object> {
     // human readable name, will appear as the title of the card
@@ -19,3 +20,7 @@ export class BaseApp implements App<string, any> {
 }
 
 export type Serializable<A extends App<string, any>> = Omit<A, "card" | "form" | "title" | "key">
+export function serialize<A extends App<string, any>>(data: A): Serializable<A> {
+    let {card, form, title, key, ...serializable} = data
+    return serializable
+}

@@ -2,14 +2,10 @@ import { env } from '$env/dynamic/private'
 import { TessituraAppServer } from '$lib/apps/tessitura/tessitura.server'
 import { tq } from '$lib/tq'
 import { test, expect, describe, beforeEach, vi } from 'vitest'
-import child_process from 'child_process'
-import { Azure, UserLoaded } from '$lib/azure'
+import { UserLoaded } from '$lib/azure'
 import { SecretClient } from '@azure/keyvault-secrets'
 import { DefaultAzureCredential } from '@azure/identity'
-import { superValidate } from 'sveltekit-superforms'
-import { tessituraSchema } from '$lib/apps/tessitura/tessitura.schema'
-import { zod } from 'sveltekit-superforms/adapters'
-import { TessituraApp } from '$lib/apps/tessitura/tessitura'
+
 const dev_server = JSON.parse(env.DEV_SERVER)
 
 describe("TessituraAppServer", () => {
@@ -17,13 +13,11 @@ describe("TessituraAppServer", () => {
     let tessi: TessituraAppServer
     beforeEach(() => {
         user = env.TQ_ADMIN_LOGIN.split("|")
-        tessi = new TessituraAppServer()
-        Object.assign(tessi.data,{
+        tessi = new TessituraAppServer({
             tessiApiUrl: dev_server[0].value,
             userid: user[0],
             group: user[1],
             location: user[2],
-            valid: false
         })
     })
 

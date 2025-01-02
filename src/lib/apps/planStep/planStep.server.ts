@@ -10,9 +10,8 @@ import { Azure } from "$lib/azure"
 import { type Serializable } from "$lib/apps"
 import { TessituraAppServer } from "../tessitura/tessitura.server"
 
-export class PlanStepAppServer 
-    extends BaseAppServer<"planStep",PlanStepAppLoad,PlanStepAppLoad>
-    implements AppServer<"planStep",PlanStepAppLoad,PlanStepAppLoad> {
+export class PlanStepAppServer extends BaseAppServer<"planStep",PlanStepAppLoad,PlanStepAppLoad,PlanStepAppLoad>
+    implements AppServer<"planStep",PlanStepAppLoad,PlanStepAppLoad,PlanStepAppLoad> {
     
     key: "planStep" = "planStep"
 }

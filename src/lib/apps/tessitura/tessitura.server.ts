@@ -10,10 +10,10 @@ import { type AppServer } from '$lib/apps.server'
 import { BaseAppServer } from '$lib/baseapp.server'
 import { env } from '$env/dynamic/private'
 import { servers } from '$lib/const'
+import { serialize, type Serializable } from '$lib/apps'
 
-export class TessituraAppServer extends 
-                BaseAppServer<"tessitura", TessituraAppLoad, TessituraAppSave> implements 
-                AppServer<"tessitura", TessituraAppLoad, TessituraAppSave> {
+export class TessituraAppServer extends BaseAppServer<"tessitura", Serializable<TessituraApp>, TessituraAppLoad, TessituraAppSave> implements 
+                AppServer<"tessitura", Serializable<TessituraApp>, TessituraAppLoad, TessituraAppSave> {
 
     key: "tessitura" = "tessitura"
 
@@ -62,13 +62,15 @@ export class TessituraAppServer extends
         await super.load(backend).catch(() => {})
         let valid = false
         let form: SuperValidated<any>
+        let out = serialize(new TessituraApp())
+        Object.assign(out,this.data)
         if(this.data.userid && this.data.group && this.data.tessiApiUrl && this.data.location) {
             valid = await this.tessiValidate()
             form = await superValidate(this.data, zod(tessituraSchema))
         } else {
             form = await superValidate(zod(tessituraSchema))
         }
-        return {...this.data, valid: valid, password: "", form: form}
+        return {...out, valid: valid, password: "", form: form}
     }
 
     async save(data: TessituraAppSave, backend: UserLoaded) {
@@ -77,19 +79,20 @@ export class TessituraAppServer extends
             return fail(400, {form})
         }
         
-        this.data.tessiApiUrl = form.data.tessiApiUrl
-        this.data.userid = form.data.userid
-        this.data.group = form.data.group
-        this.data.location = form.data.userid+"-14"
+        let out = serialize(new TessituraApp())
+        out.tessiApiUrl = form.data.tessiApiUrl
+        out.userid = form.data.userid
+        out.group = form.data.group
+        out.location = form.data.userid+"-14"
 
         await this.tessiPassword(form.data.password)
-        this.data.valid = await this.tessiValidate()
-        if (!this.data.valid) {
+        let valid = await this.tessiValidate()
+        if (!valid) {
             return setError(form, "password", "Invalid login")
         }
 
         await this.tessiLoad()
-        await backend.save({identity: backend.identity, app: this.key}, this.data)
+        await backend.save({identity: backend.identity, app: this.key}, out)
         return message(form, "Login updated successfully")
     }
 } 
