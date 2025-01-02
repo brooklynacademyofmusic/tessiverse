@@ -65,7 +65,7 @@ export function lowercaseKeys(o: object): object {
         return o.map(lowercaseKeys)
     } else {
         return Object.fromEntries(Object.entries(o).map(([k,v]) => {
-            if (typeof v === "object" && !Array.isArray(v))
+            if (typeof v === "object")
                 v = lowercaseKeys(v)
             return [k.toLocaleLowerCase(),v]
         }))
