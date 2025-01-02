@@ -22,6 +22,7 @@
         {/if}
         <p><span>API server:</span> <span class="text-primary">{servers.filter((v) => v.value === tessi.tessiApiUrl)[0].label}</span></p>
         <p><span>Username:</span> <span class="text-primary">{tessi.userid}</span></p>
+        <p><span>Tessi #:</span> <span class="text-primary">{tessi.constituentid}</span></p>
         <p><span>Group:</span> <span class="text-primary">
             {#await groups then groups} 
                 {groups.filter((g) => g.value === tessi.group)[0].label}
