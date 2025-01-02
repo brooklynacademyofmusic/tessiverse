@@ -12,20 +12,30 @@
     import * as config from "$lib/const"
 	import type { TessituraAppLoad } from './tessitura';
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
-	import { Ellipsis, LoaderCircle } from 'lucide-svelte';
+	import { LoaderCircle } from 'lucide-svelte';
 	
     let servers = config.servers
     
-    let groups = fetch("/tessitura/groups")
-                        .then((res) => res.json())
+    let groups = fetch("/tessitura/groups").then((res) => res.json())
+    let selectedGroup = $state({value: "", label: ""})
+    groups.then((g: {value: string, label:string}[]) => selectedGroup = g.filter((v) => v.value === $formData.group)[0])
 
     let { data, open = $bindable(true) }: { data: TessituraAppLoad, open?: boolean} = $props()
     
     let form: SuperForm<Infer<typeof tessituraSchema>> = 
         superForm(data.form,
-            {validators: zodClient(tessituraSchema)})
-    
+            {
+                validators: zodClient(tessituraSchema),
+                onResult: async ( {result} ) => {
+                    if (result.type === "success") {
+                        $message = ""
+                        open = false
+                    }
+                }
+            })
+
     const { form: formData, message, submitting, enhance } = form
+
 </script>
 <Dialog.Root bind:open={open} closeOnEscape={false} closeOnOutsideClick={false}>
     <Dialog.Content>
@@ -71,7 +81,9 @@
         <Form.Field {form} name="group">
             <Form.Control let:attrs>
                 <Form.Label>User Group</Form.Label>
-                    <Select.Root {...attrs} onSelectedChange={(v: {value: string} | undefined) => { $formData.group = v ? v.value : ""}}>
+                    <Select.Root {...attrs} 
+                    selected = {selectedGroup}
+                    onSelectedChange={(v: {value: string} | undefined) => { $formData.group = v ? v.value : ""}}>
                         {#await groups}
                         <Select.Trigger>
                             <Select.Value placeholder="Loading groups..." />
