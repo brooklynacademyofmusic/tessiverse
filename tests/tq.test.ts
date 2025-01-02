@@ -22,7 +22,11 @@ describe("lowercaseKeys", () => {
         expect(lowercaseKeys(o)).toEqual(l)
     })
 
-
+    test("lowercaseKeys works with nested array", () => {
+        let p = {"Nested!":[structuredClone(o),structuredClone(l)]}
+        expect((lowercaseKeys(p) as any)["nested!"][0]).toEqual(lowercaseKeys(o))
+        expect((lowercaseKeys(p) as any)["nested!"][1]).toEqual(lowercaseKeys(l))
+    })
 })
 
 
