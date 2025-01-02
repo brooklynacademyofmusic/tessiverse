@@ -38,7 +38,7 @@ export class Azure implements Backend<User> {
             if (response.properties?.tags?.identity != key.identity) {
                 error(500, {message: "Hash collision PANIC!"})
             }
-            return JSON.parse(response.value || "") as UserLoaded
+            return JSON.parse(response.value || "{}")
         }).catch((e) => {
             console.log(e)
             if (e.code === "SecretNotFound")

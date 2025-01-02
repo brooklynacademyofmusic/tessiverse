@@ -5,11 +5,11 @@ import type { ActionFailure } from "@sveltejs/kit"
 import { string } from "zod"
 
 export abstract class BaseAppServer<Key extends string, Data extends object, Load extends object, Save extends object> implements AppServer<Key,Data,Load,Save> {
-    data: Partial<Data>
+    data: Data
     key = "base" as Key
 
-    constructor(data?: Data) {
-        this.data = data || {}
+    constructor(data: Data) {
+        this.data = data
     }
 
     // Loads data into this.data and also returns it
