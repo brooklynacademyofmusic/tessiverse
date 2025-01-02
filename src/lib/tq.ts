@@ -19,7 +19,8 @@ export async function tq(verb: string, object: string, options?: {variant?: stri
     const tqExecutable = (env.OS || "").match(/Windows/i) ? 'bin/tq.exe' : 'bin/tq'
     var tq = child_process.spawn(tqExecutable, [verb, object, flag], 
     {
-        env: {...options.env,
+        env: {...process.env,
+              ...options.env,
               "TQ_LOGIN": options.login ?? "",
               "AZURE_KEY_VAULT": "https://"+tq_key_vault_url,
               "TQ_HEADERS": options.headers ? JSON.stringify(options.headers) : "",
