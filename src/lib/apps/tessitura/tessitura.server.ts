@@ -1,7 +1,7 @@
 import { tq } from '$lib/tq'
 import { error } from '@sveltejs/kit'
 import * as errors from '$lib/errors'
-import { superValidate, message, fail, setError, type SuperValidated } from 'sveltekit-superforms'
+import { superValidate, fail, setError, type SuperValidated, setMessage } from 'sveltekit-superforms'
 import { zod } from 'sveltekit-superforms/adapters'
 import { tessituraSchema } from './tessitura.schema'
 import { TessituraApp, type TessituraAppLoad, type TessituraAppSave } from './tessitura'
@@ -25,15 +25,7 @@ export class TessituraAppServer extends BaseAppServer<"tessitura", Serializable<
             this.data.location || ""].join("|")
     }
 
-    async tessiLoad(): Promise<Partial<TessituraApp>> {
-      return tq("get","users",{query: {"username":this.data.userid},login: this.auth}).
-          then((tessi) => {
-              Object.assign(this.data, tessi)
-              return this
-          }).catch(() => 
-              error(500, errors.TQ)
-          )
-    }
+    static tessiAdminAuth = servers[0].value + "|" + env.TQ_ADMIN_LOGIN
 
     async tessiPassword(password:string): Promise<void> {
         return tq("auth","add",{query: password,login: this.auth})
@@ -47,7 +39,17 @@ export class TessituraAppServer extends BaseAppServer<"tessitura", Serializable<
             .catch(() => false)
     }
 
-    static async tessiGroups(login: string = servers[1].value + "|" + env.TQ_ADMIN_LOGIN): Promise<{value: string, label: string}[]> {
+    async tessiLoad(): Promise<Partial<TessituraApp>> {
+        return tq("get","users",{query: {"username":this.data.userid},login: TessituraAppServer.tessiAdminAuth}).
+            then((tessi) => {
+                Object.assign(this.data, tessi)
+                return this
+            }).catch(() => 
+                error(500, errors.TQ)
+            )
+      }  
+
+    static async tessiGroups(login: string = this.tessiAdminAuth): Promise<{value: string, label: string}[]> {
         return tq("get","usergroups",{variant: "summaries", login: login}).
             then((tessi: {id: string, name: string}[]) => 
                 tessi.map((t) => ({value: t.id.trim(), label: t.name.trim()}))
@@ -59,7 +61,7 @@ export class TessituraAppServer extends BaseAppServer<"tessitura", Serializable<
     }
 
     async load(backend: UserLoaded): Promise<TessituraAppLoad & {password: string}> {
-        await super.load(backend).catch(() => {})
+        await super.load(backend)
         let valid = false
         let form: SuperValidated<any>
         let out = serialize(new TessituraApp())
@@ -79,11 +81,10 @@ export class TessituraAppServer extends BaseAppServer<"tessitura", Serializable<
             return fail(400, {form})
         }
         
-        let out = serialize(new TessituraApp())
-        out.tessiApiUrl = form.data.tessiApiUrl
-        out.userid = form.data.userid
-        out.group = form.data.group
-        out.location = form.data.userid+"-14"
+        this.data.tessiApiUrl = form.data.tessiApiUrl
+        this.data.userid = form.data.userid
+        this.data.group = form.data.group
+        this.data.location = form.data.userid+"-14"
 
         await this.tessiPassword(form.data.password)
         let valid = await this.tessiValidate()
@@ -92,8 +93,9 @@ export class TessituraAppServer extends BaseAppServer<"tessitura", Serializable<
         }
 
         await this.tessiLoad()
-        await backend.save({identity: backend.identity, app: this.key}, out)
-        return message(form, "Login updated successfully")
+        await backend.save({identity: backend.identity, app: this.key}, serialize(Object.assign(new TessituraApp(),this.data)))
+        setMessage(form, 'Login updated successfully!')
+        return { form , success: true }
     }
 } 
 
