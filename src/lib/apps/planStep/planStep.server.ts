@@ -11,8 +11,8 @@ import { type Serializable } from "$lib/apps"
 import { TessituraAppServer } from "../tessitura/tessitura.server"
 import { NodeHtmlMarkdown } from "node-html-markdown"
 
-export class PlanStepAppServer extends BaseAppServer<"planStep",PlanStepAppLoad,PlanStepAppLoad,PlanStepAppLoad>
-    implements AppServer<"planStep",PlanStepAppLoad,PlanStepAppLoad,PlanStepAppLoad> {
+export class PlanStepAppServer extends BaseAppServer<"planStep",Serializable<PlanStepApp>,PlanStepAppLoad,Serializable<PlanStepApp>>
+    implements AppServer<"planStep",Serializable<PlanStepApp>,PlanStepAppLoad,Serializable<PlanStepApp>> {
     
     key: "planStep" = "planStep"
 
@@ -34,7 +34,7 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     let user: UserLoaded = await new Azure().load({identity: email.from})
         .catch(() => {throw(error(400, `User configuration not found for ${email.from}`))})
     
-    let tessiUser: TessituraApp = user.apps.tessitura
+    let tessiUser = user.apps.tessitura
     let tessiApp = new TessituraAppServer({...tessiUser})
     if ( !await tessiApp.tessiValidate() ) {
         throw(error(400, `Invalid Tessitura login for ${email.from}`))
@@ -46,10 +46,10 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
         throw(error(404, `User ${email.from} does not have any plans!`))
     }
 
-    let planStepUser: Serializable<PlanStepApp> = user.apps.planStep
+    let planStepUser = user.apps.planStep
     let plans: PlanScore[] = await tq("get", "plans", 
         {variant: "all",
-            query: {workerid: tessiUser.constituentid || "1"}, 
+            query: {workerid: (tessiUser.constituentid || 1).toString()}, 
             login: tessiApp.auth}).catch(() => {
                 throw(error(404, `User ${email.from} does not have any plans!`))
         })
@@ -112,6 +112,17 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
         },
         login:tessiApp.auth})
 
+
+    // Save plan step to history array
+    planStepUser = Object.assign(new PlanStepApp(),planStepUser)
+    planStepUser.history.push(
+        {
+            subject: email.subject,
+            planDesc: `${plan.constituent.displayname} ${plan.campaign} ${plan.contributiondesignation}`,
+            date: new Date()
+        }
+    )
+    Object.assign(new UserLoaded(user.identity),user).save({identity: user.identity, app: "planStep"}, planStepUser)
     return null
 };
 
