@@ -5,6 +5,8 @@ import { test, expect, describe, beforeEach, vi } from 'vitest'
 import { UserLoaded } from '$lib/azure'
 import { SecretClient } from '@azure/keyvault-secrets'
 import { DefaultAzureCredential } from '@azure/identity'
+import { serialize } from '$lib/apps'
+import { TessituraApp } from '$lib/apps/tessitura/tessitura'
 
 const dev_server = JSON.parse(env.DEV_SERVER)
 
@@ -73,7 +75,7 @@ describe("TessituraAppServer", () => {
     })
 
     test("load falls back to blank data on load failure", async () => {
-        let tessi = new TessituraAppServer()
+        let tessi = new TessituraAppServer(serialize(new TessituraApp()))
         let userFail = new UserLoaded("")
         let data = await tessi.load(userFail)
         expect(data.userid).toBe("")
