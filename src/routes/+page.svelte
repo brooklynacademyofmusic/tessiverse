@@ -7,7 +7,7 @@
     import { Ellipsis } from "lucide-svelte"
     import { fade } from "svelte/transition"
     let { data }: { data: PageData} = $props()
-    let { userData, appData } = data
+    let { userData, appData } = $derived(data)
     import * as config from '$lib/config'
     let apps = new config.Apps()
     function hasProperty<O extends object>(o: O, k: PropertyKey): k is keyof O {
