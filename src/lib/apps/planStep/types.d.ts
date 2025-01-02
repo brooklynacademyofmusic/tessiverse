@@ -16,4 +16,6 @@ export interface Email {
     address: string
 }
 
-
+export interface PlanWorker {
+    constituentid: number
+}

@@ -1,7 +1,7 @@
 import { UserLoaded } from "$lib/azure"
 import { tq } from "$lib/tq"
 import { error } from "@sveltejs/kit"
-import type { Email, PlanScore } from "./types"
+import type { Email, PlanScore, PlanWorker } from "./types"
 import { type AppServer } from "$lib/apps.server"
 import { BaseAppServer } from '$lib/baseapp.server'
 import { PlanStepApp, type PlanStepAppLoad } from "./planStep"
@@ -9,18 +9,20 @@ import { TessituraApp } from "../tessitura/tessitura"
 import { Azure } from "$lib/azure"
 import { type Serializable } from "$lib/apps"
 import { TessituraAppServer } from "../tessitura/tessitura.server"
+import { NodeHtmlMarkdown } from "node-html-markdown"
 
 export class PlanStepAppServer extends BaseAppServer<"planStep",PlanStepAppLoad,PlanStepAppLoad,PlanStepAppLoad>
     implements AppServer<"planStep",PlanStepAppLoad,PlanStepAppLoad,PlanStepAppLoad> {
     
     key: "planStep" = "planStep"
+
 }
 
 export type PlanStepEmail = {
     from: string
     to: string
-    cc: string
-    bcc: string
+    cc?: string
+    bcc?: string
     subject: string
     body: string
 }
@@ -33,21 +35,31 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
         .catch(() => {throw(error(400, `User configuration not found for ${email.from}`))})
     
     let tessiUser: TessituraApp = user.apps.tessitura
-    let tessiApp = new TessituraAppServer({...tessiUser,valid:false})
+    let tessiApp = new TessituraAppServer({...tessiUser})
     if ( !await tessiApp.tessiValidate() ) {
         throw(error(400, `Invalid Tessitura login for ${email.from}`))
+    }
+
+    let workers: PlanWorker[] = await tq("get","workers",
+        {variant: "all", login: tessiApp.auth})
+    if (!workers.find((w) => w.constituentid == tessiUser.constituentid)) {
+        throw(error(404, `User ${email.from} does not have any plans!`))
     }
 
     let planStepUser: Serializable<PlanStepApp> = user.apps.planStep
     let plans: PlanScore[] = await tq("get", "plans", 
         {variant: "all",
-            query: {workerconstituentid: tessiUser.constituentid || "1"}, 
-            login: tessiApp.auth})
-    let body: string = [email.to,email.cc,email.bcc,email.subject,email.body].join(" ")
+            query: {workerid: tessiUser.constituentid || "1"}, 
+            login: tessiApp.auth}).catch(() => {
+                throw(error(404, `User ${email.from} does not have any plans!`))
+        })
+
+    email.body = NodeHtmlMarkdown.translate(email.body)
+    let body: string = [email.to,email.cc || "",email.bcc || "",email.subject,email.body].join(" ")
     let plans_emails: Email[][] = await Promise.all(plans.map((p) => {
         return tq("get", "electronicaddresses", 
             {variant: "all", 
-                query: {constituentids: p.constituent.id}, 
+                query: {constituentids: p.constituent.id.toString()}, 
                 login:tessiApp.auth})
     }))
 
@@ -89,7 +101,7 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     let plan = plans_filtered[0]
 
     // Make a plan step
-    await tq("post","planstep",
+    await tq("post","steps",
         {query:{
             plan: {id: plan.id},
             type: {id: planStepUser.stepType },
