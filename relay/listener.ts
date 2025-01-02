@@ -85,12 +85,12 @@ export async function createListener(namespace: string, relay: string, server: s
 
 // pass response from axios back to the relay
 function axiosToServerResponse(incoming: AxiosResponse, outgoing: ServerResponse) {
+    outgoing.statusCode = incoming.status
     if (incoming.headers) 
         Object.entries(incoming.headers)
             .filter(([key]) => !key.match(forbiddenHeaders))
             .map(([key,val]) => outgoing.setHeader(key,val))
     outgoing.write(incoming.data)
-    outgoing.statusCode = incoming.status
 }
 
 const forbiddenHeaders = new RegExp("^(Accept-Encoding|Access-Control-Request-Headers|Access-Control-Request-Method|Connection|Content-Length|"+
