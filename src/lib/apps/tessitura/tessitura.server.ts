@@ -44,7 +44,15 @@ export class TessituraAppServer extends BaseAppServer<"tessitura", Serializable<
             then((tessi) => {
                 Object.assign(this.data, tessi)
                 return this
-            }).catch(() => 
+            }).
+            then((tessi) => 
+                tq("get","constituents",{variant: "search", query: {type:"fluent", q:tessi.data.emailaddress || ""}, login: TessituraAppServer.tessiAdminAuth})
+            ).
+            then((tessi: {constituentsummaries: {id: number}[]}) => {
+                this.data.constituentid = tessi.constituentsummaries[0].id
+                return this
+            }).
+            catch(() => 
                 error(500, errors.TQ)
             )
       }  

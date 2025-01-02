@@ -13,6 +13,7 @@ export class TessituraApp implements App<"tessitura", TessituraAppLoad> {
     tessiApiUrl: config.ValidServerValues[any] = config.servers[0].value
     userid: string = ""
     group: string = ""
+    emailaddress?: string = ""
     firstname?: string
     lastname?: string
     inactive?: boolean
