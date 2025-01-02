@@ -13,7 +13,8 @@ export async function tq(verb: string, object: string, options?: {variant?: stri
     if (options.login?.split("|")[0].match("servicebus.windows.net/"))
         Object.assign(options,{ headers: { ServiceBusAuthorization: (await new DefaultAzureCredential().getToken(relay_aad_audience)).token } })
 
-    console.log(`running tq (${verb} ${object} ${JSON.stringify(options)})`)
+    let { headers, ...optionsMinusHeaders } = options
+    console.log(`running tq ${verb} ${object} ${JSON.stringify(optionsMinusHeaders)}`)
 
     const tqExecutable = (env.OS || "").match(/Windows/i) ? 'bin/tq.exe' : 'bin/tq'
     var tq = child_process.spawn(tqExecutable, [verb, object, flag], 
