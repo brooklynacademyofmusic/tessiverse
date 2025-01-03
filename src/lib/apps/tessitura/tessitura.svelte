@@ -16,7 +16,6 @@
 	import { tick } from 'svelte';
 	
     let servers = config.servers
-    let select
     
     let groups = fetch("/tessitura/groups").then((res) => res.json())
     let selectedGroup = $state({value: "", label: ""})
@@ -40,9 +39,6 @@
     const { form: formData, message, submitting, delayed, enhance } = form
     let buttonText = $derived($delayed ? "Saving..." : $submitting ? "Validating..." : "Log In")
 
-    const scroll = function() {
-
-    }
 
 </script>
 <Dialog.Root bind:open={open} closeOnEscape={false} closeOnOutsideClick={false}>
