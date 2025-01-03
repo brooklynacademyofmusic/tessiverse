@@ -1,5 +1,5 @@
 import * as config from "$lib/config"
-import type { Backend, BackendKey } from "$lib/azure"
+import type { Serializable } from "./apps"
 
 export class User {
     readonly identity: string
@@ -9,6 +9,12 @@ export class User {
     constructor(identity: string) {
         this.identity = identity
     }
+}
+
+export interface UserData {
+    readonly identity: string
+    firstname: string 
+    apps: { [K in keyof config.Apps]: Serializable<config.Apps[K]> }
 }
 
 
