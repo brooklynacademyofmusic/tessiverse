@@ -127,7 +127,7 @@
         <Form.Button class="mt-5 w-full relative">
             {buttonText}
             {#if $submitting}            
-                <LoaderCircle class="animate-spin absolute right-4 h-4"/>
+                <LoaderCircle class="animate-spin absolute right-2 h-4"/>
             {/if}
             </Form.Button>
     </form>
