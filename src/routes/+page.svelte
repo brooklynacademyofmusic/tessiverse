@@ -25,10 +25,10 @@
     </h1>
     <Card class="min-h-16 p-4 shadow-3xl shadow-primary dark:prose-headings:text-white">
         <Accordion class="w-full"><AccordionItem value="readme" class="border-0">
-            <AccordionTrigger class="text-lg hover:no-underline align-text-bottom">
-                <span class="rainbow">the tessiverse</span> is a collection of apps for importing, exporting and otherwise interacting with Tessitura data.            
+            <AccordionTrigger class="text-lg decoration-primary align-text-bottom">
+                <span class="rainbow hover:underline">the tessiverse</span> is a collection of apps for importing, exporting and otherwise interacting with Tessitura data.            
             </AccordionTrigger>
-            <AccordionContent><Readme/></AccordionContent>
+            <AccordionContent class="prose-default prose"><Readme/></AccordionContent>
         </AccordionItem></Accordion>
     </Card>
 </article>
