@@ -3,7 +3,7 @@ import * as config from "$lib/config"
 export class User {
     readonly identity: string
     firstname: string = ""
-    apps = new config.Apps()
+    apps = config.AppsData
 
     constructor(data: Partial<UserData> & {identity: string}) {
         Object.assign(this,data)
@@ -14,7 +14,7 @@ export class User {
 export interface UserData {
     readonly identity: string
     firstname: string 
-    apps: { [K in keyof config.Apps]: {data: config.Apps[K]["data"] } }
+    apps: { [K in keyof config.Apps]: config.Apps[K]["data"] }
 }
 
 
