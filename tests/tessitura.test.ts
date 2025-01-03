@@ -74,15 +74,15 @@ describe("TessituraAppServer", () => {
     })
 
     test("load falls back to blank data on load failure", async () => {
-        let tessi = new TessituraAppServer(serialize(new TessituraApp()))
-        let userFail = new UserLoaded("")
+        let tessi = new TessituraAppServer(new TessituraApp().data)
+        let userFail = new UserLoaded({identity: ""})
         let data = await tessi.load(userFail)
         expect(data.userid).toBe("")
         expect(data.group).toBe("")
     })
 
     test("load loads all data and renders form on success", async () => {
-        let userSuccess = new UserLoaded("")
+        let userSuccess = new UserLoaded({identity: ""})
         Object.assign(userSuccess.apps.tessitura,tessi.data)
         let data = await tessi.load(userSuccess)
         expect(data.userid).toBe(user[0])

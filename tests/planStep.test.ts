@@ -37,8 +37,8 @@ describe("planStep", () => {
     Azure.prototype.load = vi.fn(async () => {
         if (!azure_valid) 
             throw("whoops!")
-        let user = new User("me")
-        user.apps.tessitura.constituentid = 12345
+        let user = new User({identity: "me"})
+        user.apps.tessitura.data.constituentid = 12345
         user.apps.planStep = new PlanStepApp()
         return user as UserLoaded
     })
