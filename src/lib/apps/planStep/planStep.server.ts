@@ -4,17 +4,16 @@ import { error } from "@sveltejs/kit"
 import type { Email, PlanScore, PlanWorker } from "./types"
 import { type AppServer } from "$lib/apps.server"
 import { BaseAppServer } from '$lib/baseapp.server'
-import { PlanStepApp, type PlanStepAppLoad } from "./planStep"
-import { TessituraApp } from "../tessitura/tessitura"
+import { PlanStepApp, PlanStepAppData, type PlanStepAppLoad, type PlanStepAppSave } from "./planStep"
 import { Azure } from "$lib/azure"
-import { type Serializable } from "$lib/apps"
 import { TessituraAppServer } from "../tessitura/tessitura.server"
 import { NodeHtmlMarkdown } from "node-html-markdown"
 
-export class PlanStepAppServer extends BaseAppServer<"planStep",Serializable<PlanStepApp>,PlanStepAppLoad,Serializable<PlanStepApp>>
-    implements AppServer<"planStep",Serializable<PlanStepApp>,PlanStepAppLoad,Serializable<PlanStepApp>> {
+export class PlanStepAppServer extends BaseAppServer<PlanStepApp,PlanStepAppSave>
+                                implements AppServer<PlanStepApp,PlanStepAppSave> {
     
     key: "planStep" = "planStep"
+    data = new PlanStepAppData()
 
 }
 
@@ -31,25 +30,25 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     let emailId: string = `${email.from} => ${email.to} (${email.subject})`
     console.log(`Generating plan step for email ${emailId}`)
 
-    let user: UserLoaded = await new Azure().load({identity: email.from})
+    let userData = await new Azure().load({identity: email.from})
         .catch(() => {throw(error(400, `User configuration not found for ${email.from}`))})
     
-    let tessiUser = user.apps.tessitura
-    let tessiApp = new TessituraAppServer({...tessiUser})
+    let tessiData = userData.apps.tessitura.data
+    let tessiApp = new TessituraAppServer(tessiData)
     if ( !await tessiApp.tessiValidate() ) {
         throw(error(400, `Invalid Tessitura login for ${email.from}`))
     }
 
     let workers: PlanWorker[] = await tq("get","workers",
         {variant: "all", login: tessiApp.auth})
-    if (!workers.find((w) => w.constituentid == tessiUser.constituentid)) {
+    if (!workers.find((w) => w.constituentid == tessiData.constituentid)) {
         throw(error(404, `User ${email.from} does not have any plans!`))
     }
 
-    let planStepUser = user.apps.planStep
+    let planStepData = userData.apps.planStep.data
     let plans: PlanScore[] = await tq("get", "plans", 
         {variant: "all",
-            query: {workerid: (tessiUser.constituentid || 1).toString()}, 
+            query: {workerid: (tessiData.constituentid || 1).toString()}, 
             login: tessiApp.auth}).catch(() => {
                 throw(error(404, `User ${email.from} does not have any plans!`))
         })
@@ -104,25 +103,28 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     await tq("post","steps",
         {query:{
             plan: {id: plan.id},
-            type: {id: planStepUser.stepType },
+            type: {id: planStepData.stepType },
             notes: email.body,
             stepdatetime: new Date(),
-            completedondatetime: planStepUser.closeStep ? new Date() : null,
+            completedondatetime: planStepData.closeStep ? new Date() : null,
             description: email.subject
         },
         login:tessiApp.auth})
 
 
     // Save plan step to history array
-    planStepUser = Object.assign(new PlanStepApp(),planStepUser)
-    planStepUser.history.push(
+    planStepData = Object.assign(new PlanStepApp(),planStepData)
+    planStepData.history.push(
         {
             subject: email.subject,
             planDesc: `${plan.constituent.displayname} ${plan.campaign} ${plan.contributiondesignation}`,
             date: new Date()
         }
     )
-    Object.assign(new UserLoaded(user.identity),user).save({identity: user.identity, app: "planStep"}, planStepUser)
+    let planStepServer = new PlanStepAppServer()
+    // reload to avoid race condition
+    let userLoaded = new UserLoaded(await new Azure().load({identity: email.from}))
+    planStepServer.save(planStepData,userLoaded)
     return null
 };
 

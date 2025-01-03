@@ -4,16 +4,15 @@ import * as errors from '$lib/errors'
 import { superValidate, fail, setError, type SuperValidated, setMessage } from 'sveltekit-superforms'
 import { zod } from 'sveltekit-superforms/adapters'
 import { tessituraSchema } from './tessitura.schema'
-import { TessituraApp, type TessituraAppLoad, type TessituraAppSave } from './tessitura'
+import { TessituraApp, TessituraAppData, type TessituraAppLoad, type TessituraAppSave } from './tessitura'
 import type { UserLoaded } from '$lib/azure'
 import { type AppServer } from '$lib/apps.server'
 import { BaseAppServer } from '$lib/baseapp.server'
 import { env } from '$env/dynamic/private'
 import { servers } from '$lib/const'
-import { serialize, type Serializable } from '$lib/apps'
 
-export class TessituraAppServer extends BaseAppServer<"tessitura", Serializable<TessituraApp>, TessituraAppLoad, TessituraAppSave> implements 
-                AppServer<"tessitura", Serializable<TessituraApp>, TessituraAppLoad, TessituraAppSave> {
+export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraAppSave> implements 
+                                            AppServer<TessituraApp, TessituraAppSave> {
 
     key: "tessitura" = "tessitura"
 
@@ -72,15 +71,13 @@ export class TessituraAppServer extends BaseAppServer<"tessitura", Serializable<
         await super.load(backend)
         let valid = false
         let form: SuperValidated<any>
-        let out = serialize(new TessituraApp())
-        Object.assign(out,this.data)
         if(this.data.userid && this.data.group && this.data.tessiApiUrl && this.data.location) {
             valid = await this.tessiValidate()
             form = await superValidate(this.data, zod(tessituraSchema))
         } else {
             form = await superValidate(zod(tessituraSchema))
         }
-        return {...out, valid: valid, password: "", form: form}
+        return {...this.data, valid: valid, password: "", form: form}
     }
 
     async save(data: TessituraAppSave, backend: UserLoaded) {
@@ -101,7 +98,7 @@ export class TessituraAppServer extends BaseAppServer<"tessitura", Serializable<
         }
 
         await this.tessiLoad()
-        await backend.save({identity: backend.identity, app: this.key}, serialize(Object.assign(new TessituraApp(),this.data)))
+        await backend.save({identity: backend.identity, app: this.key}, this.data)
         setMessage(form, 'Login updated successfully!')
         return { form , success: true }
     }

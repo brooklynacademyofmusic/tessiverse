@@ -5,7 +5,6 @@ import { test, expect, describe, beforeEach, vi } from 'vitest'
 import { UserLoaded } from '$lib/azure'
 import { SecretClient } from '@azure/keyvault-secrets'
 import { DefaultAzureCredential } from '@azure/identity'
-import { serialize } from '$lib/apps'
 import { TessituraApp } from '$lib/apps/tessitura/tessitura'
 
 const dev_server = JSON.parse(env.DEV_SERVER)

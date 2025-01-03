@@ -6,12 +6,11 @@ import * as errors from "$lib/errors"
 import { User, type UserData } from "$lib/user"
 import * as server from "$lib/config.server";
 import * as config from "$lib/config";
-import type { Serializable } from "$lib/apps";
 
 type ValidAppNames = keyof config.Apps
 type ValidBackendKey<A extends ValidAppNames>  = {identity: string, app: A}
 type ValidBackendKeys = ValidBackendKey<ValidAppNames>
-type ValidAppData<K extends ValidBackendKeys> =  K extends ValidBackendKey<infer A> ? Serializable<config.Apps[A]> : never
+type ValidAppData<K extends ValidBackendKeys> =  K extends ValidBackendKey<infer A> ? config.Apps[A]["data"] : never
 
 export type BackendKey = {identity: string, app?: string} 
 export interface Backend<T> {
