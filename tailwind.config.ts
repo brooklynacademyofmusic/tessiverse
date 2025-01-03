@@ -64,8 +64,31 @@ const config: Config = {
 			},
 			fontFamily: {
 				sans: [...fontFamily.sans]
-			}
-		}
+			},
+			typography: ({ theme }) => ({
+				default: {
+				  css: {
+					'--tw-prose-body': 'hsl(var(--primary-foreground))',
+					'--tw-prose-headings': 'hsl(var(--primary-foreground))',
+					'--tw-prose-lead': 'hsl(var(--primary-foreground))',
+					'--tw-prose-links': 'hsl(var(--primary))',
+					'--tw-prose-bold': 'hsl(var(--primary))',
+					'--tw-prose-counters': 'hsl(var(--primary))',
+					'--tw-prose-bullets': 'hsl(var(--primary))',
+					'--tw-prose-hr': 'hsl(var(--secondary))',
+					'--tw-prose-quotes': 'hsl(var(--secondary-foreground))',
+					'--tw-prose-quote-borders': 'hsl(var(--secondary))',
+					'--tw-prose-captions': 'hsl(var(--secondary-foreground))',
+					'--tw-prose-code': 'hsl(var(--secondary-foreground))',
+					'--tw-prose-pre-code': 'hsl(var(--secondary-foreground))',
+					'--tw-prose-pre-bg': 'hsl(var(--secondary-background))',
+					'--tw-prose-th-borders': 'hsl(var(--secondary))',
+					'--tw-prose-td-borders': 'hsl(var(--secondary))',
+				  },
+				},
+			  }),
+		},
+		
 	},
 };
 
