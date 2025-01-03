@@ -4,7 +4,7 @@ import * as errors from '$lib/errors'
 import { superValidate, fail, setError, type SuperValidated, setMessage } from 'sveltekit-superforms'
 import { zod } from 'sveltekit-superforms/adapters'
 import { tessituraSchema } from './tessitura.schema'
-import { TessituraApp, type TessituraAppLoad, type TessituraAppSave } from './tessitura'
+import { TessituraApp, TessituraAppData, type TessituraAppLoad, type TessituraAppSave } from './tessitura'
 import type { UserLoaded } from '$lib/azure'
 import { type AppServer } from '$lib/apps.server'
 import { BaseAppServer } from '$lib/baseapp.server'
@@ -85,20 +85,21 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
         if (!form.valid) {
             return fail(400, {form})
         }
-        
-        this.data.tessiApiUrl = form.data.tessiApiUrl
-        this.data.userid = form.data.userid
-        this.data.group = form.data.group
-        this.data.location = form.data.userid+"-14"
 
-        await this.tessiPassword(form.data.password)
-        let valid = await this.tessiValidate()
+        let tessi = new TessituraAppServer(new TessituraAppData())
+        tessi.data.tessiApiUrl = form.data.tessiApiUrl
+        tessi.data.userid = form.data.userid
+        tessi.data.group = form.data.group
+        tessi.data.location = form.data.userid+"-14"
+
+        await tessi.tessiPassword(form.data.password)
+        let valid = await tessi.tessiValidate()
         if (!valid) {
             return setError(form, "password", "Invalid login")
         }
 
-        await this.tessiLoad()
-        await super.save(this.data, backend)
+        await tessi.tessiLoad()
+        await super.save(tessi.data, backend)
         setMessage(form, 'Login updated successfully!')
         return { form , success: true }
     }
