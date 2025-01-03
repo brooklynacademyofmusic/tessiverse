@@ -20,7 +20,6 @@ export class PlanStepAppServer extends BaseAppServer<PlanStepApp,PlanStepAppSave
 
     async load(backend: UserLoaded): Promise<PlanStepAppLoad> {
         await super.load(backend)
-        let valid = false
         let form: SuperValidated<any>
         form = await superValidate(this.data, zod(planStepSchema))
         return {...this.data, form: form}
@@ -30,7 +29,7 @@ export class PlanStepAppServer extends BaseAppServer<PlanStepApp,PlanStepAppSave
         if (!form.valid) {
             return fail(400, {form})
         }
-        await super.save(this.data, backend)
+        await super.save(form.data, backend)
         setMessage(form, 'Login updated successfully!')
         return { form , success: true }
     } 
@@ -132,18 +131,17 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
 
 
     // Save plan step to history array
-    planStepData = Object.assign(new PlanStepApp(),planStepData)
-    planStepData.history.push(
+    let planStepServer = new PlanStepAppServer()
+    let backend = new UserLoaded(userData)
+    await planStepServer.load(backend)
+    planStepServer.data.history.push(
         {
             subject: email.subject,
             planDesc: `${plan.constituent.displayname} ${plan.campaign} ${plan.contributiondesignation}`,
             date: new Date()
         }
     )
-    let planStepServer = new PlanStepAppServer()
-    // reload to avoid race condition
-    let userLoaded = new UserLoaded(await new Azure().load({identity: email.from}))
-    planStepServer.save(planStepData,userLoaded)
+    await backend.save({identity: backend.identity, app: planStepServer.key},planStepServer.data)
     return null
 };
 
