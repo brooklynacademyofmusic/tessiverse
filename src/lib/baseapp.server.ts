@@ -1,11 +1,11 @@
 import type { AppServer } from "$lib/apps.server"
-import type { App, AppLoad } from "$lib/apps"
+import type { App } from "$lib/apps"
 import { UserLoaded, type ValidBackendKeys } from "$lib/azure"
 import type { ActionFailure } from "@sveltejs/kit"
 import type { Apps } from "./config"
 
 
-export abstract class BaseAppServer<A extends App<keyof Apps,any,any>, Save extends object>  implements AppServer<A,Save> {
+export abstract class BaseAppServer<A extends App<keyof Apps,any,any>, Save extends object> implements AppServer<A,Save> {
     data: A["data"]
     key = "base" as A["key"]
 
@@ -14,13 +14,13 @@ export abstract class BaseAppServer<A extends App<keyof Apps,any,any>, Save exte
     }
 
     // Assigns data into this.data and also returns it
-    async load(backend: UserLoaded, key: ValidBackendKeys = {identity: backend.identity, app: this.key}): Promise<AppLoad<A>> {
+    async load(backend: UserLoaded, key: ValidBackendKeys = {identity: backend.identity, app: this.key}): Promise<A["data"]> {
         Object.assign(this.data,backend.load({identity: key.identity, app: this.key}))
         return this.data
     }
 
     // Assigns data into this.data and then saves it to the backend
-    async save(data: Save, backend: UserLoaded, key: ValidBackendKeys = {identity: backend.identity, app: this.key}): Promise<void | ActionFailure<any> | {form: any}> {
+    async save(data: A["data"], backend: UserLoaded, key: ValidBackendKeys = {identity: backend.identity, app: this.key}): Promise<void | ActionFailure<any> | {form: any}> {
         // Get the freshest data from the backend first
         Object.assign(this.data, backend.load(key))
         Object.assign(this.data, data)

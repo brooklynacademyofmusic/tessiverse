@@ -4,7 +4,7 @@ import * as errors from '$lib/errors'
 import { superValidate, fail, setError, type SuperValidated, setMessage } from 'sveltekit-superforms'
 import { zod } from 'sveltekit-superforms/adapters'
 import { tessituraSchema } from './tessitura.schema'
-import { TessituraApp, TessituraAppData, type TessituraAppLoad, type TessituraAppSave } from './tessitura'
+import { TessituraApp, type TessituraAppLoad, type TessituraAppSave } from './tessitura'
 import type { UserLoaded } from '$lib/azure'
 import { type AppServer } from '$lib/apps.server'
 import { BaseAppServer } from '$lib/baseapp.server'
@@ -98,7 +98,7 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
         }
 
         await this.tessiLoad()
-        await backend.save({identity: backend.identity, app: this.key}, this.data)
+        await super.save(this.data, backend)
         setMessage(form, 'Login updated successfully!')
         return { form , success: true }
     }
