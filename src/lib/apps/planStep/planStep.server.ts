@@ -8,6 +8,9 @@ import { PlanStepApp, PlanStepAppData, type PlanStepAppLoad, type PlanStepAppSav
 import { Azure } from "$lib/azure"
 import { TessituraAppServer } from "../tessitura/tessitura.server"
 import { NodeHtmlMarkdown } from "node-html-markdown"
+import { planStepSchema } from "./planStep.schema"
+import { zod } from "sveltekit-superforms/adapters"
+import { fail, setMessage, superValidate, type SuperValidated } from "sveltekit-superforms"
 
 export class PlanStepAppServer extends BaseAppServer<PlanStepApp,PlanStepAppSave>
                                 implements AppServer<PlanStepApp,PlanStepAppSave> {
@@ -15,6 +18,22 @@ export class PlanStepAppServer extends BaseAppServer<PlanStepApp,PlanStepAppSave
     key: "planStep" = "planStep"
     data = new PlanStepAppData()
 
+    async load(backend: UserLoaded): Promise<PlanStepAppLoad> {
+        await super.load(backend)
+        let valid = false
+        let form: SuperValidated<any>
+        form = await superValidate(this.data, zod(planStepSchema))
+        return {...this.data, form: form}
+    } 
+    async save(data: PlanStepAppSave, backend: UserLoaded) {
+        const form = await superValidate(data, zod(planStepSchema))
+        if (!form.valid) {
+            return fail(400, {form})
+        }
+        await super.save(this.data, backend)
+        setMessage(form, 'Login updated successfully!')
+        return { form , success: true }
+    } 
 }
 
 export type PlanStepEmail = {
