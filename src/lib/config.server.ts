@@ -15,6 +15,7 @@ type AppServerConstraint = {
 }
 
 export class AppServers implements AppServerConstraint {
+    [k: string]: AppServer<any,any>
     tessitura = new TessituraAppServer(new TessituraApp().data)
     planStep = new PlanStepAppServer(new PlanStepApp().data)
 } 

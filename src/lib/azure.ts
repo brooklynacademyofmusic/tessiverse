@@ -9,7 +9,7 @@ import * as config from "$lib/config";
 
 type ValidAppNames = keyof config.Apps
 type ValidBackendKey<A extends ValidAppNames>  = {identity: string, app: A}
-type ValidBackendKeys = ValidBackendKey<ValidAppNames>
+export type ValidBackendKeys = ValidBackendKey<ValidAppNames>
 type ValidAppData<K extends ValidBackendKeys> =  K extends ValidBackendKey<infer A> ? config.Apps[A]["data"] : never
 
 export type BackendKey = {identity: string, app?: string} 

@@ -1,11 +1,12 @@
 import type { PageServerLoad, Actions, RequestEvent } from './$types';
 import * as server from '$lib/config.server'
+import * as config from '$lib/config'
 import { Azure, UserLoaded } from '$lib/azure';
 import type { AppServer } from '$lib/apps.server';
 import { error } from '@sveltejs/kit';
 import * as errors from '$lib/errors'
 
-let servers = new server.AppServers()
+let servers = new server.AppServers() 
 
 type AppPromises = {
     [K in keyof server.AppServers]: Promise<server.AppServers[K]["data"]>
@@ -19,23 +20,22 @@ export const load: PageServerLoad = async ( { locals }) => {
     let backend = new Azure()
     let userData = backend.load({identity: locals.user.userDetails})
     let appData = objectMap(servers, 
-        (key, server: AppServer<string,any,any,any>) => 
+        (_, server: AppServer<config.Apps[keyof config.Apps],any>) => 
             userData
-                .then((user) => Object.assign(new UserLoaded(locals.user.userDetails),user))
-                .catch(() => new UserLoaded(locals.user.userDetails))
-                .then((user) => server.load(user, 
-                        {identity: user.identity, app: key}))) as AppPromises
+                .then((user) => new UserLoaded(user))
+                .catch(() => new UserLoaded({identity: locals.user.userDetails}))
+                .then((backend) => server.load(backend))) as AppPromises
     return {userData: userData, appData: appData}
 }
 
-const actionFactory = function(key: string,server: AppServer<any,any,any,any>) {
+const actionFactory = function(_: string, server: AppServer<config.Apps[keyof config.Apps],any>) {
     return async ({request, locals}: RequestEvent) => {
         let formData = await request.formData()
         let backend = new Azure()
-        let user = await backend.load({identity: locals.user.userDetails})
-            .then((user) => Object.assign(new UserLoaded(locals.user.userDetails),user))
-            .catch(() => new UserLoaded(locals.user.userDetails))
-        return server.save(formData, user, {identity: locals.user.userDetails, app: key})
+        return await backend.load({identity: locals.user.userDetails})
+            .then((user) => new UserLoaded(user))
+            .catch(() => new UserLoaded({identity: locals.user.userDetails}))
+            .then((backend) => server.save(formData, backend))
             .catch(() => error(500, errors.AZURE_KEYVAULT))
 }}
 
