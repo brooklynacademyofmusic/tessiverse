@@ -38,8 +38,8 @@ describe("planStep", () => {
         if (!azure_valid) 
             throw("whoops!")
         let user = new User({identity: "me"})
-        user.apps.tessitura.data.constituentid = 12345
-        user.apps.planStep = new PlanStepApp()
+        user.apps.tessitura.constituentid = 12345
+        user.apps.planStep = new PlanStepApp().data
         return user as UserLoaded
     })
 

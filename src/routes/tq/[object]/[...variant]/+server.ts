@@ -16,9 +16,9 @@ export const PUT: RequestHandler = ({params, request, locals}) => {
 async function tq_verb(verb: string, params: RouteParams, request: Request, locals: App.Locals): Promise<Response> {
   let azure = new Azure()
   let user = await azure.load({identity: locals.user.userDetails})
-  let tessiApp = new TessituraAppServer(user.apps.tessitura.data)
+  let tessiApp = new TessituraAppServer(user.apps.tessitura)
   let query = Object.fromEntries(new URL(request.url).searchParams.entries())
-  
+
   return request.text()
     .then((text) => {
       query = text ? Object.assign(query,JSON.parse(text)) : query

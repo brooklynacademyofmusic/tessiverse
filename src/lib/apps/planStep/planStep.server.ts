@@ -52,7 +52,7 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     let userData = await new Azure().load({identity: email.from})
         .catch(() => {throw(error(400, `User configuration not found for ${email.from}`))})
     
-    let tessiData = userData.apps.tessitura.data
+    let tessiData = userData.apps.tessitura
     let tessiApp = new TessituraAppServer(tessiData)
     if ( !await tessiApp.tessiValidate() ) {
         throw(error(400, `Invalid Tessitura login for ${email.from}`))
@@ -64,7 +64,7 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
         throw(error(404, `User ${email.from} does not have any plans!`))
     }
 
-    let planStepData = userData.apps.planStep.data
+    let planStepData = userData.apps.planStep
     let plans: PlanScore[] = await tq("get", "plans", 
         {variant: "all",
             query: {workerid: (tessiData.constituentid || 1).toString()}, 
