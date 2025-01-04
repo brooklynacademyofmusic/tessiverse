@@ -8,10 +8,19 @@ export const handle: Handle = async ({ event, resolve }) => {
 
     let user: App.Platform["clientPrincipal"]
     const token = event.request.headers.get("authorization")?.split(" ")[1]
-    let headers = ""
-    event.request.headers.forEach((v,k) => {headers += `${k}=${v};`})
-    if(token) {
-        error(403, headers)
+
+    if (event.platform && event.platform.clientPrincipal){
+        user = event.platform.clientPrincipal
+    } else if (env.DEV_USER) {
+        user = JSON.parse(Buffer.from(env.DEV_USER, 'base64').toLocaleString())
+    } else if (event.request.headers.get("Api-Key") == env.API_KEY) {
+        user = {
+            identityProvider: "api_key",
+            userId: event.request.headers.get("x-ms-workflow-id") || "apiUser",
+            userDetails: event.request.headers.get("x-ms-workflow-name") || "apiUser",
+            userRoles: ["authenticated", "anonymous", "admin"]
+        }
+    } else if(token) {
         let payload = await new Promise((res,rej) => 
             jwt.verify(token, getKey, {
                 algorithms: ['RS256'],
@@ -31,11 +40,8 @@ export const handle: Handle = async ({ event, resolve }) => {
             userDetails: payload.upn,
             userRoles: ["authenticated", "anonymous"].concat(payload.roles)
         }
-    } else if (event.platform && event.platform.clientPrincipal){
-        user = event.platform.clientPrincipal
-    } else if (env.DEV_USER) {
-        user = JSON.parse(Buffer.from(env.DEV_USER, 'base64').toLocaleString())
-    }
+    } 
+
     if(!user) {
         user = {identityProvider: "", userId: "", userDetails: "", userRoles: ["anonymous"]}
     }
