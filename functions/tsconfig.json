@@ -6,8 +6,5 @@
     "rootDir": ".",
     "sourceMap": true,
     "strict": false
-  },
-  "references": [
-    {"path": "../"}
-  ]
-}
+  }
+ }
