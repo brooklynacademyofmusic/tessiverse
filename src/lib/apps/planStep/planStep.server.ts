@@ -55,7 +55,7 @@ export type PlanStepEmail = {
 
 export async function planStep(email: PlanStepEmail): Promise<null> {
     email.from = email.from.toLowerCase()
-    let emailId: string = `${email.from} => ${email.to} (${email.subject})`
+    let emailId: string = `${email.from} => ${email.subject} ${email.body.substring(0,63)}${email.body.length > 64 ? "..." : ""}`
     console.log(`Generating plan step for email ${emailId}`)
     let backend = new Azure()
     let userData = await backend.load({identity: email.from})
@@ -92,9 +92,9 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
                 query: {constituentids: p.constituent.id.toString()}, 
                 login:tessiApp.auth})
             }))
-        .catch(() => {
-            throw(error(500, ERRORS.TQ))
-        })
+            .catch(() => {
+                throw(error(500, ERRORS.TQ))
+            })
 
     let plans_filtered: PlanScore[] = []
 
