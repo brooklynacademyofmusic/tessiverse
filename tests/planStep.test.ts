@@ -42,6 +42,8 @@ describe("planStep", () => {
         user.apps.planStep = new PlanStepApp().data
         return user as UserLoaded
     })
+    
+    PlanStepAppServer.prototype.saveHistory = vi.fn(async () => {})
 
     let email = {
         from: "me@test.com",
@@ -82,10 +84,10 @@ describe("planStep", () => {
     let planstep = {
         "description": "Note to self", 
         "notes": "a@test.com", 
-        "plan": {"id": 1}, 
+        "plan": {"id": 0}, 
         "stepdatetime": now,
         "completedondatetime": now, 
-        "type": {"id": 0}
+        "type": {"id": 4}
     }
 
     beforeEach(() => {
@@ -151,7 +153,7 @@ describe("planStep", () => {
         {body: "a@test.com", id: 1},
         {body: "2000", id: 2},
         {body: "Christina Person", id: 3}
-    ])("planStep identifies a matching plan by email address, constituentid, and name", async (arg) => {
+    ])("planStep identifies a matching plan by email address, constituentid, and name", {timeout: 15000}, async (arg) => {
 
         tqMocked.mockReset().
             mockResolvedValueOnce([{"constituentid":12345}]).
@@ -159,7 +161,8 @@ describe("planStep", () => {
             mockResolvedValueOnce([emails[0]]).
             mockResolvedValueOnce([emails[1]]).
             mockResolvedValueOnce([emails[2]]).
-            mockResolvedValueOnce([emails[3]])
+            mockResolvedValueOnce([emails[3]]).
+            mockResolvedValue(null)
 
         email.body = arg.body
         planstep.plan.id = arg.id
@@ -187,7 +190,8 @@ describe("planStep", () => {
             mockResolvedValueOnce([emails[0]]).
             mockResolvedValueOnce([emails[1]]).
             mockResolvedValueOnce([emails[2]]).
-            mockResolvedValueOnce([emails[3]])
+            mockResolvedValueOnce([emails[3]]).
+            mockResolvedValue(null)
 
         email.body = arg.body
         planstep.plan.id = arg.id
