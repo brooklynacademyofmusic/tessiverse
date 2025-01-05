@@ -73,7 +73,7 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
         let form: SuperValidated<any>
         if(this.data.userid && this.data.group && this.data.tessiApiUrl && this.data.location) {
             valid = await this.tessiValidate()
-            form = await superValidate(this.data, zod(tessituraSchema))
+            form = await superValidate(this.data, zod(tessituraSchema), {errors: false})
         } else {
             form = await superValidate(zod(tessituraSchema))
         }
