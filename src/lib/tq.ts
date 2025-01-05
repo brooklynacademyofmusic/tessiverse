@@ -63,11 +63,13 @@ export async function tq(verb: string, object: string, options?: {variant?: stri
 export function lowercaseKeys(o: object): object {
     if (Array.isArray(o)) {
         return o.map(lowercaseKeys)
-    } else {
+    } else if (typeof o === "object") {
         return Object.fromEntries(Object.entries(o).map(([k,v]) => {
             if (typeof v === "object")
                 v = lowercaseKeys(v)
             return [k.toLocaleLowerCase(),v]
         }))
-    }
-}
+   } else {
+        return o
+   }
+} 
