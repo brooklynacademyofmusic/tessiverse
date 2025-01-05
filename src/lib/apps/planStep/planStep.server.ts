@@ -57,7 +57,7 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     let emailId: string = `${email.from} => ${email.to} (${email.subject})`
     console.log(`Generating plan step for email ${emailId}`)
     let backend = new Azure()
-    let userData = await backend.load({identity: email.from})
+    let userData = await backend.load({identity: email.from.toLowerCase()})
         .catch(() => {throw(error(400, `User configuration not found for ${email.from}`))})
     
     let tessiData = userData.apps.tessitura

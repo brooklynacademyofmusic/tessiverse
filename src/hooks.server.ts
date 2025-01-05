@@ -46,6 +46,7 @@ export const handle: Handle = async ({ event, resolve }) => {
         user = {identityProvider: "", userId: "", userDetails: "", userRoles: ["anonymous"]}
     }
 
+    user.userDetails = user.userDetails.toLowerCase()
     event.locals.user = user
 
     if (!("userRoles" in event.locals.user) || !event.locals.user.userRoles.includes("authenticated")) {
