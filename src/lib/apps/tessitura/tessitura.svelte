@@ -42,7 +42,8 @@
 
 </script>
 <Dialog.Root bind:open={open} closeOnEscape={false} closeOnOutsideClick={false}>
-    <Dialog.Content>
+    <Dialog.Content class="max-h-full">
+        <ScrollArea class="max-h-[calc(100svh-3rem)]">
         <Dialog.Header class="flex w-full h-48 items-center justify-center">
             {#if $mode === "light"}<img src={logoLight} class="w-1/2" alt="Tessitura Logo"/>
             {:else if $mode === "dark"}<img src={logoDark} class="w-1/2" alt="Tessitura Logo"/>
@@ -131,5 +132,6 @@
             {/if}
             </Form.Button>
     </form>
+        </ScrollArea>
 </Dialog.Content>
 </Dialog.Root>

@@ -10,6 +10,7 @@
     import PlanStepReadme from './planStep.md'
 	import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '$lib/components/ui/accordion';
 	import { LoaderCircle } from 'lucide-svelte';
+	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
     let { data, open = $bindable(true) }: { data: PlanStepAppLoad, open?: boolean} = $props()
     
     console.log(data)
@@ -39,10 +40,11 @@
 </script>
 
 <Dialog.Root bind:open={open} closeOnEscape={false} closeOnOutsideClick={false}>
-    <Dialog.Content class="md:w-2/3 max-w-full">
-        <Dialog.Header class="flex w-full prose max-w-full prose-default">
+    <Dialog.Content class="md:w-2/3 max-w-full max-h-svh">
+        <ScrollArea class="max-h-[calc(100svh-3rem)]">
+            <Dialog.Header class="flex w-full prose max-w-full prose-default mb-4">
             <Accordion><AccordionItem value="planstepreadme">
-                    <AccordionTrigger class="text-xl decoration-primary">
+                    <AccordionTrigger class="text-xl decoration-primary mr-4">
                         <span class="rainbow">Email to plan step</span>
                     </AccordionTrigger>
                     <AccordionContent>
@@ -96,5 +98,6 @@
             {/if}
         </Form.Button>
         </form>
+    </ScrollArea>
     </Dialog.Content>
-    </Dialog.Root> 
+</Dialog.Root> 
