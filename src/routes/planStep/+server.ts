@@ -8,9 +8,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     if (! locals.user.userRoles.includes("admin") ) {
         error(403, ERRORS.LOGIN)
     }
-    return (request.body || new ReadableStream()).getReader().read()
-    .then((body) => JSON.parse(body.value?.toString() || "null") as PlanStepEmail)
-    .then((email) => planStep(email))
+    return request.json()
+    .then((email: PlanStepEmail) => planStep(email))
     .then((response) => new Response(response))
 
 }
