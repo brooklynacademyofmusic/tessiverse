@@ -1,6 +1,7 @@
 import { UserLoaded } from "$lib/azure"
 import { tq } from "$lib/tq"
 import { error } from "@sveltejs/kit"
+import * as ERRORS from '$lib/errors'
 import type { Email, PlanScore, PlanWorker } from "./types"
 import { type AppServer } from "$lib/apps.server"
 import { BaseAppServer } from '$lib/baseapp.server'
@@ -24,6 +25,7 @@ export class PlanStepAppServer extends BaseAppServer<PlanStepApp,PlanStepAppSave
         form = await superValidate(this.data, zod(planStepSchema))
         return {...this.data, form: form}
     } 
+
     async save(data: PlanStepAppSave, backend: UserLoaded) {
         const form = await superValidate(data, zod(planStepSchema))
         if (!form.valid) {
@@ -33,6 +35,13 @@ export class PlanStepAppServer extends BaseAppServer<PlanStepApp,PlanStepAppSave
         setMessage(form, 'Login updated successfully!')
         return { form , success: true }
     } 
+
+    async saveHistory(history: PlanStepAppData["history"][0], backend: UserLoaded) {
+        await super.load(backend)
+        this.data.history.push(history)
+        return super.save(this.data, backend)
+            .then(() => {})
+    }
 }
 
 export type PlanStepEmail = {
@@ -47,8 +56,8 @@ export type PlanStepEmail = {
 export async function planStep(email: PlanStepEmail): Promise<null> {
     let emailId: string = `${email.from} => ${email.to} (${email.subject})`
     console.log(`Generating plan step for email ${emailId}`)
-
-    let userData = await new Azure().load({identity: email.from})
+    let backend = new Azure()
+    let userData = await backend.load({identity: email.from})
         .catch(() => {throw(error(400, `User configuration not found for ${email.from}`))})
     
     let tessiData = userData.apps.tessitura
@@ -57,8 +66,10 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
         throw(error(400, `Invalid Tessitura login for ${email.from}`))
     }
 
-    let workers: PlanWorker[] = await tq("get","workers",
+    let workers = await tq("get","workers",
         {variant: "all", login: tessiApp.auth})
+        .then((res: PlanWorker[]) => res)
+        .catch(() => [{constituentid: 1}])
     if (!workers.find((w) => w.constituentid == tessiData.constituentid)) {
         throw(error(404, `User ${email.from} does not have any plans!`))
     }
@@ -67,7 +78,8 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     let plans: PlanScore[] = await tq("get", "plans", 
         {variant: "all",
             query: {workerid: (tessiData.constituentid || 1).toString()}, 
-            login: tessiApp.auth}).catch(() => {
+            login: tessiApp.auth})
+        .catch(() => {
                 throw(error(404, `User ${email.from} does not have any plans!`))
         })
 
@@ -78,7 +90,10 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
             {variant: "all", 
                 query: {constituentids: p.constituent.id.toString()}, 
                 login:tessiApp.auth})
-    }))
+            }))
+        .catch(() => {
+            throw(error(500, ERRORS.TQ))
+        })
 
     let plans_filtered: PlanScore[] = []
 
@@ -128,20 +143,18 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
             description: email.subject
         },
         login:tessiApp.auth})
+        .catch(() => {
+            throw(error(500, ERRORS.TQ))
+        })
 
-
-    // Save plan step to history array
-    let planStepServer = new PlanStepAppServer()
-    let backend = new UserLoaded(userData)
-    await planStepServer.load(backend)
-    planStepServer.data.history.push(
-        {
+    // Refresh data, it's been a while
+    let backend2 = new UserLoaded(await backend.load({identity: email.from}))
+    await new PlanStepAppServer().saveHistory({
             subject: email.subject,
             planDesc: `${plan.constituent.displayname} ${plan.campaign} ${plan.contributiondesignation}`,
             date: new Date()
-        }
-    )
-    await backend.save({identity: backend.identity, app: planStepServer.key},planStepServer.data)
+        },backend2)
+
     return null
 };
 
@@ -166,4 +179,3 @@ export function findFirstString(needle: Array<string | null | void>, haystack: s
             }
     }) 
 }
-
