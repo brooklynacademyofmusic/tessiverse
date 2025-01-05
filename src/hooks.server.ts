@@ -1,8 +1,8 @@
 import { error, type Handle, redirect } from '@sveltejs/kit';
 import * as errors from "$lib/errors"
 import { env } from "$env/dynamic/private"
-import jwt from "jsonwebtoken"
-import jwks from "jwks-rsa"
+// import jwt from "jsonwebtoken"
+// import jwks from "jwks-rsa"
 
 export const handle: Handle = async ({ event, resolve }) => {
 
@@ -59,18 +59,18 @@ export const handle: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
-// Client for getting the JWT signing key
-const client = new jwks.JwksClient({
-    jwksUri: `https://login.microsoftonline.com/${env.AZURE_TENANT_ID}/discovery/keys`
-})
+// // Client for getting the JWT signing key
+// const client = new jwks.JwksClient({
+//     jwksUri: `https://login.microsoftonline.com/${env.AZURE_TENANT_ID}/discovery/keys`
+// })
 
-// Helper function to retrieve signing key from kid (key ID)
-const getKey: jwt.GetPublicKeyOrSecret = (header, callback) => {
-    client.getSigningKey(header.kid, (err, key) => {
-        if (err || !key) {
-            return callback(err);
-        }
-        const signingKey = key.getPublicKey();
-        callback(null, signingKey);
-    });
-}
+// // Helper function to retrieve signing key from kid (key ID)
+// const getKey: jwt.GetPublicKeyOrSecret = (header, callback) => {
+//     client.getSigningKey(header.kid, (err, key) => {
+//         if (err || !key) {
+//             return callback(err);
+//         }
+//         const signingKey = key.getPublicKey();
+//         callback(null, signingKey);
+//     });
+// }
