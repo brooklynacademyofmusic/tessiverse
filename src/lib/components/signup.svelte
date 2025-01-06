@@ -4,7 +4,7 @@
 	import { ChevronRight } from 'lucide-svelte';
 	import type { TessituraAppLoad } from '$lib/apps/tessitura/tessitura';
     let { data }: { data: TessituraAppLoad } = $props()
-    let ok = $state(true);
+    let ok = $state(false);
 </script>
 
 <!-- signup flow, rendered if no user exists 
