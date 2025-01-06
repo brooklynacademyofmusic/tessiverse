@@ -15,7 +15,7 @@ export class TessituraApp extends BaseApp<"tessitura", TessituraAppData, Tessitu
 } 
 
 export class TessituraAppData {
-    tessiApiUrl: config.ValidServerValues[any] = config.servers[0].value
+    tessiApiUrl: string = ""
     userid: string = ""
     group: string = ""
     emailaddress?: string = ""
