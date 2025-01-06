@@ -12,7 +12,10 @@
 		"lint": "prettier --check . && eslint .",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
-		"test:e2e": "playwright test"
+		"test:e2e": "playwright test",
+		"predeploy": "npx swa build",
+		"deploy": "npx swa deploy ${NODE_ENV:-preview} --env ${NODE_ENV:-preview}",
+		"postdeploy": "cd build/server && func azure functionapp publish tessiverse-api $(if [ \"$NODE_ENV\" != production ]; then echo --slot ${NODE_ENV:-preview}; fi)"
 	},
 	"devDependencies": {
 		"@azure/app-configuration-provider": "^1.1.2",
