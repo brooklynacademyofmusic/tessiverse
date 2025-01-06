@@ -40,15 +40,16 @@
 </script>
 
 <Dialog.Root bind:open={open} closeOnEscape={false} closeOnOutsideClick={false}>
-    <Dialog.Content class="md:w-2/3 max-w-full max-h-svh">
-        <ScrollArea class="max-h-[calc(100svh-3rem)]">
+    <Dialog.Content class="h-svh sm:h-auto md:w-2/3 max-w-full max-h-svh z-[100]">
             <Dialog.Header class="flex w-full prose max-w-full prose-default mb-4">
             <Accordion><AccordionItem value="planstepreadme">
                     <AccordionTrigger class="text-xl decoration-primary mr-4">
                         <span class="rainbow">Email to plan step</span>
                     </AccordionTrigger>
                     <AccordionContent>
-                        <PlanStepReadme/>
+                        <ScrollArea class="h-[min(50svh,30rem)]">
+                            <PlanStepReadme/>
+                        </ScrollArea>
                     </AccordionContent>
                 </AccordionItem></Accordion>
         </Dialog.Header>
@@ -64,6 +65,10 @@
                     <Select.Trigger>
                         <Select.Value placeholder="Loading step types..." />
                     </Select.Trigger>
+                {:catch}
+                    <Select.Trigger>
+                        <Select.Value placeholder="Error loading step types..." />
+                    </Select.Trigger>    
                 {:then stepTypes}
                     <Select.Trigger>
                         <Select.Value placeholder="Choose a step type" />
@@ -98,6 +103,5 @@
             {/if}
         </Form.Button>
         </form>
-    </ScrollArea>
     </Dialog.Content>
 </Dialog.Root> 
