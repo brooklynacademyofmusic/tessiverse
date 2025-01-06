@@ -20,7 +20,7 @@
         {#await userData}
             <Ellipsis class="animate-pulse inline-block w-12 h-12 text-secondary"/>
         {:then user}
-            <span transition:fade>{ user.firstname }</span>
+            <span transition:fade>{ user.apps.tessitura.firstname }</span>
         {/await} 
     </h1>
     <Card class="min-h-16 p-4 shadow-3xl shadow-primary dark:prose-headings:text-white">
