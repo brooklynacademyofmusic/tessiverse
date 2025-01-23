@@ -20,6 +20,8 @@ function endpointServer(port, endpointRes) {
         _req.setEncoding("utf8");
         request.data = "";
         await new Promise((res) => _req.on("data", (data) => request.data += data).on("close", () => res(true)));
+        if (request.data == "error plz!")
+            _res.statusCode = 418; //I'm a teapot!
         _res.setHeader("content-type", "application/json");
         _res.setHeader("endpoint", "this is an endpoint header");
         _res.write(endpointRes);
@@ -75,6 +77,14 @@ describe("listener with http endpoint", async () => {
         expect(response.headers["content-type"]).toBe("application/json");
         expect(response.headers["endpoint"]).toBe("this is an endpoint header");
         expect(response.data).toBe("I'm an endpoint");
+    });
+    test("listener returns response code from endpoint => client", async () => {
+        let endpointBody = "I'm an endpoint";
+        endpoint = await endpointServer(serverPort, endpointBody);
+        let error = await axiosInstance.post(relayURI, "error plz!").catch((e) => e);
+        expect(error.status).toBe(418);
+        expect(request.method).toBe("POST");
+        expect(request.url).toBe("/");
     });
     test("listener does not leak servicebus tokens", async () => {
         let endpointBody = "I'm an endpoint";

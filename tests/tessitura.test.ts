@@ -2,14 +2,11 @@ import { env } from '$env/dynamic/private'
 import { TessituraAppServer } from '$lib/apps/tessitura/tessitura.server'
 import { tq } from '$lib/tq'
 import { test, expect, describe, beforeEach, vi } from 'vitest'
-import child_process from 'child_process'
-import { Azure, UserLoaded } from '$lib/azure'
+import { UserLoaded } from '$lib/azure'
 import { SecretClient } from '@azure/keyvault-secrets'
 import { DefaultAzureCredential } from '@azure/identity'
-import { superValidate } from 'sveltekit-superforms'
-import { tessituraSchema } from '$lib/apps/tessitura/tessitura.schema'
-import { zod } from 'sveltekit-superforms/adapters'
 import { TessituraApp } from '$lib/apps/tessitura/tessitura'
+
 const dev_server = JSON.parse(env.DEV_SERVER)
 
 describe("TessituraAppServer", () => {
@@ -17,13 +14,11 @@ describe("TessituraAppServer", () => {
     let tessi: TessituraAppServer
     beforeEach(() => {
         user = env.TQ_ADMIN_LOGIN.split("|")
-        tessi = new TessituraAppServer()
-        Object.assign(tessi.data,{
+        tessi = new TessituraAppServer({
             tessiApiUrl: dev_server[0].value,
             userid: user[0],
             group: user[1],
             location: user[2],
-            valid: false
         })
     })
 
@@ -79,15 +74,15 @@ describe("TessituraAppServer", () => {
     })
 
     test("load falls back to blank data on load failure", async () => {
-        let tessi = new TessituraAppServer()
-        let userFail = new UserLoaded("")
+        let tessi = new TessituraAppServer(new TessituraApp().data)
+        let userFail = new UserLoaded({identity: ""})
         let data = await tessi.load(userFail)
         expect(data.userid).toBe("")
         expect(data.group).toBe("")
     })
 
     test("load loads all data and renders form on success", async () => {
-        let userSuccess = new UserLoaded("")
+        let userSuccess = new UserLoaded({identity: ""})
         Object.assign(userSuccess.apps.tessitura,tessi.data)
         let data = await tessi.load(userSuccess)
         expect(data.userid).toBe(user[0])

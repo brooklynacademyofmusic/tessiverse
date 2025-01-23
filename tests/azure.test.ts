@@ -4,7 +4,7 @@ import { SecretClient } from "@azure/keyvault-secrets"
 import { Azure } from "$lib/azure";
 
 describe("Azure", () => {
-    let user = new User("me@test.com")
+    let user = new User({identity: "me@test.com"})
 
 
     test("loadFromAzure throws error if data does not exist in Azure", async () => {
@@ -19,7 +19,7 @@ describe("Azure", () => {
     })
 
     test("loadFromAzure returns a matching secret", async () => {
-        let user2 = new User("me@test.com")
+        let user2 = new User({identity: "me@test.com"})
         let azure = new Azure()
         await expect(azure.load({identity: user2.identity})).resolves.toEqual(JSON.parse(JSON.stringify(user)))
     })

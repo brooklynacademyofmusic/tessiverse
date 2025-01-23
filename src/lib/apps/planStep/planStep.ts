@@ -1,16 +1,28 @@
-import type { App, Serializable } from '$lib/apps'
-import { type Component } from 'svelte'
+import type { App } from '$lib/apps'
+import PlanStepCard from './planStepCard.svelte'
+import type { Infer, SuperValidated } from 'sveltekit-superforms'
+import type { planStepSchema } from './planStep.schema'
+import PlanStep from './planStep.svelte'
 
-let PlanStep: Component<any> = {} as Component<any>
-
-export class PlanStepApp implements App<"planStep", PlanStepAppLoad>{
+export class PlanStepApp implements App<"planStep", PlanStepAppData, PlanStepAppLoad>{
     title = "Email to plan step"
     key: "planStep" = "planStep"
-    card = PlanStep
+    card = PlanStepCard
     form = PlanStep
-    stepType = 0
+    data = new PlanStepAppData()
+}
+
+export class PlanStepAppData {
+    history: PlanSteps = []
+    stepType = 4
     closeStep = true
 }
 
-export type PlanStepAppLoad = Serializable<PlanStepApp>
-export type PlanStepAppSave = PlanStepAppLoad
+export type PlanStepAppLoad = PlanStepAppData & {form: SuperValidated<Infer<typeof planStepSchema>>}
+export type PlanStepAppSave = Omit<PlanStepAppData,"history">
+
+export type PlanSteps = Array<{
+    planDesc: string,
+    subject: string,
+    date: Date
+}>

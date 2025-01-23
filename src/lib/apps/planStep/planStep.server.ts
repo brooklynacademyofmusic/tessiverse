@@ -1,57 +1,100 @@
 import { UserLoaded } from "$lib/azure"
 import { tq } from "$lib/tq"
 import { error } from "@sveltejs/kit"
-import type { Email, PlanScore } from "./types"
+import * as ERRORS from '$lib/errors'
+import type { Email, PlanScore, PlanWorker } from "./types"
 import { type AppServer } from "$lib/apps.server"
 import { BaseAppServer } from '$lib/baseapp.server'
-import { PlanStepApp, type PlanStepAppLoad } from "./planStep"
-import { TessituraApp } from "../tessitura/tessitura"
+import { PlanStepApp, PlanStepAppData, type PlanStepAppLoad, type PlanStepAppSave } from "./planStep"
 import { Azure } from "$lib/azure"
-import { type Serializable } from "$lib/apps"
 import { TessituraAppServer } from "../tessitura/tessitura.server"
+import { NodeHtmlMarkdown } from "node-html-markdown"
+import { planStepSchema } from "./planStep.schema"
+import { zod } from "sveltekit-superforms/adapters"
+import { fail, setMessage, superValidate, type SuperValidated } from "sveltekit-superforms"
 
-export class PlanStepAppServer 
-    extends BaseAppServer<"planStep",PlanStepAppLoad,PlanStepAppLoad>
-    implements AppServer<"planStep",PlanStepAppLoad,PlanStepAppLoad> {
+export class PlanStepAppServer extends BaseAppServer<PlanStepApp,PlanStepAppSave>
+                                implements AppServer<PlanStepApp,PlanStepAppSave> {
     
     key: "planStep" = "planStep"
+    data = new PlanStepAppData()
+
+    async load(backend: UserLoaded): Promise<PlanStepAppLoad> {
+        await super.load(backend)
+        let form: SuperValidated<any>
+        form = await superValidate(this.data, zod(planStepSchema))
+        return {...this.data, form: form}
+    } 
+
+    async save(data: PlanStepAppSave, backend: UserLoaded) {
+        const form = await superValidate(data, zod(planStepSchema))
+        if (!form.valid) {
+            return fail(400, {form})
+        }
+        await super.save(form.data, backend)
+        setMessage(form, 'Login updated successfully!')
+        return { form , success: true }
+    } 
+
+    async saveHistory(history: PlanStepAppData["history"][0], backend: UserLoaded) {
+        await super.load(backend)
+        this.data.history.push(history)
+        return super.save(this.data, backend)
+            .then(() => {})
+    }
 }
 
 export type PlanStepEmail = {
     from: string
     to: string
-    cc: string
-    bcc: string
+    cc?: string
+    bcc?: string
     subject: string
     body: string
 }
 
 export async function planStep(email: PlanStepEmail): Promise<null> {
-    let emailId: string = `${email.from} => ${email.to} (${email.subject})`
+    email.from = email.from.toLowerCase()
+    let emailId: string = `${email.from} => ${email.subject} ${email.body.substring(0,63)}${email.body.length > 64 ? "..." : ""}`
     console.log(`Generating plan step for email ${emailId}`)
-
-    let user: UserLoaded = await new Azure().load({identity: email.from})
-        .catch(() => {throw(error(400, `User configuration not found for ${email.from}`))})
+    let backend = new Azure()
+    let userData = await backend.load({identity: email.from})
+        .catch(() => {throw(error(400, `User configuration not found for ${JSON.stringify(email.from)}`))})
     
-    let tessiUser: TessituraApp = user.apps.tessitura
-    let tessiApp = new TessituraAppServer()
-    Object.assign(tessiApp,tessiUser)
+    let tessiData = userData.apps.tessitura
+    let tessiApp = new TessituraAppServer(tessiData)
     if ( !await tessiApp.tessiValidate() ) {
         throw(error(400, `Invalid Tessitura login for ${email.from}`))
     }
 
-    let planStepUser: Serializable<PlanStepApp> = user.apps.planStep
+    let workers = await tq("get","workers",
+        {variant: "all", login: tessiApp.auth})
+        .then((res: PlanWorker[]) => res)
+        .catch(() => [{constituentid: 1}])
+    if (!workers.find((w) => w.constituentid == tessiData.constituentid)) {
+        throw(error(404, `User ${email.from} does not have any plans!`))
+    }
+
+    let planStepData = userData.apps.planStep
     let plans: PlanScore[] = await tq("get", "plans", 
         {variant: "all",
-            query: {workerconstituentid: tessiUser.constituentid || "1"}, 
+            query: {workerid: (tessiData.constituentid || 1).toString()}, 
             login: tessiApp.auth})
-    let body: string = [email.to,email.cc,email.bcc,email.subject,email.body].join(" ")
+        .catch(() => {
+                throw(error(404, `User ${email.from} does not have any plans!`))
+        })
+
+    email.body = NodeHtmlMarkdown.translate(email.body)
+    let body: string = [email.to,email.cc || "",email.bcc || "",email.subject,email.body].join(" ")
     let plans_emails: Email[][] = await Promise.all(plans.map((p) => {
         return tq("get", "electronicaddresses", 
             {variant: "all", 
-                query: {constituentids: p.constituent.id}, 
+                query: {constituentids: p.constituent.id.toString()}, 
                 login:tessiApp.auth})
-    }))
+            }))
+            .catch(() => {
+                throw(error(500, ERRORS.TQ))
+            })
 
     let plans_filtered: PlanScore[] = []
 
@@ -91,16 +134,27 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     let plan = plans_filtered[0]
 
     // Make a plan step
-    await tq("post","planstep",
+    await tq("post","steps",
         {query:{
             plan: {id: plan.id},
-            type: {id: planStepUser.stepType },
+            type: {id: planStepData.stepType },
             notes: email.body,
             stepdatetime: new Date(),
-            completedondatetime: planStepUser.closeStep ? new Date() : null,
+            completedondatetime: planStepData.closeStep ? new Date() : null,
             description: email.subject
         },
         login:tessiApp.auth})
+        .catch(() => {
+            throw(error(500, ERRORS.TQ))
+        })
+
+    // Refresh data, it's been a while
+    let backend2 = new UserLoaded(await backend.load({identity: email.from}))
+    await new PlanStepAppServer().saveHistory({
+            subject: email.subject,
+            planDesc: `${plan.constituent.displayname} ${plan.campaign} ${plan.contributiondesignation}`,
+            date: new Date()
+        },backend2)
 
     return null
 };
@@ -126,4 +180,3 @@ export function findFirstString(needle: Array<string | null | void>, haystack: s
             }
     }) 
 }
-

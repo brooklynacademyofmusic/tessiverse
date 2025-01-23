@@ -13,12 +13,14 @@ export async function tq(verb: string, object: string, options?: {variant?: stri
     if (options.login?.split("|")[0].match("servicebus.windows.net/"))
         Object.assign(options,{ headers: { ServiceBusAuthorization: (await new DefaultAzureCredential().getToken(relay_aad_audience)).token } })
 
-    console.log(`running tq (${verb} ${object} ${JSON.stringify(options)})`)
+    let { headers, ...optionsMinusHeaders } = options
+    console.log(`running tq ${verb} ${object} ${JSON.stringify(optionsMinusHeaders)}`)
 
     const tqExecutable = (env.OS || "").match(/Windows/i) ? 'bin/tq.exe' : 'bin/tq'
     var tq = child_process.spawn(tqExecutable, [verb, object, flag], 
     {
-        env: {...options.env,
+        env: {...process.env,
+              ...options.env,
               "TQ_LOGIN": options.login ?? "",
               "AZURE_KEY_VAULT": "https://"+tq_key_vault_url,
               "TQ_HEADERS": options.headers ? JSON.stringify(options.headers) : "",
@@ -61,11 +63,13 @@ export async function tq(verb: string, object: string, options?: {variant?: stri
 export function lowercaseKeys(o: object): object {
     if (Array.isArray(o)) {
         return o.map(lowercaseKeys)
-    } else {
+    } else if (typeof o === "object") {
         return Object.fromEntries(Object.entries(o).map(([k,v]) => {
-            if (typeof v === "object" && !Array.isArray(v))
+            if (typeof v === "object")
                 v = lowercaseKeys(v)
             return [k.toLocaleLowerCase(),v]
         }))
-    }
-}
+   } else {
+        return o
+   }
+} 

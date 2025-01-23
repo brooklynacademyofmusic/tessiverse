@@ -1,1 +1,1 @@
-**<span class="rainbow">tessiverse</span>** is a collection of apps for importing, exporting and otherwise interacting with Tessitura data.
+*...more documentation coming soon!*

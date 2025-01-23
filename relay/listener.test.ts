@@ -2,7 +2,7 @@ import { test, expect, describe, vi, afterEach, beforeAll, afterAll, beforeEach 
 import http from "http"
 import https from "https"
 import * as hyco_https from 'hyco-https'
-import axios from "axios"
+import axios, { Axios, AxiosError } from "axios"
 import { createListener, relay_aad_audience } from "./listener"
 import * as identity from '@azure/identity'
 import { readFileSync } from "fs"
@@ -24,6 +24,8 @@ function endpointServer(port: number, endpointRes: any): Promise<http.Server> {
         _req.setEncoding("utf8")
         request.data = ""
         await new Promise((res) => _req.on("data", (data) => request.data += data).on("close",() => res(true)))
+        if (request.data  == "error plz!")
+            _res.statusCode = 418 //I'm a teapot!
         _res.setHeader("content-type","application/json")
         _res.setHeader("endpoint","this is an endpoint header")
         _res.write(endpointRes)
@@ -87,6 +89,15 @@ describe("listener with http endpoint", async () => {
         expect(response.headers["content-type"]).toBe("application/json")
         expect(response.headers["endpoint"]).toBe("this is an endpoint header")
         expect(response.data).toBe("I'm an endpoint")
+    })
+
+    test("listener returns response code from endpoint => client", async () => {
+        let endpointBody = "I'm an endpoint"
+        endpoint = await endpointServer(serverPort,endpointBody)
+        let error: AxiosError = await axiosInstance.post(relayURI,"error plz!").catch((e) => e)
+        expect(error.status).toBe(418)
+        expect(request.method).toBe("POST")
+        expect(request.url).toBe("/")
     })
 
     test("listener does not leak servicebus tokens", async () => {

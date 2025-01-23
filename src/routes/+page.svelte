@@ -7,7 +7,7 @@
     import { Ellipsis } from "lucide-svelte"
     import { fade } from "svelte/transition"
     let { data }: { data: PageData} = $props()
-    let { userData, appData } = data
+    let { userData, appData } = $derived(data)
     import * as config from '$lib/config'
     let apps = new config.Apps()
     function hasProperty<O extends object>(o: O, k: PropertyKey): k is keyof O {
@@ -20,15 +20,15 @@
         {#await userData}
             <Ellipsis class="animate-pulse inline-block w-12 h-12 text-secondary"/>
         {:then user}
-            <span transition:fade>{ user.firstname }</span>
+            <span transition:fade>{ user.apps.tessitura.firstname }</span>
         {/await} 
     </h1>
     <Card class="min-h-16 p-4 shadow-3xl shadow-primary dark:prose-headings:text-white">
         <Accordion class="w-full"><AccordionItem value="readme" class="border-0">
-            <AccordionTrigger class="text-lg hover:no-underline align-text-bottom">
-                <span class="rainbow">the tessiverse</span> is a collection of apps for importing, exporting and otherwise interacting with Tessitura data.            
+            <AccordionTrigger class="text-lg decoration-primary align-text-bottom">
+                <span class="rainbow hover:underline">the tessiverse</span> is a collection of apps for importing, exporting and otherwise interacting with Tessitura data.            
             </AccordionTrigger>
-            <AccordionContent><Readme/></AccordionContent>
+            <AccordionContent class="prose-default prose"><Readme/></AccordionContent>
         </AccordionItem></Accordion>
     </Card>
 </article>

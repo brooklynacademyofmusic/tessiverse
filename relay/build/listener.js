@@ -71,12 +71,12 @@ export async function createListener(namespace, relay, server) {
 }
 // pass response from axios back to the relay
 function axiosToServerResponse(incoming, outgoing) {
+    outgoing.statusCode = incoming.status;
     if (incoming.headers)
         Object.entries(incoming.headers)
             .filter(([key]) => !key.match(forbiddenHeaders))
             .map(([key, val]) => outgoing.setHeader(key, val));
     outgoing.write(incoming.data);
-    outgoing.statusCode = incoming.status;
 }
 const forbiddenHeaders = new RegExp("^(Accept-Encoding|Access-Control-Request-Headers|Access-Control-Request-Method|Connection|Content-Length|" +
     "Cookie|Date|DNT|Expect|Host|Keep-Alive|Origin|Permissions-Policy|Proxy-.+|Sec-.+|Referer|TE|Trailer|Transfer-Encoding|Upgrade|Via)$", "i");
