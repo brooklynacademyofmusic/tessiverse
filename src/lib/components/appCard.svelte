@@ -12,8 +12,10 @@
     <div class="w-full rounded-t bg-secondary p-3 font-extralight tracking-tight">{title}</div>
     <Card.CardContent class="grow flex flex-col">{@render children()}</Card.CardContent>
     <div class="text-right">
-        <Button size="icon" variant="ghost" class="text-secondary-foreground border-primary border-r-0 border-b-0">
-            <Settings class="w-5 h-5" onclick = {() => {open = true}}/>
+        <Button size="icon" variant="ghost" 
+            onclick = {() => {open = true}}
+            class="text-secondary-foreground border-primary border-r-0 border-b-0">
+            <Settings class="w-5 h-5"/>
         </Button>
     </div>
 </Card.Root>
