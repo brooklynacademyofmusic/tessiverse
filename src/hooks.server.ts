@@ -57,6 +57,7 @@ export const handle: Handle = async ({ event, resolve }) => {
         }
     }
 	const response = await resolve(event);
+    response.headers.set("cache-control", "private")
 	return response;
 };
 
