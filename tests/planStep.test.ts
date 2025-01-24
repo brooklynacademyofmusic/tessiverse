@@ -246,3 +246,10 @@ describe("planStep", () => {
     })
 
 })
+
+describe("planStep e2e", () => {
+    test("test", async () => {
+        await expect(planStep({from: "ssyzygy@bam.org", to: "planStep@bam.org", 
+            subject: "test", body: ""})).resolves.toBeNull()
+    })
+})
