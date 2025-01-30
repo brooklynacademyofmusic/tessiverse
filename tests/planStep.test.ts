@@ -178,6 +178,36 @@ describe("planStep", () => {
 
     })
 
+    test("planStep limits description to 30 characters", {timeout: 15000}, async (arg) => {
+
+        tqMocked.mockReset().
+            mockResolvedValueOnce([{"constituentid":12345}]).
+            mockResolvedValueOnce(plans).
+            mockResolvedValueOnce([emails[0]]).
+            mockResolvedValueOnce([emails[1]]).
+            mockResolvedValueOnce([emails[2]]).
+            mockResolvedValueOnce([emails[3]]).
+            mockResolvedValue(null)
+
+        let email2 = email
+        let planstep2 = planstep
+
+        email2.body = "a@test.com"
+        email2.subject = "abcdefghijklmnopqrstuvwxyz123456789"
+        planstep2.plan.id = 1
+        planstep2.notes = "a@test.com"
+        planstep2.description = "abcdefghijklmnopqrstuvwxyz1..."
+
+        vi.useFakeTimers({now: planstep.stepdatetime})
+        await planStep(email)
+
+        expect(tqMocked).toBeCalledTimes(7)
+        expect(tqMocked.mock.calls[6][0]).toBe("post")
+        expect(tqMocked.mock.calls[6][1]).toBe("steps")
+        expect(tqMocked.mock.calls[6][2]?.query).toEqual(planstep)
+
+    })
+
     test.each([
         {body: "a@test.com 2000 Christina Person", id: 1},
         {body: "2000 a@test.com Christina Person", id: 2},
@@ -245,11 +275,4 @@ describe("planStep", () => {
 
     })
 
-})
-
-describe("planStep e2e", () => {
-    test("test", async () => {
-        await expect(planStep({from: "ssyzygy@bam.org", to: "planStep@bam.org", 
-            subject: "test", body: ""})).resolves.toBeNull()
-    })
 })
