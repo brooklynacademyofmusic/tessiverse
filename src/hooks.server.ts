@@ -3,6 +3,7 @@ import * as errors from "$lib/errors"
 import { env } from "$env/dynamic/private"
 import jwt from "jsonwebtoken"
 import jwks from "jwks-rsa"
+import type { ClientPrincipalWithClaims } from 'svelte-adapter-azure-swa';
 
 export const handle: Handle = async ({ event, resolve }) => {
 
@@ -10,13 +11,17 @@ export const handle: Handle = async ({ event, resolve }) => {
     const token = event.request.headers.get("authorization")?.split(" ")[1]
 
     if (event.platform && event.platform.clientPrincipal){
-        user = event.platform.clientPrincipal
-    } else if (event.request.headers.get("Api-Key") == env.API_KEY) {
-        user = {
-            identityProvider: "api_key",
-            userId: event.request.headers.get("x-ms-workflow-id") || "apiUser",
-            userDetails: event.request.headers.get("x-ms-workflow-name") || "apiUser",
-            userRoles: ["authenticated", "anonymous", "admin"]
+        if (event.platform.clientPrincipal.userDetails) {
+            user = event.platform.clientPrincipal
+        } else {
+            // This appears to be how Azure handles authentication internally ...
+            let cp = (event.platform.clientPrincipal as ClientPrincipalWithClaims & {name_typ: string, role_typ: string, auth_typ: string})
+            user = {
+                identityProvider: cp.auth_typ,
+                userId: cp.claims.filter((v) => v.typ == cp.name_typ)[0].val,
+                userDetails: cp.claims.filter((v) => v.typ == cp.name_typ)[0].val,
+                userRoles: ["authenticated", "anonymous"]
+            }
         }
     } else if (env.DEV_USER) {
         user = JSON.parse(Buffer.from(env.DEV_USER, 'base64').toLocaleString())        
