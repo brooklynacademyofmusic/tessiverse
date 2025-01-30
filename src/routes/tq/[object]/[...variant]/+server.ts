@@ -19,10 +19,13 @@ async function tq_verb(verb: string, params: RouteParams, request: Request, loca
   let tessiApp = new TessituraAppServer(user.apps.tessitura)
   let query = Object.fromEntries(new URL(request.url).searchParams.entries())
 
+  if (!params.object)
+    error(500, {message: "Invalid query"})
+
   return request.text()
     .then((text) => {
       query = text ? Object.assign(query,JSON.parse(text)) : query
       return tq(verb, params.object, {variant: params.variant, query: query, login: tessiApp.auth})})
     .then((result) => json(result))
-    .catch((e) => error(500, {message: "Invalid query"}))
+    .catch(() => error(500, {message: "Invalid query"}))
 }
