@@ -1,8 +1,8 @@
 import { error, type Handle, redirect } from '@sveltejs/kit';
 import * as errors from "$lib/errors"
 import { env } from "$env/dynamic/private"
-// import jwt from "jsonwebtoken"
-// import jwks from "jwks-rsa"
+import jwt from "jsonwebtoken"
+import jwks from "jwks-rsa"
 
 export const handle: Handle = async ({ event, resolve }) => {
 
@@ -20,26 +20,27 @@ export const handle: Handle = async ({ event, resolve }) => {
         }
     } else if (env.DEV_USER) {
         user = JSON.parse(Buffer.from(env.DEV_USER, 'base64').toLocaleString())        
-    // } else if(token) {
-    //     let payload = await new Promise((res,rej) => 
-    //         jwt.verify(token, getKey, {
-    //             algorithms: ['RS256'],
-    //             audience: env.AZURE_CLIENT_ID,
-    //             issuer: `https://sts.windows.net/${env.AZURE_TENANT_ID}/`
-    //         },(e,p) => {
-    //             if(e || !p) rej(e)
-    //             else res(p)
-    //         })).catch((e) => error(403,e)) as jwt.JwtPayload | string
-
-    //     if (typeof payload === "string")
-    //         payload = JSON.parse(payload) as jwt.JwtPayload
-            
-    //     user = {
-    //         identityProvider: "bearer_token",
-    //         userId: payload.oid,
-    //         userDetails: payload.upn,
-    //         userRoles: ["authenticated", "anonymous"].concat(payload.roles)
-    //     }
+    } else if(token) {
+        await new Promise<jwt.JwtPayload | string>((res,rej) => 
+            // verify that it's a signed key, not expired, and it's meant for us...
+            jwt.verify(token, getKey, {
+                algorithms: ['RS256'],
+                audience: env.AZURE_CLIENT_ID,
+                issuer: `https://sts.windows.net/${env.AZURE_TENANT_ID}/`
+            },(err,payload) => {
+                if(err || !payload) rej(err)
+                else res(payload)
+            })).then((payload) => {
+                if (typeof payload === "string")
+                    payload = JSON.parse(payload) as jwt.JwtPayload
+                    
+                user = {
+                    identityProvider: "bearer_token",
+                    userId: payload.oid,
+                    userDetails: payload.upn,
+                    userRoles: ["authenticated", "anonymous"].concat(payload.roles)
+                }
+        }).catch(() => {}) // no-op
     } 
 
     if(!user) {
@@ -61,18 +62,18 @@ export const handle: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
-// // Client for getting the JWT signing key
-// const client = new jwks.JwksClient({
-//     jwksUri: `https://login.microsoftonline.com/${env.AZURE_TENANT_ID}/discovery/keys`
-// })
+// Client for getting the JWT signing key
+const client = new jwks.JwksClient({
+    jwksUri: `https://login.microsoftonline.com/${env.AZURE_TENANT_ID}/discovery/keys`
+})
 
-// // Helper function to retrieve signing key from kid (key ID)
-// const getKey: jwt.GetPublicKeyOrSecret = (header, callback) => {
-//     client.getSigningKey(header.kid, (err, key) => {
-//         if (err || !key) {
-//             return callback(err);
-//         }
-//         const signingKey = key.getPublicKey();
-//         callback(null, signingKey);
-//     });
-// }
+// Helper function to retrieve signing key from kid (key ID)
+const getKey: jwt.GetPublicKeyOrSecret = (header, callback) => {
+    client.getSigningKey(header.kid, (err, key) => {
+        if (err || !key) {
+            return callback(err);
+        }
+        const signingKey = key.getPublicKey();
+        callback(null, signingKey);
+    });
+}
