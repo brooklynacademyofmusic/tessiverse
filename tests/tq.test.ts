@@ -41,7 +41,10 @@ describe("tq", () => {
         expect(await tq("auth","list")).toMatch(env.TQ_ADMIN_LOGIN || "The TQ_ADMIN_LOGIN variable isn't defined!")
     })
 
-    test("tq returns an object (vpn)", async () => {
+    test("tq returns an object (vpn)", {timeout: 10000}, async () => {
+        if (!env.TQ_ADMIN_PASSWORD)
+            throw("Define an admin password in env")
+        await tq("auth","add",{query: env.TQ_ADMIN_PASSWORD, login: dev_server[0].value + "|" + env.TQ_ADMIN_LOGIN})
         let constituent = await tq("get","constituents",{query: {constituentid: "1"}, login: dev_server[0].value + "|" + env.TQ_ADMIN_LOGIN})
         expect(constituent).toHaveProperty("id")
         expect(constituent).toHaveProperty("displayname")
@@ -49,6 +52,9 @@ describe("tq", () => {
     })
 
     test("tq returns an object (relay)", async () => {
+        if (!env.TQ_ADMIN_PASSWORD)
+            throw("Define an admin password in env")
+        await tq("auth","add",{query: env.TQ_ADMIN_PASSWORD, login: dev_server[1].value + "|" + env.TQ_ADMIN_LOGIN})
         let constituent = await tq("get","constituents",{query: {constituentid: "1"}, login: dev_server[1].value + "|" + env.TQ_ADMIN_LOGIN})
         expect(constituent).toHaveProperty("id")
         expect(constituent).toHaveProperty("displayname")
