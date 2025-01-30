@@ -55,6 +55,7 @@ export type PlanStepEmail = {
 
 export async function planStep(email: PlanStepEmail): Promise<null> {
     email.from = email.from.toLowerCase()
+    email.body = NodeHtmlMarkdown.translate(email.body)
     let emailId: string = `${email.from} => ${email.subject} ${email.body.substring(0,63)}${email.body.length > 64 ? "..." : ""}`
     console.log(`Generating plan step for email ${emailId}`)
     let backend = new Azure()
@@ -84,7 +85,6 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
                 throw(error(404, `User ${email.from} does not have any plans!`))
         })
 
-    email.body = NodeHtmlMarkdown.translate(email.body)
     let body: string = [email.to,email.cc || "",email.bcc || "",email.subject,email.body].join(" ")
     let plans_emails: Email[][] = await Promise.all(plans.map((p) => {
         return tq("get", "electronicaddresses", 
@@ -141,7 +141,7 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
             notes: email.body,
             stepdatetime: new Date(),
             completedondatetime: planStepData.closeStep ? new Date() : null,
-            description: email.subject
+            description: email.subject.length > 27 ? email.subject.substring(0,27)+"..." : email.subject 
         },
         login:tessiApp.auth})
         .catch(() => {
