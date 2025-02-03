@@ -43,7 +43,7 @@ jobs:
           action: "upload"
           app_location: "./"
           api_location: ""
-          app_build_command: "bash -c 'npm run build && cd tq && git submodule update && GOOS=linux GOARCH=amd64 go build -o ../build/server/bin/tq .'"
+          app_build_command: "npm run build && cd tq && git submodule update && GOOS=linux GOARCH=amd64 $(which go) build -o ../build/server/bin/tq ."
           skip_api_build: true
           output_location: "./build/static"
 
