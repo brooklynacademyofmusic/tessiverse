@@ -43,9 +43,11 @@ jobs:
           action: "upload"
           app_location: "./"
           api_location: ""
-          app_build_command: "npm run build && cd tq && git submodule update && GOOS=linux GOARCH=amd64 $(which go) build -o ../build/server/bin/tq ."
           skip_api_build: true
           output_location: "./build/static"
+
+      - name: Build tq
+        run: "cd tq && go build -o ../build/server/bin/tq ."
 
       - name: 'Deploy API as function app'
         uses: Azure/functions-action@v1
