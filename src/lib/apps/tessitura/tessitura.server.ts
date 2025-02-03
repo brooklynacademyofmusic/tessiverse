@@ -90,7 +90,7 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
         tessi.data.tessiApiUrl = form.data.tessiApiUrl
         tessi.data.userid = form.data.userid
         tessi.data.group = form.data.group
-        tessi.data.location = form.data.userid+"-14"
+        tessi.data.location = env.MACHINE_LOCATION
 
         await tessi.tessiPassword(form.data.password)
         let valid = await tessi.tessiValidate()
