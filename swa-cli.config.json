@@ -16,7 +16,7 @@
       "appName": "tessiverse",
       "resourceGroup": "tessiverse",
       "outputLocation": "./build/static",
-      "apiLocation": "./build/server",
+      "apiLocation": "",
       "apiVersion": "18",
       "apiLanguage": "node",
       "appLocation": "."
