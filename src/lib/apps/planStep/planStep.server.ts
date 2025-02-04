@@ -86,12 +86,10 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
         })
 
     let body: string = [email.to,email.cc || "",email.bcc || "",email.subject,email.body].join(" ")
-    let plans_emails: Email[][] = await Promise.all(plans.map((p) => {
-        return tq("get", "electronicaddresses", 
+    let plans_emails: Email[][] = await tq("get", "electronicaddresses", 
             {variant: "all", 
-                query: {constituentids: p.constituent.id.toString()}, 
-                login:tessiApp.auth})
-            }))
+                query: plans.map((p) => {return {constituentids: p.constituent.id.toString()}}), 
+                login: tessiApp.auth})
             .catch(() => {
                 throw(error(500, ERRORS.TQ))
             })

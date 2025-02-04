@@ -73,11 +73,11 @@ describe("planStep", () => {
          laststepdate: new Date().toString()},
     ]
     
-    let emails: Email[] = [
-        {address: "a@test.com"},
-        {address: "b@test.com"},
-        {address: "c@test.com"},
-        {address: "d@test.com"}
+    let emails: Email[][] = [
+        [{address: "a@test.com"}],
+        [{address: "b@test.com"}],
+        [{address: "c@test.com"}],
+        [{address: "d@test.com"}]
     ]
     
     let now = new Date()
@@ -139,7 +139,7 @@ describe("planStep", () => {
         expect(errorMocked.mock.calls[0][1]).toMatch(/User .* does not have any plans/)
         expect(tqMocked).toBeCalledTimes(1)
 
-        tqMocked.mockReset().mockResolvedValueOnce([{"constituentid":12345}]).mockResolvedValueOnce(plans).mockResolvedValue([emails[0]])
+        tqMocked.mockReset().mockResolvedValueOnce([{"constituentid":12345}]).mockResolvedValueOnce(plans).mockResolvedValue(emails)
 
         await planStep(email).catch(() => {})
 
@@ -158,10 +158,7 @@ describe("planStep", () => {
         tqMocked.mockReset().
             mockResolvedValueOnce([{"constituentid":12345}]).
             mockResolvedValueOnce(plans).
-            mockResolvedValueOnce([emails[0]]).
-            mockResolvedValueOnce([emails[1]]).
-            mockResolvedValueOnce([emails[2]]).
-            mockResolvedValueOnce([emails[3]]).
+            mockResolvedValueOnce([emails]).
             mockResolvedValue(null)
 
         email.body = arg.body
@@ -183,10 +180,7 @@ describe("planStep", () => {
         tqMocked.mockReset().
             mockResolvedValueOnce([{"constituentid":12345}]).
             mockResolvedValueOnce(plans).
-            mockResolvedValueOnce([emails[0]]).
-            mockResolvedValueOnce([emails[1]]).
-            mockResolvedValueOnce([emails[2]]).
-            mockResolvedValueOnce([emails[3]]).
+            mockResolvedValueOnce([emails]).
             mockResolvedValue(null)
 
         let email2 = email
@@ -217,10 +211,7 @@ describe("planStep", () => {
         tqMocked.mockReset().
             mockResolvedValueOnce([{"constituentid":12345}]).
             mockResolvedValueOnce(plans).
-            mockResolvedValueOnce([emails[0]]).
-            mockResolvedValueOnce([emails[1]]).
-            mockResolvedValueOnce([emails[2]]).
-            mockResolvedValueOnce([emails[3]]).
+            mockResolvedValueOnce([emails]).
             mockResolvedValue(null)
 
         email.body = arg.body
