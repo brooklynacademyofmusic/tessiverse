@@ -41,10 +41,10 @@ jobs:
 
       - name: Build
         run: |
-             npm in --dev
+             npm in --include=dev
              npm run build
              cd tq
-             GOOS=linux GOARCH=amd64 go build -o ../build/server/bin/tq .'
+             GOOS=linux GOARCH=amd64 go build -o ../build/server/bin/tq .
 
       - name: Deploy
         env: 
