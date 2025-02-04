@@ -44,7 +44,7 @@ jobs:
              npm in --include=dev
              npm run build
              cd tq
-             GOOS=linux GOARCH=amd64 go build -o ../build/server/bin/tq .
+             GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ../build/server/bin/tq .
 
       - name: Deploy
         env: 
