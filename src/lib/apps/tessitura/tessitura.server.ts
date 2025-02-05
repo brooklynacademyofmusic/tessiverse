@@ -28,8 +28,6 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
 
     async tessiPassword(password:string): Promise<void> {
         return tq("auth","add",{query: password,login: this.auth})
-        .catch(() => 
-            error(500, errors.TQ))
     }
 
     async tessiValidate(): Promise<boolean> {
@@ -50,10 +48,7 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
             then((tessi: {constituentsummaries: {id: number}[]}) => {
                 this.data.constituentid = tessi.constituentsummaries[0].id
                 return this
-            }).
-            catch(() => 
-                error(500, errors.TQ)
-            )
+            })
       }  
 
     static async tessiGroups(login: string = tessiAdminAuth): Promise<{value: string, label: string}[]> {
@@ -61,9 +56,6 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
             then((tessi: {id: string, name: string}[]) => 
                 tessi.map((t) => ({value: t.id.trim(), label: t.name.trim()}))
                      .sort((a,b) => a.label > b.label ? 1 : -1)
-            )
-            .catch(() => 
-                error(500, errors.TQ)
             )
     }
 
