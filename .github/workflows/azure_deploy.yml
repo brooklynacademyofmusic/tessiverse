@@ -66,17 +66,17 @@ jobs:
         uses: Azure/cli@v2
         env:
           ENV_NAME: ${{ env.DEPLOY_NAME != 'production' && format('--environment-name ${0}',env.DEPLOY_NAME) || '' }}
-          SLOT_NAME: ${{ env.DEPLOY_NAME != 'production' && format('slots/${0}',env.DEPLOY_NAME) || '' }}
+          SLOT_NAME: ${{ env.DEPLOY_NAME != 'production' && format('/slots/${0}',env.DEPLOY_NAME) || '' }}
         with:
           azcliversion: latest
           inlineScript: |
             # link front end and backend            
-            eval az staticwebapp backends unlink -n tessiverse -g tessiverse $ENV_NAME
-            eval az staticwebapp backends link -n tessiverse -g tessiverse $ENV_NAME \
-              --backend-resource-id "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/tessiverse/providers/Microsoft.Web/sites/tessiverse-api/$SLOT_NAME" --backend-region canadaeast
+            eval az staticwebapp backends unlink -n tessiverse -g tessiverse ${{ env.ENV_NAME }}
+            eval az staticwebapp backends link -n tessiverse -g tessiverse  ${{ env.ENV_NAME }} \
+              --backend-resource-id "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/tessiverse/providers/Microsoft.Web/sites/tessiverse-api${{ env.SLOT_NAME }}" --backend-region canadaeast
             
             # configure backend using production config options
             if [ DEPLOY_NAME != "production" ]; then 
               az functionapp config appsettings list -n tessiverse-api -g tessiverse --query '[?!slotSetting]' > settings.json
-              az functionapp config appsettings set -n tessiverse-api -g tessiverse -s ${DEPLOY_NAME} --settings @settings.json
+              az functionapp config appsettings set -n tessiverse-api -g tessiverse -s ${{ env.DEPLOY_NAME }} --settings @settings.json
             fi
