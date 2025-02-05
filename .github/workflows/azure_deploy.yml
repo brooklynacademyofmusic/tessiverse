@@ -65,10 +65,15 @@ jobs:
       - name: Configure frontend and backend
         uses: Azure/cli@v2
         with:
+          azcliversion: latest
           inlineScript: |
-            # link front end and backend            
+            # set up some variables
             ENV_NAME=$([ $DEPLOY_NAME != "production" ] && echo --environment-name $DEPLOY_NAME)
             SLOT_NAME=$([ $DEPLOY_NAME != "production" ] && echo slots/$DEPLOY_NAME)
+            echo ENV_NAME=$ENV_NAME
+            echo SLOT_NAME=$SLOT_NAME
+
+            # link front end and backend            
             eval az staticwebapp backends unlink -n tessiverse -g tessiverse $ENV_NAME
             eval az staticwebapp backends link -n tessiverse -g tessiverse $ENV_NAME \
               --backend-resource-id "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/tessiverse/providers/Microsoft.Web/sites/tessiverse-api/$SLOT_NAME" --backend-region canadaeast
