@@ -76,7 +76,7 @@ jobs:
               --backend-resource-id "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/tessiverse/providers/Microsoft.Web/sites/tessiverse-api${{ env.SLOT_NAME }}" --backend-region canadaeast
             
             # configure backend using production config options
-            if [ DEPLOY_NAME != "production" ]; then 
+            if [ "${{ env.DEPLOY_NAME }}" != "production" ]; then 
               az functionapp config appsettings list -n tessiverse-api -g tessiverse --query '[?!slotSetting]' > settings.json
               az functionapp config appsettings set -n tessiverse-api -g tessiverse -s ${{ env.DEPLOY_NAME }} --settings @settings.json
             fi
