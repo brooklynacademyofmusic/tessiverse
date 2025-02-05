@@ -20,7 +20,7 @@ export const handle: Handle = async ({ event, resolve }) => {
                 identityProvider: cp.auth_typ,
                 userId: cp.claims.filter((v) => v.typ == cp.name_typ)[0].val,
                 userDetails: cp.claims.filter((v) => v.typ == cp.name_typ)[0].val,
-                userRoles: ["authenticated", "anonymous"]
+                userRoles: ["admin", "authenticated", "anonymous"]
             }
         }
     } else if (env.DEV_USER) {
@@ -51,6 +51,8 @@ export const handle: Handle = async ({ event, resolve }) => {
     if(!user) {
         user = {identityProvider: "", userId: "", userDetails: "", userRoles: ["anonymous"]}
     }
+
+    console.log(user)
 
     user.userDetails = user.userDetails.toLowerCase()
     event.locals.user = user
