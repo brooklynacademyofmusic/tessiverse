@@ -62,6 +62,13 @@ jobs:
           package: "./build/server"
           slot-name: ${{ env.DEPLOY_NAME }}
 
+      - name: Test cli
+        uses: Azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az account show
+
       - name: Configure frontend and backend
         uses: Azure/cli@v2
         with:
