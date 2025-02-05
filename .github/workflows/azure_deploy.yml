@@ -71,7 +71,7 @@ jobs:
             SLOT_NAME=$([ $DEPLOY_NAME != "production" ] && echo slots/$DEPLOY_NAME)
             eval az staticwebapp backends unlink -n tessiverse -g tessiverse $ENV_NAME
             eval az staticwebapp backends link -n tessiverse -g tessiverse $ENV_NAME \
-              --backend-resource-id "/subscriptions/${{ env.AZURE_SUBSCRIPTION_ID }}/resourceGroups/tessiverse/providers/Microsoft.Web/sites/tessiverse-api/$SLOT_NAME" --backend-region canadaeast
+              --backend-resource-id "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/tessiverse/providers/Microsoft.Web/sites/tessiverse-api/$SLOT_NAME" --backend-region canadaeast
             
             # configure backend using production config options
             if [ DEPLOY_NAME != "production" ]; then 
