@@ -7,7 +7,7 @@ on:
     branches:
       - main
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened]
     branches:
       - main
 
@@ -18,9 +18,11 @@ permissions:
 
 jobs:
   build_and_deploy:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy
+    env:
+      DEPLOY_NAME: ${{ (github.head_ref || github.ref_name) == 'main' && 'production' || (github.head_ref || github.ref_name)  }}  
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,11 +52,29 @@ jobs:
         env: 
           SWA_CLI_DEPLOYMENT_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
         run: |
-            npx swa deploy production --env production
+            npx swa deploy production --env $DEPLOY_NAME
 
-      - name: 'Deploy API as function app'
+      - name: Deploy API as function app
         uses: Azure/functions-action@v1
         id: fa
         with:
           app-name: "tessiverse-api"
           package: "./build/server"
+          slot-name: ${{ env.DEPLOY_NAME }}
+
+      - name: Configure frontend and backend
+        uses: Azure/cli@v2
+        with:
+          inlineScript: |
+            # link front end and backend            
+            ENV_NAME=$([ $DEPLOY_NAME != "production" ] && echo --environment-name $DEPLOY_NAME)
+            SLOT_NAME=$([ $DEPLOY_NAME != "production" ] && echo slots/$DEPLOY_NAME)
+            eval az staticwebapp backends unlink -n tessiverse -g tessiverse $ENV_NAME
+            eval az staticwebapp backends link -n tessiverse -g tessiverse $ENV_NAME \
+              --backend-resource-id "/subscriptions/${{ env.AZURE_SUBSCRIPTION_ID }}/resourceGroups/tessiverse/providers/Microsoft.Web/sites/tessiverse-api/$SLOT_NAME" --backend-region canadaeast
+            
+            # configure backend using production config options
+            if [ DEPLOY_NAME != "production" ]; then 
+              az functionapp config appsettings list -n tessiverse-api -g tessiverse --query '[?!slotSetting]' > settings.json
+              az functionapp config appsettings set -n tessiverse-api -g tessiverse -s ${DEPLOY_NAME} --settings @settings.json
+            fi
