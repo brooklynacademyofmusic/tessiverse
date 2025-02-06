@@ -11,8 +11,6 @@ import { BaseAppServer } from '$lib/baseapp.server'
 import { env } from '$env/dynamic/private'
 import { servers } from '$lib/const'
 
-const tessiAdminAuth = servers[0].value + "|" + env.TQ_ADMIN_LOGIN
-
 export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraAppSave> implements 
                                             AppServer<TessituraApp, TessituraAppSave> {
 
@@ -37,13 +35,13 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
     }
 
     async tessiLoad(): Promise<Partial<TessituraApp>> {
-        return tq("get","users",{query: {"username":this.data.userid},login: tessiAdminAuth}).
+        return tq("get","users",{query: {"username":this.data.userid},login: this.data.tessiApiUrl + "|" + env.TQ_ADMIN_LOGIN}).
             then((tessi) => {
                 Object.assign(this.data, tessi)
                 return this
             }).
             then((tessi) => 
-                tq("get","constituents",{variant: "search", query: {type:"fluent", q:tessi.data.emailaddress || ""}, login: tessiAdminAuth})
+                tq("get","constituents",{variant: "search", query: {type:"fluent", q:tessi.data.emailaddress || ""}, login: this.data.tessiApiUrl + "|" + env.TQ_ADMIN_LOGIN})
             ).
             then((tessi: {constituentsummaries: {id: number}[]}) => {
                 this.data.constituentid = tessi.constituentsummaries[0].id
@@ -51,7 +49,7 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
             })
       }  
 
-    static async tessiGroups(login: string = tessiAdminAuth): Promise<{value: string, label: string}[]> {
+    static async tessiGroups(login: string = servers[0] + "|" + env.TQ_ADMIN_LOGIN): Promise<{value: string, label: string}[]> {
         return tq("get","usergroups",{variant: "summaries", login: login}).
             then((tessi: {id: string, name: string}[]) => 
                 tessi.map((t) => ({value: t.id.trim(), label: t.name.trim()}))
