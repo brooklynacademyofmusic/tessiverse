@@ -108,7 +108,12 @@
         </Form.Button>
         </form>
         <Table.Root>
-            <Table.Caption>Your {history.length} most recent plan steps.</Table.Caption>
+            <Table.Caption>{#if history.length>0}
+                Your {history.length} most recent plan steps.
+                {:else}
+                You haven't created any plan steps yet!
+                {/if}
+            </Table.Caption>
             <ScrollArea class="h-[min(50svh,30rem)]">
 
             <Table.Header>
