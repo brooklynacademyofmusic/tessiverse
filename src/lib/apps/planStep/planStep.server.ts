@@ -150,7 +150,7 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
     let backend2 = new UserLoaded(await backend.load({identity: email.from}))
     await new PlanStepAppServer().saveHistory({
             subject: email.subject,
-            planDesc: [plan.constituent.displayname,plan.campaign.description,plan.contributiondesignation.description].join(" "),
+            planDesc: [plan.constituent.displayname,plan.campaign.description,plan.contributiondesignation.description].join(" / "),
             date: new Date()
         },backend2)
 
