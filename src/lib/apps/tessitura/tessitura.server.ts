@@ -49,7 +49,7 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
             })
       }  
 
-    static async tessiGroups(login: string = servers[0] + "|" + env.TQ_ADMIN_LOGIN): Promise<{value: string, label: string}[]> {
+    static async tessiGroups(login: string = servers[0].value + "|" + env.TQ_ADMIN_LOGIN): Promise<{value: string, label: string}[]> {
         return tq("get","usergroups",{variant: "summaries", login: login}).
             then((tessi: {id: string, name: string}[]) => 
                 tessi.map((t) => ({value: t.id.trim(), label: t.name.trim()}))
