@@ -8,6 +8,7 @@ import { DefaultAzureCredential } from '@azure/identity'
 import { TessituraApp } from '$lib/apps/tessitura/tessitura'
 import { readFileSync } from 'node:fs'
 import * as https from 'node:https'
+import { json } from 'node:stream/consumers'
 
 describe("TessituraAppServer", async () => {
     let user: string[]
@@ -16,15 +17,15 @@ describe("TessituraAppServer", async () => {
                 key: readFileSync('relay/dev-server.key'), // openssl genrsa -out dev-server.key 2048  
                 cert: readFileSync('relay/dev-server.crt') // openssl x509 -new -key dev-server.key -days 365 -out dev-server.crt -subj /CN=localhost/},
             },
-            (req, res) => {
+            async (req, res) => {
                 var out: any
                 res.setHeader("content-type","application/json")
                 if(req.url?.match("CRM/Constituents")) {
-                    out = {
+                    out = {"ConstituentSummaries":[{
                         Id:12345,
                         DisplayName: "Tessi",
                         LastName: "Verse"
-                    }
+                    }]}
                 } else if(req.url?.match("ReferenceData/UserGroups")) {
                     out = [
                         {Id: "group1", Name: "Group 1"},
@@ -34,7 +35,14 @@ describe("TessituraAppServer", async () => {
                     out = {
                         FirstName: "Sky"
                     }
-                } 
+                } else if(req.url?.match("Security/Authenticate")) {
+                    let payload = await json(req) as {"UserName": string}
+                    if (payload.UserName == env.TQ_ADMIN_LOGIN.split("|")[0]) {
+                        out = {"Token": "secret"}
+                    } else {
+                        out = {}
+                    }
+                }
                 res.write(JSON.stringify(out))
                 res.end()
         }).listen(8888).on("listening",() => res(true)))
@@ -113,6 +121,8 @@ describe("TessituraAppServer", async () => {
         let data = await tessi.load(userSuccess)
         expect(data.userid).toBe(user[0])
         expect(data.group).toBe(user[1])
+        expect(data.valid).toBe(true)
+        expect(data.form).toHaveProperty("errors")
     })
-        
+
 })
