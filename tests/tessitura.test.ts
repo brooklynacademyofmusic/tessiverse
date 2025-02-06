@@ -6,16 +6,43 @@ import { UserLoaded } from '$lib/azure'
 import { SecretClient } from '@azure/keyvault-secrets'
 import { DefaultAzureCredential } from '@azure/identity'
 import { TessituraApp } from '$lib/apps/tessitura/tessitura'
+import { readFileSync } from 'node:fs'
+import * as https from 'node:https'
 
-const dev_server = JSON.parse(env.DEV_SERVER)
-
-describe("TessituraAppServer", () => {
+describe("TessituraAppServer", async () => {
     let user: string[]
     let tessi: TessituraAppServer
+    await new Promise((res) => https.createServer({
+                key: readFileSync('relay/dev-server.key'), // openssl genrsa -out dev-server.key 2048  
+                cert: readFileSync('relay/dev-server.crt') // openssl x509 -new -key dev-server.key -days 365 -out dev-server.crt -subj /CN=localhost/},
+            },
+            (req, res) => {
+                var out: any
+                res.setHeader("content-type","application/json")
+                if(req.url?.match("CRM/Constituents")) {
+                    out = {
+                        Id:12345,
+                        DisplayName: "Tessi",
+                        LastName: "Verse"
+                    }
+                } else if(req.url?.match("ReferenceData/UserGroups")) {
+                    out = [
+                        {Id: "group1", Name: "Group 1"},
+                        {Id: "group2", Name: "Group 2"},
+                    ]
+                } else if(req.url?.match("Security/Users")) {
+                    out = {
+                        FirstName: "Sky"
+                    }
+                } 
+                res.write(JSON.stringify(out))
+                res.end()
+        }).listen(8888).on("listening",() => res(true)))
+
     beforeEach(() => {
         user = env.TQ_ADMIN_LOGIN.split("|")
         tessi = new TessituraAppServer({
-            tessiApiUrl: dev_server[0].value,
+            tessiApiUrl: "localhost:8888",
             userid: user[0],
             group: user[1],
             location: user[2],
@@ -23,15 +50,14 @@ describe("TessituraAppServer", () => {
     })
 
     test("auth returns a valid auth", async () => {
-        expect(tessi.auth).toBe(dev_server[0].value+"|"+env.TQ_ADMIN_LOGIN)
-        console.log(env.DEV_SERVER)
+        expect(tessi.auth).toBe("localhost:8888"+"|"+env.TQ_ADMIN_LOGIN)
     })
 
     test("tessiGroups gets valid groups from Tessitura", async () => {
         let groups = await TessituraAppServer.tessiGroups(tessi.auth)
         expect(groups.length).greaterThan(1)
-        expect(groups[0]).toHaveProperty("label")
-        expect(groups[0]).toHaveProperty("value")
+        expect(groups[0].label).toBe("Group 1")
+        expect(groups[0].value).toBe("group1")
     })    
 
     test("tessiLoad loads user info from Tessitura", async () => {
