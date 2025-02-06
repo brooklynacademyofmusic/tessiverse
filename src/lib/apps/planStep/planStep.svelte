@@ -11,9 +11,13 @@
 	import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '$lib/components/ui/accordion';
 	import { LoaderCircle } from 'lucide-svelte';
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
+    import * as Table from "$lib/components/ui/table";
+
     let { data, open = $bindable(true) }: { data: PlanStepAppLoad, open?: boolean} = $props()
-    
-    console.log(data)
+
+    let dateFormat = new Intl.DateTimeFormat("en-US",{dateStyle: "short", timeStyle: "short"})
+    let history = data.history.reverse().slice(0,25)
+
     let form: SuperForm<Infer<typeof planStepSchema>> = 
         superForm(data.form,
             {
@@ -103,5 +107,30 @@
             {/if}
         </Form.Button>
         </form>
+        <Table.Root>
+            <Table.Caption>Your {history.length} most recent plan steps.</Table.Caption>
+            <ScrollArea class="h-[min(50svh,30rem)]">
+
+            <Table.Header>
+              <Table.Row>
+                <Table.Head>Date</Table.Head>
+                <Table.Head>Plan</Table.Head>
+                <Table.Head>Subject</Table.Head>
+              </Table.Row>
+            </Table.Header>
+
+            <Table.Body>
+                {#each history as step }
+                <Table.Row>
+                    <Table.Cell class="font-medium">{dateFormat.format(new Date(step.date))}</Table.Cell>
+                    <Table.Cell>{step.planDesc}</Table.Cell>
+                    <Table.Cell>{step.subject}</Table.Cell>
+                </Table.Row>
+              {/each}
+            </Table.Body>
+        </ScrollArea>
+
+          </Table.Root>
+
     </Dialog.Content>
 </Dialog.Root> 
