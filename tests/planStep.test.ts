@@ -145,7 +145,7 @@ describe("planStep", () => {
 
         expect(errorMocked).toBeCalledTimes(2)
         expect(errorMocked.mock.calls[1][1]).toMatch(/Couldn't find a matching plan for .*/)
-        expect(tqMocked).toBeCalledTimes(6)
+        expect(tqMocked).toBeCalledTimes(3)
 
     })
 
@@ -158,7 +158,7 @@ describe("planStep", () => {
         tqMocked.mockReset().
             mockResolvedValueOnce([{"constituentid":12345}]).
             mockResolvedValueOnce(plans).
-            mockResolvedValueOnce([emails]).
+            mockResolvedValueOnce(emails).
             mockResolvedValue(null)
 
         email.body = arg.body
@@ -168,10 +168,10 @@ describe("planStep", () => {
         vi.useFakeTimers({now: planstep.stepdatetime})
         await planStep(email)
 
-        expect(tqMocked).toBeCalledTimes(7)
-        expect(tqMocked.mock.calls[6][0]).toBe("post")
-        expect(tqMocked.mock.calls[6][1]).toBe("steps")
-        expect(tqMocked.mock.calls[6][2]?.query).toEqual(planstep)
+        expect(tqMocked).toBeCalledTimes(4)
+        expect(tqMocked.mock.calls[3][0]).toBe("post")
+        expect(tqMocked.mock.calls[3][1]).toBe("steps")
+        expect(tqMocked.mock.calls[3][2]?.query).toEqual(planstep)
 
     })
 
@@ -180,7 +180,7 @@ describe("planStep", () => {
         tqMocked.mockReset().
             mockResolvedValueOnce([{"constituentid":12345}]).
             mockResolvedValueOnce(plans).
-            mockResolvedValueOnce([emails]).
+            mockResolvedValueOnce(emails).
             mockResolvedValue(null)
 
         let email2 = email
@@ -195,10 +195,10 @@ describe("planStep", () => {
         vi.useFakeTimers({now: planstep.stepdatetime})
         await planStep(email)
 
-        expect(tqMocked).toBeCalledTimes(7)
-        expect(tqMocked.mock.calls[6][0]).toBe("post")
-        expect(tqMocked.mock.calls[6][1]).toBe("steps")
-        expect(tqMocked.mock.calls[6][2]?.query).toEqual(planstep)
+        expect(tqMocked).toBeCalledTimes(4)
+        expect(tqMocked.mock.calls[3][0]).toBe("post")
+        expect(tqMocked.mock.calls[3][1]).toBe("steps")
+        expect(tqMocked.mock.calls[3][2]?.query).toEqual(planstep)
 
     })
 
@@ -211,7 +211,7 @@ describe("planStep", () => {
         tqMocked.mockReset().
             mockResolvedValueOnce([{"constituentid":12345}]).
             mockResolvedValueOnce(plans).
-            mockResolvedValueOnce([emails]).
+            mockResolvedValueOnce(emails).
             mockResolvedValue(null)
 
         email.body = arg.body
@@ -221,10 +221,10 @@ describe("planStep", () => {
         vi.useFakeTimers({now: planstep.stepdatetime})
         await planStep(email)
 
-        expect(tqMocked).toBeCalledTimes(7)
-        expect(tqMocked.mock.calls[6][0]).toBe("post")
-        expect(tqMocked.mock.calls[6][1]).toBe("steps")
-        expect(tqMocked.mock.calls[6][2]?.query).toEqual(planstep)
+        expect(tqMocked).toBeCalledTimes(4)
+        expect(tqMocked.mock.calls[3][0]).toBe("post")
+        expect(tqMocked.mock.calls[3][1]).toBe("steps")
+        expect(tqMocked.mock.calls[3][2]?.query).toEqual(planstep)
 
     })
 
@@ -250,7 +250,7 @@ describe("planStep", () => {
 
     tqMocked.mockReset().
         mockResolvedValueOnce([{"constituentid":12345}]).
-        mockResolvedValueOnce(plans_ambiguous).mockResolvedValue([emails[0]])
+        mockResolvedValueOnce(plans_ambiguous).mockResolvedValue([emails[0],emails[0],emails[0]])
 
     email.body = arg.body
     planstep.plan.id = arg.id
@@ -259,10 +259,10 @@ describe("planStep", () => {
     vi.useFakeTimers({now: planstep.stepdatetime})
     await planStep(email)
 
-    expect(tqMocked).toBeCalledTimes(6)
-    expect(tqMocked.mock.calls[5][0]).toBe("post")
-    expect(tqMocked.mock.calls[5][1]).toBe("steps")
-    expect(tqMocked.mock.calls[5][2]?.query).toEqual(planstep)
+    expect(tqMocked).toBeCalledTimes(4)
+    expect(tqMocked.mock.calls[3][0]).toBe("post")
+    expect(tqMocked.mock.calls[3][1]).toBe("steps")
+    expect(tqMocked.mock.calls[3][2]?.query).toEqual(planstep)
 
     })
 
