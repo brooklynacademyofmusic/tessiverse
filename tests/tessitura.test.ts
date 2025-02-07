@@ -2,7 +2,7 @@ import { env } from '$env/dynamic/private'
 import { TessituraAppServer } from '$lib/apps/tessitura/tessitura.server'
 import { tq } from '$lib/tq'
 import { test, expect, describe, beforeEach, vi } from 'vitest'
-import { UserLoaded } from '$lib/azure'
+import { Azure, UserLoaded } from '$lib/azure'
 import { SecretClient } from '@azure/keyvault-secrets'
 import { DefaultAzureCredential } from '@azure/identity'
 import { TessituraApp, type TessituraAppSave } from '$lib/apps/tessitura/tessitura'
@@ -12,7 +12,6 @@ import { json } from 'node:stream/consumers'
 import { servers } from '$lib/const'
 import type { Infer, SuperValidated } from 'sveltekit-superforms'
 import { tessituraSchema } from '$lib/apps/tessitura/tessitura.schema'
-
 
 describe("TessituraAppServer", async () => {
     let user: string[]
@@ -131,17 +130,21 @@ describe("TessituraAppServer", async () => {
 
     test("save validates the password, loads user data from Tessi and saves to backend", async () => {
         let user = new UserLoaded({identity: ""})
-        servers[2] = {label: "test", value: tessi.data.tessiApiUrl}
+        user.save = async () => {}
+        tessi.data.tessiApiUrl = servers[0].value
         let tessiSave = Object.assign(tessi.data,{password:"$e(ret"})
         vi.spyOn(tessi,"tessiPassword")
         vi.spyOn(tessi,"tessiValidate")
         vi.spyOn(tessi,"tessiLoad")
         await tessi.save(tessiSave,user)
         expect(tessi.tessiPassword).toHaveBeenCalledWith('$se(r3t')
+        expect(tessi.tessiValidate).toHaveBeenCalledOnce()
+        expect(tessi.tessiLoad).toHaveBeenCalledOnce()
     })
 
     test("save reports errors from each step", async () => {
         let user = new UserLoaded({identity: ""})
+        user.save = async () => {}
         let tessiSave = Object.assign(tessi.data,{password:"$e(ret"})
         vi.spyOn(tessi,"tessiPassword")
         vi.spyOn(tessi,"tessiValidate")
@@ -150,7 +153,7 @@ describe("TessituraAppServer", async () => {
         expect(response.form.errors).toMatch("tessiApiUrl")
 
         tessi.tessiLoad = () => {throw("Error loading")}
-        servers[2].value = tessi.data.tessiApiUrl
+        tessi.data.tessiApiUrl = servers[0].value
         response = await tessi.save(tessiSave,user) as {form: SuperValidated<Infer<typeof tessituraSchema>>}
         expect(response.form.errors).toMatch("Error loading")
 
