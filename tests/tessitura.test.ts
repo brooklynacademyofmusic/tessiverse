@@ -87,7 +87,7 @@ describe("TessituraAppServer", async () => {
 
     test("tessiPassword saves password to Auth backend",  {timeout: 15000}, async () => {
         tessi.data.userid = "notauser"
-        tessi.tessiPassword("pAsSw0rD")
+        await tessi.tessiPassword("pAsSw0rD")
 
         let list = await tq("auth","list")
         expect(list).toMatch("notauser")
@@ -133,6 +133,8 @@ describe("TessituraAppServer", async () => {
         user.save = async () => {}
         tessi.data.tessiApiUrl = servers[0].value
         let tessiSave = Object.assign(tessi.data,{password:"$e(ret"})
+        tessi.tessiValidate = async () => true
+        tessi.tessiLoad = async () => {}
         vi.spyOn(tessi,"tessiPassword")
         vi.spyOn(tessi,"tessiValidate")
         vi.spyOn(tessi,"tessiLoad")
