@@ -72,6 +72,7 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
 
     async save(data: TessituraAppSave, backend: UserLoaded) {
         const form = await superValidate(data, zod(tessituraSchema))
+            .catch(async (e) => superValidate(zod(tessituraSchema)))
         if (!form.valid) {
             return fail(400, {form})
         }
@@ -82,16 +83,20 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
         tessi.data.group = form.data.group
         tessi.data.location = env.MACHINE_LOCATION
 
-        await tessi.tessiPassword(form.data.password)
-        let valid = await tessi.tessiValidate()
+        // load and validate password
+        let valid = await tessi.tessiPassword(form.data.password)
+                .then(() => tessi.tessiValidate())
+                .catch(() => false)
         if (!valid) {
             return setError(form, "password", "Invalid login")
         }
 
+        // load data from tessi and then save it
         await tessi.tessiLoad()
-        await super.save(tessi.data, backend)
-        setMessage(form, 'Login updated successfully!')
-        return { form , success: true }
+            .then(() => super.save(tessi.data, backend))
+            .then(() => setMessage(form, 'Login updated successfully!'))
+            .catch(() => setError(form, "password", "Internal error!"))
+        return { form , success: form.valid }
     }
 } 
 
