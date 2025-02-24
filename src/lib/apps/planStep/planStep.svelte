@@ -9,7 +9,7 @@
     import { zodClient } from 'sveltekit-superforms/adapters';
     import PlanStepReadme from './planStep.md'
 	import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '$lib/components/ui/accordion';
-	import { LoaderCircle } from 'lucide-svelte';
+	import LoaderCircle from 'lucide-svelte/icons/loader-circle';
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
     import * as Table from "$lib/components/ui/table";
 
