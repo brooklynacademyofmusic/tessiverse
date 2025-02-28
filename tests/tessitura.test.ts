@@ -133,13 +133,11 @@ describe("TessituraAppServer", async () => {
         user.save = async () => {}
         tessi.data.tessiApiUrl = servers[0].value
         let tessiSave = Object.assign(tessi.data,{password:"$e(ret"})
-        tessi.tessiValidate = async () => true
-        tessi.tessiLoad = async () => {}
-        vi.spyOn(tessi,"tessiPassword")
-        vi.spyOn(tessi,"tessiValidate")
-        vi.spyOn(tessi,"tessiLoad")
+        tessi.tessiPassword = vi.fn(async () => {})
+        tessi.tessiValidate = vi.fn(async () => true)
+        tessi.tessiLoad = vi.fn(async () => new TessituraApp())
         await tessi.save(tessiSave,user)
-        expect(tessi.tessiPassword).toHaveBeenCalledWith('$se(r3t')
+        expect(tessi.tessiPassword).toHaveBeenCalledWith('$e(ret')
         expect(tessi.tessiValidate).toHaveBeenCalledOnce()
         expect(tessi.tessiLoad).toHaveBeenCalledOnce()
     })
