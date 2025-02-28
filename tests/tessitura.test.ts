@@ -12,6 +12,7 @@ import { json } from 'node:stream/consumers'
 import { servers } from '$lib/const'
 import type { Infer, SuperValidated } from 'sveltekit-superforms'
 import { tessituraSchema } from '$lib/apps/tessitura/tessitura.schema'
+import type { ActionFailure } from '@sveltejs/kit'
 
 describe("TessituraAppServer", async () => {
     let user: string[]
@@ -144,26 +145,31 @@ describe("TessituraAppServer", async () => {
 
     test("save reports errors from each step", async () => {
         let user = new UserLoaded({identity: ""})
+        let response: ActionFailure<{form: SuperValidated<Infer<typeof tessituraSchema>>}> = {} as any
         user.save = async () => {}
         let tessiSave = Object.assign(tessi.data,{password:"$e(ret"})
-        vi.spyOn(tessi,"tessiPassword")
-        vi.spyOn(tessi,"tessiValidate")
-        vi.spyOn(tessi,"tessiLoad")
-        let response = await tessi.save(tessiSave,user) as {form: SuperValidated<Infer<typeof tessituraSchema>>}
-        expect(response.form.errors).toMatch("tessiApiUrl")
+        tessi.tessiPassword = vi.fn(async () => {})
+        tessi.tessiValidate = vi.fn(async () => true)
+        tessi.tessiLoad = vi.fn(async () => new TessituraApp())
+        response = await tessi.save(tessiSave,user) as any
+        expect(response.data.form.errors).toHaveProperty("tessiApiUrl")
+        expect((response.data.form.errors.tessiApiUrl || [])[0]).toMatch("localhost:8888")
 
-        tessi.tessiLoad = () => {throw("Error loading")}
+        tessi.tessiLoad = vi.fn(async () => {throw("Error loading")})
         tessi.data.tessiApiUrl = servers[0].value
-        response = await tessi.save(tessiSave,user) as {form: SuperValidated<Infer<typeof tessituraSchema>>}
-        expect(response.form.errors).toMatch("Error loading")
+        response = await tessi.save(tessiSave,user) as any
+        expect(response.data.form.errors).toHaveProperty("password")
+        expect(response.data.form.errors.password).toContain("Internal error!")
 
-        tessi.tessiValidate = () => {throw("Error validating")}
-        response = await tessi.save(tessiSave,user) as {form: SuperValidated<Infer<typeof tessituraSchema>>}
-        expect(response.form.errors).toMatch("Error validating")
+        tessi.tessiValidate = vi.fn(async () => {throw("Error validating")})
+        response = await tessi.save(tessiSave,user) as any
+        expect(response.data.form.errors).toHaveProperty("password")
+        expect(response.data.form.errors.password).toContain("Invalid login")
 
-        tessi.tessiPassword = () => {throw("Error saving password")}
-        response = await tessi.save(tessiSave,user) as {form: SuperValidated<Infer<typeof tessituraSchema>>}
-        expect(response.form.errors).toMatch("Error saving password")
+        tessi.tessiPassword = vi.fn(async () => {throw("Error saving password")})
+        response = await tessi.save(tessiSave,user) as any
+        expect(response.data.form.errors).toHaveProperty("password")
+        expect(response.data.form.errors.password).toContain("Invalid login")
     })
 
 })
