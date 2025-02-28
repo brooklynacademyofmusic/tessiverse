@@ -1,7 +1,7 @@
 <script lang="ts">
     import * as Card from "./ui/card"
     import { Button } from "./ui/button"
-    import { Settings } from "lucide-svelte"
+	import Settings from 'lucide-svelte/icons/settings';
     import { cn } from "../utils"
 	import { Dialog } from "./ui/dialog";
     let { title, children, config, data, class: className = undefined } = $props()

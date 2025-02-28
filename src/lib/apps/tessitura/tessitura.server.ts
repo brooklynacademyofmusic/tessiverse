@@ -76,22 +76,24 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
             return fail(400, {form})
         }
 
-        let tessi = new TessituraAppServer(new TessituraAppData())
-        tessi.data.tessiApiUrl = form.data.tessiApiUrl
-        tessi.data.userid = form.data.userid
-        tessi.data.group = form.data.group
-        tessi.data.location = env.MACHINE_LOCATION
+        this.data.tessiApiUrl = form.data.tessiApiUrl
+        this.data.userid = form.data.userid
+        this.data.group = form.data.group
+        this.data.location = env.MACHINE_LOCATION
 
-        await tessi.tessiPassword(form.data.password)
-        let valid = await tessi.tessiValidate()
+        // load and validate password
+        let valid = await this.tessiPassword(form.data.password)
+                .then(() => this.tessiValidate())
+                .catch(() => false)
         if (!valid) {
             return setError(form, "password", "Invalid login")
         }
 
-        await tessi.tessiLoad()
-        await super.save(tessi.data, backend)
-        setMessage(form, 'Login updated successfully!')
-        return { form , success: true }
+        // load data from tessi and then save it
+        return await this.tessiLoad()
+            .then(() => super.save(this.data, backend))
+            .then(() => setMessage(form, 'Login updated successfully!'))
+            .catch(() => setError(form, "password", "Internal error!"))
     }
 } 
 

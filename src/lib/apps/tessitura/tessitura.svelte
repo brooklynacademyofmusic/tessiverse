@@ -12,7 +12,7 @@
     import * as config from "$lib/const"
 	import type { TessituraAppLoad } from './tessitura';
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
-	import { LoaderCircle } from 'lucide-svelte';
+	import LoaderCircle from 'lucide-svelte/icons/loader-circle';
 	import { tick } from 'svelte';
 	
     let servers = config.servers

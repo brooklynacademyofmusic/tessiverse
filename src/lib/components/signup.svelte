@@ -1,7 +1,7 @@
 <script lang="ts">
     import * as Alert from '$lib/components/ui/alert-dialog'
     import Tessitura from "$lib/apps/tessitura/tessitura.svelte"
-	import { ChevronRight } from 'lucide-svelte';
+	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import type { TessituraAppLoad } from '$lib/apps/tessitura/tessitura';
     let { data }: { data: TessituraAppLoad } = $props()
     let ok = $state(false);

@@ -4,7 +4,7 @@
     import AppCard from "$lib/components/appCard.svelte";
 	import type { PageData } from "./$types";
     import Readme from "./readme.md"
-    import { Ellipsis } from "lucide-svelte"
+    import Ellipsis from "lucide-svelte/icons/ellipsis"
     import { fade } from "svelte/transition"
     let { data }: { data: PageData} = $props()
     let { userData, appData } = $derived(data)
