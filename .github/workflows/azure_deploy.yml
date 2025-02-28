@@ -65,8 +65,8 @@ jobs:
       - name: Configure frontend and backend
         uses: Azure/cli@v2
         env:
-          ENV_NAME: ${{ env.DEPLOY_NAME != 'production' && format('--environment-name ${0}',env.DEPLOY_NAME) || '' }}
-          SLOT_NAME: ${{ env.DEPLOY_NAME != 'production' && format('/slots/${0}',env.DEPLOY_NAME) || '' }}
+          ENV_NAME: ${{ env.DEPLOY_NAME != 'production' && format('--environment-name {0}',env.DEPLOY_NAME) || '' }}
+          SLOT_NAME: ${{ env.DEPLOY_NAME != 'production' && format('/slots/{0}',env.DEPLOY_NAME) || '' }}
         with:
           azcliversion: latest
           inlineScript: |
