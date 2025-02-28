@@ -90,11 +90,10 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
         }
 
         // load data from tessi and then save it
-        await this.tessiLoad()
+        return await this.tessiLoad()
             .then(() => super.save(this.data, backend))
             .then(() => setMessage(form, 'Login updated successfully!'))
             .catch(() => setError(form, "password", "Internal error!"))
-        return { form , success: form.valid }
     }
 } 
 
