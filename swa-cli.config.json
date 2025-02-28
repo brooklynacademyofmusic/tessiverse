@@ -7,7 +7,7 @@
       "resourceGroup": "tessiverse",
       "outputLocation": "./build/static",
       "apiLocation": "",
-      "apiVersion": "18",
+      "apiVersion": "20",
       "apiLanguage": "node",
       "appLocation": "."
     },
@@ -17,7 +17,7 @@
       "resourceGroup": "tessiverse",
       "outputLocation": "./build/static",
       "apiLocation": "",
-      "apiVersion": "18",
+      "apiVersion": "20",
       "apiLanguage": "node",
       "appLocation": "."
     }
