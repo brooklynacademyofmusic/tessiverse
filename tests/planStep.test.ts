@@ -232,15 +232,15 @@ describe("planStep", () => {
         {constituent: {id: 1000, displayname: "A. Person"}, id: 1,
          campaign: {description: "25FY Gala"},
          contributiondesignation: {description: "designation"},
-         laststepdate: new Date().toString()},
+         updateddatetime: new Date().toString()},
          {constituent: {id: 1000, displayname: "A. Person"}, id: 2,
          campaign: {description: "campaign"},
          contributiondesignation: {description: "OPERA-futuristic"},
-         laststepdate: new Date().toString()},
+         updateddatetime: new Date().toString()},
          {constituent: {id: 1000, displayname: "A. Person"}, id: 3,
          campaign: {description: "campaign"},
          contributiondesignation: {description: "designation"},
-         laststepdate: new Date(new Date().getTime() + 1000000).toString()}]
+         updateddatetime: new Date(new Date().getTime() + 1000000).toString()}]
     
     test.each([
     {body: "a@test.com gala", id: 1},
