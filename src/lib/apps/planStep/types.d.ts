@@ -8,7 +8,7 @@ export interface Plan {
     campaign: {description: string},
     contributiondesignation: {description: string},
     constituent: {id: number, displayname: string},
-    laststepdate: string,
+    updateddatetime: string,
     id: number
 }
 

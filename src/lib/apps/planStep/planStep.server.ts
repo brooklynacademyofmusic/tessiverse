@@ -109,7 +109,7 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
 
         plan.primary = findFirstString(primary, body)
         plan.secondary = findFirstString(secondary, body)
-        plan.tertiary = Date.parse(plan.laststepdate)
+        plan.tertiary = Date.parse(plan.updateddatetime)
 
         if (plan.secondary < 0) {
             plan.secondary = Infinity
