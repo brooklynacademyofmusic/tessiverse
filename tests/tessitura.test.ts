@@ -132,7 +132,6 @@ describe("TessituraAppServer", async () => {
     test("save validates the password, loads user data from Tessi and saves to backend", async () => {
         let user = new UserLoaded({identity: ""})
         user.save = async () => {}
-        tessi.data.tessiApiUrl = servers[0].value
         let tessiSave = Object.assign(tessi.data,{password:"$e(ret"})
         tessi.tessiPassword = vi.fn(async () => {})
         tessi.tessiValidate = vi.fn(async () => true)
@@ -151,12 +150,8 @@ describe("TessituraAppServer", async () => {
         tessi.tessiPassword = vi.fn(async () => {})
         tessi.tessiValidate = vi.fn(async () => true)
         tessi.tessiLoad = vi.fn(async () => new TessituraApp())
-        response = await tessi.save(tessiSave,user) as any
-        expect(response.data.form.errors).toHaveProperty("tessiApiUrl")
-        expect((response.data.form.errors.tessiApiUrl || [])[0]).toMatch("localhost:8888")
 
         tessi.tessiLoad = vi.fn(async () => {throw("Error loading")})
-        tessi.data.tessiApiUrl = servers[0].value
         response = await tessi.save(tessiSave,user) as any
         expect(response.data.form.errors).toHaveProperty("password")
         expect(response.data.form.errors.password).toContain("Internal error!")
@@ -170,6 +165,11 @@ describe("TessituraAppServer", async () => {
         response = await tessi.save(tessiSave,user) as any
         expect(response.data.form.errors).toHaveProperty("password")
         expect(response.data.form.errors.password).toContain("Invalid login")
+
+        tessi.data.tessiApiUrl = "something weird"
+        response = await tessi.save(tessiSave,user) as any
+        expect(response.data.form.errors).toHaveProperty("tessiApiUrl")
+        expect((response.data.form.errors.tessiApiUrl || [])[0]).toMatch("localhost:8888")
     })
 
 })
