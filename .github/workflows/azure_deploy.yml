@@ -71,7 +71,7 @@ jobs:
           azcliversion: latest
           inlineScript: |
             # link front end and backend 
-            if [ -n "$(az staticwebapp backends show -n tessiverse -g tessiverse ${{ env.ENV_NAME }} --query [0])" ]; then
+            if [ -n "$(az staticwebapp backends show -n tessiverse -g tessiverse ${{ env.ENV_NAME }} --query \[0\])" ]; then
               az staticwebapp backends unlink -n tessiverse -g tessiverse ${{ env.ENV_NAME }}
             fi
             az staticwebapp backends link -n tessiverse -g tessiverse  ${{ env.ENV_NAME }} \
