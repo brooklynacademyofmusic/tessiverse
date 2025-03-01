@@ -71,7 +71,7 @@ jobs:
           azcliversion: latest
           inlineScript: |
             # link front end and backend            
-            eval az staticwebapp backends unlink -n tessiverse -g tessiverse ${{ env.ENV_NAME }} || true
+            eval (az staticwebapp backends unlink -n tessiverse -g tessiverse ${{ env.ENV_NAME }} || true)
             eval az staticwebapp backends link -n tessiverse -g tessiverse  ${{ env.ENV_NAME }} \
               --backend-resource-id "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/tessiverse/providers/Microsoft.Web/sites/tessiverse-api${{ env.SLOT_NAME }}" --backend-region canadaeast
             
