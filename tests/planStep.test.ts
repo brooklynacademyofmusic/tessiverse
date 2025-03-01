@@ -58,19 +58,19 @@ describe("planStep", () => {
         {constituent: {id: 1000, displayname: "Alice Person"}, id: 1,
          campaign: {description: "campaign"},
          contributiondesignation: {description: "designation"},
-         laststepdate: new Date().toString()},
+         updateddatetime: new Date().toString()},
         {constituent: {id: 2000, displayname: "Briana Person"}, id: 2,
          campaign: {description: "campaign"},
          contributiondesignation: {description: "designation"},
-         laststepdate: new Date().toString()},
+         updateddatetime: new Date().toString()},
         {constituent: {id: 3000, displayname: "Christina Person"}, id: 3,
          campaign: {description: "campaign"},
          contributiondesignation: {description: "designation"},
-         laststepdate: new Date().toString()},
+         updateddatetime: new Date().toString()},
         {constituent: {id: 4000, displayname: "Daphne Person"}, id: 4,
          campaign: {description: "campaign"},
          contributiondesignation: {description: "designation"},
-         laststepdate: new Date().toString()},
+         updateddatetime: new Date().toString()},
     ]
     
     let emails: Email[][] = [
