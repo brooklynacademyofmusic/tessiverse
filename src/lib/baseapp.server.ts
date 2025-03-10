@@ -21,7 +21,7 @@ export abstract class BaseAppServer<A extends App<keyof Apps,any,any>, Save exte
 
     // Assigns data into this.data and then saves it to the backend
     async save(data: Partial<A["data"]>, backend: UserLoaded, key: ValidBackendKeys = {identity: backend.identity, app: this.key}): Promise<void | ActionFailure<any> | {form: any}> {
-        // Copy data so we don't overwrite it if it's actualy this.data 
+        // Copy data so we don't overwrite it if it's actually this.data 
         let _data = Object.assign({},data)
         // Get the freshest data from the backend first
         Object.assign(this.data, backend.load(key))
