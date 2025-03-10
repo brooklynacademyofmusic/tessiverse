@@ -15,7 +15,7 @@ type ValidAppData<K extends ValidBackendKeys> =  K extends ValidBackendKey<infer
 export type BackendKey = {identity: string, app?: string} 
 export interface Backend<T> {
     load(key: BackendKey): Promise<T> | T
-    save(key: BackendKey, data: T): void
+    save(key: BackendKey, data: T): Promise<boolean> | boolean 
 }
 
 export class Azure implements Backend<UserData> {
@@ -50,11 +50,11 @@ export class Azure implements Backend<UserData> {
     }
 
     // Save is destructive and overwrites the existing data
-    async save(key: BackendKey, data: UserData): Promise<void> {
+    async save(key: BackendKey, data: UserData): Promise<boolean> {
         return this.client.setSecret(this.hash(key.identity),
             JSON.stringify(data),            
             { tags: {identity: key.identity} }
-        ).then(() => {}).catch(() => 
+        ).then(() => true).catch(() => 
             error(500, errors.AZURE_KEYVAULT)
         )
     }
@@ -65,7 +65,7 @@ export class UserLoaded extends User implements Backend<ValidAppData<ValidBacken
         return this.apps[key.app] as any
     }
 
-    save<K extends ValidBackendKeys>(key: K, data: ValidAppData<K>): Promise<void> {
+    save<K extends ValidBackendKeys>(key: K, data: ValidAppData<K>): Promise<boolean> {
         if (key.app && key.app in this.apps) {
             this.apps[key.app] = data as any
         } 

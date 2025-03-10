@@ -5,7 +5,7 @@ import { test, expect, describe, beforeEach, vi } from 'vitest'
 import { Azure, UserLoaded } from '$lib/azure'
 import { SecretClient } from '@azure/keyvault-secrets'
 import { DefaultAzureCredential } from '@azure/identity'
-import { TessituraApp, type TessituraAppSave } from '$lib/apps/tessitura/tessitura'
+import { TessituraApp } from '$lib/apps/tessitura/tessitura'
 import { readFileSync } from 'node:fs'
 import * as https from 'node:https'
 import { json } from 'node:stream/consumers'
@@ -131,21 +131,25 @@ describe("TessituraAppServer", async () => {
 
     test("save validates the password, loads user data from Tessi and saves to backend", async () => {
         let user = new UserLoaded({identity: ""})
-        user.save = async () => {}
+        let saved = false
+        user.save = vi.fn(() => new Promise((r:(v: boolean)=>void) => setTimeout(() => r(saved = true),1000)))
         let tessiSave = Object.assign(tessi.data,{password:"$e(ret"})
         tessi.tessiPassword = vi.fn(async () => {})
         tessi.tessiValidate = vi.fn(async () => true)
         tessi.tessiLoad = vi.fn(async () => new TessituraApp())
-        await tessi.save(tessiSave,user)
+        let out = await tessi.save(tessiSave,user) as {form: SuperValidated<Infer<typeof tessituraSchema>>}
         expect(tessi.tessiPassword).toHaveBeenCalledWith('$e(ret')
         expect(tessi.tessiValidate).toHaveBeenCalledOnce()
         expect(tessi.tessiLoad).toHaveBeenCalledOnce()
+        expect(user.save).toHaveBeenCalledOnce()
+        expect(out.form.message).toMatch("Login updated successfully")
+        expect(saved).toBe(true)
     })
 
     test("save reports errors from each step", async () => {
         let user = new UserLoaded({identity: ""})
         let response: ActionFailure<{form: SuperValidated<Infer<typeof tessituraSchema>>}> = {} as any
-        user.save = async () => {}
+        user.save = async () => true
         let tessiSave = Object.assign(tessi.data,{password:"$e(ret"})
         tessi.tessiPassword = vi.fn(async () => {})
         tessi.tessiValidate = vi.fn(async () => true)
