@@ -35,15 +35,12 @@ export class TessituraAppServer extends BaseAppServer<TessituraApp, TessituraApp
     }
 
     async tessiLoad(): Promise<Partial<TessituraApp>> {
-        return tq("get","users",{query: {"username":this.data.userid},login: this.data.tessiApiUrl + "|" + env.TQ_ADMIN_LOGIN}).
-            then((tessi) => {
-                Object.assign(this.data, tessi)
-                return this
-            }).
-            then((tessi) => 
-                tq("get","constituents",{variant: "search", query: {type:"fluent", q:tessi.data.emailaddress || ""}, login: this.data.tessiApiUrl + "|" + env.TQ_ADMIN_LOGIN})
-            ).
-            then((tessi: {constituentsummaries: {id: number}[]}) => {
+        return tq("get","users",{query: {"username":this.data.userid},login: this.data.tessiApiUrl + "|" + env.TQ_ADMIN_LOGIN})
+            .then((tessi) => Object.assign(this.data, tessi))
+            .then(() => 
+                tq("get","constituents",{variant: "search", query: {type:"fluent", q:this.data.emailaddress || ""}, login: this.data.tessiApiUrl + "|" + env.TQ_ADMIN_LOGIN})
+            )
+            .then((tessi: {constituentsummaries: {id: number}[]}) => {
                 this.data.constituentid = tessi.constituentsummaries[0].id
                 return this
             })
