@@ -71,7 +71,9 @@ jobs:
           azcliversion: latest
           inlineScript: |
             # link front end and backend 
-            az staticwebapp backends unlink -n tessiverse -g tessiverse ${{ env.ENV_NAME }}
+            if [ -n "$(az staticwebapp backends show -n tessiverse -g tessiverse --environment-name development)" ]; then 
+              az staticwebapp backends unlink -n tessiverse -g tessiverse ${{ env.ENV_NAME }}
+            fi
             az staticwebapp backends link -n tessiverse -g tessiverse  ${{ env.ENV_NAME }} \
               --backend-resource-id "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/tessiverse/providers/Microsoft.Web/sites/tessiverse-api${{ env.SLOT_NAME }}" --backend-region canadaeast
             
