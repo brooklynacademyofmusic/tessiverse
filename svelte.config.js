@@ -24,7 +24,10 @@ const config = {
 					{ 	route: "/logout",
 						rewrite: "/.auth/logout"
 					}
-				]
+				],
+				platform: {
+					apiRuntime: 'node:20'
+				}
 			}
 		})
 	},

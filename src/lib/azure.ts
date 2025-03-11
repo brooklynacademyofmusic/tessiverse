@@ -15,7 +15,7 @@ type ValidAppData<K extends ValidBackendKeys> =  K extends ValidBackendKey<infer
 export type BackendKey = {identity: string, app?: string} 
 export interface Backend<T> {
     load(key: BackendKey): Promise<T> | T
-    save(key: BackendKey, data: T): void
+    save(key: BackendKey, data: T): Promise<void> | void 
 }
 
 export class Azure implements Backend<UserData> {
@@ -53,8 +53,11 @@ export class Azure implements Backend<UserData> {
     async save(key: BackendKey, data: UserData): Promise<void> {
         return this.client.setSecret(this.hash(key.identity),
             JSON.stringify(data),            
-            { tags: {identity: key.identity} }
-        ).then(() => {}).catch(() => 
+            { tags: {identity: key.identity} })
+        .then(() => {
+            console.log("saving "+key.identity+" ("+this.hash(key.identity)+") to "+this.client.vaultUrl); 
+            })
+        .catch(() => 
             error(500, errors.AZURE_KEYVAULT)
         )
     }

@@ -5,7 +5,7 @@ import { test, expect, describe, beforeEach, vi } from 'vitest'
 import { Azure, UserLoaded } from '$lib/azure'
 import { SecretClient } from '@azure/keyvault-secrets'
 import { DefaultAzureCredential } from '@azure/identity'
-import { TessituraApp, type TessituraAppSave } from '$lib/apps/tessitura/tessitura'
+import { TessituraApp, TessituraAppData } from '$lib/apps/tessitura/tessitura'
 import { readFileSync } from 'node:fs'
 import * as https from 'node:https'
 import { json } from 'node:stream/consumers'
@@ -131,16 +131,18 @@ describe("TessituraAppServer", async () => {
 
     test("save validates the password, loads user data from Tessi and saves to backend", async () => {
         let user = new UserLoaded({identity: ""})
-        user.save = async () => {}
-        tessi.data.tessiApiUrl = servers[0].value
-        let tessiSave = Object.assign(tessi.data,{password:"$e(ret"})
+        user.save = vi.fn(async () => {})
+        let tessiSave = Object.assign(tessi.data,{password:"$e(ret", userid: "newuser"})
         tessi.tessiPassword = vi.fn(async () => {})
         tessi.tessiValidate = vi.fn(async () => true)
         tessi.tessiLoad = vi.fn(async () => new TessituraApp())
-        await tessi.save(tessiSave,user)
+        let out = await tessi.save(tessiSave,user) as {form: SuperValidated<Infer<typeof tessituraSchema>>}
         expect(tessi.tessiPassword).toHaveBeenCalledWith('$e(ret')
         expect(tessi.tessiValidate).toHaveBeenCalledOnce()
         expect(tessi.tessiLoad).toHaveBeenCalledOnce()
+        expect(user.save).toHaveBeenCalledOnce()
+        expect((vi.mocked(user.save).mock.calls[0][1] as TessituraAppData).userid).toBe("newuser")
+        expect(out.form.message).toMatch("Login updated successfully")
     })
 
     test("save reports errors from each step", async () => {
@@ -151,12 +153,8 @@ describe("TessituraAppServer", async () => {
         tessi.tessiPassword = vi.fn(async () => {})
         tessi.tessiValidate = vi.fn(async () => true)
         tessi.tessiLoad = vi.fn(async () => new TessituraApp())
-        response = await tessi.save(tessiSave,user) as any
-        expect(response.data.form.errors).toHaveProperty("tessiApiUrl")
-        expect((response.data.form.errors.tessiApiUrl || [])[0]).toMatch("localhost:8888")
 
         tessi.tessiLoad = vi.fn(async () => {throw("Error loading")})
-        tessi.data.tessiApiUrl = servers[0].value
         response = await tessi.save(tessiSave,user) as any
         expect(response.data.form.errors).toHaveProperty("password")
         expect(response.data.form.errors.password).toContain("Internal error!")
@@ -170,6 +168,11 @@ describe("TessituraAppServer", async () => {
         response = await tessi.save(tessiSave,user) as any
         expect(response.data.form.errors).toHaveProperty("password")
         expect(response.data.form.errors.password).toContain("Invalid login")
+
+        tessi.data.tessiApiUrl = "something weird"
+        response = await tessi.save(tessiSave,user) as any
+        expect(response.data.form.errors).toHaveProperty("tessiApiUrl")
+        expect((response.data.form.errors.tessiApiUrl || [])[0]).toMatch("localhost:8888")
     })
 
 })
