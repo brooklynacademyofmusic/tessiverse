@@ -53,7 +53,7 @@ export type PlanStepEmail = {
     body: string
 }
 
-export async function planStep(email: PlanStepEmail): Promise<null> {
+export async function planStep(email: PlanStepEmail): Promise<PlanStepAppData["history"][0]> {
     email.from = email.from.toLowerCase()
     email.body = NodeHtmlMarkdown.translate(email.body)
     let emailId: string = `${email.from} => ${email.subject} ${email.body.substring(0,63)}${email.body.length > 64 ? "..." : ""}`
@@ -148,13 +148,14 @@ export async function planStep(email: PlanStepEmail): Promise<null> {
 
     // Refresh data, it's been a while
     let backend2 = new UserLoaded(await backend.load({identity: email.from}))
-    await new PlanStepAppServer().saveHistory({
-            subject: email.subject,
-            planDesc: [plan.constituent.displayname,plan.campaign.description,plan.contributiondesignation.description].join(" / "),
-            date: new Date()
-        },backend2)
+    let history = {
+        subject: email.subject,
+        planDesc: [plan.constituent.displayname,plan.campaign.description,plan.contributiondesignation.description].join(" / "),
+        date: new Date()
+    }
+    await new PlanStepAppServer().saveHistory(history,backend2)
 
-    return null
+    return history
 };
 
 export function findFirstString(needle: Array<string | null | void>, haystack: string): number {
