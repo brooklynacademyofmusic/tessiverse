@@ -2,7 +2,6 @@ import type { RequestHandler } from './$types';
 import { planStep, type PlanStepEmail } from '$lib/apps/planStep/planStep.server'
 import { error, json } from '@sveltejs/kit';
 import * as ERRORS from '$lib/errors'
-import type { PlanStepAppData } from '$lib/apps/planStep/planStep';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
     // needs admin because this is transacting as app users
