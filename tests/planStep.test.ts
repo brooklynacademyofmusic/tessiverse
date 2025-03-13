@@ -149,6 +149,31 @@ describe("planStep", () => {
 
     })
 
+    test("planStep returns a record of the plan created",async () => {
+        tqMocked.mockReset().
+            mockResolvedValueOnce([{"constituentid":12345}]).
+            mockResolvedValueOnce(plans).
+            mockResolvedValueOnce(emails).
+            mockResolvedValue(null)
+
+        email.body = "a@test.com"
+        planstep.plan.id = 1
+        planstep.notes = email.body
+
+        vi.useFakeTimers({now: planstep.stepdatetime})
+        let out = await planStep(email)
+
+        expect(tqMocked).toBeCalledTimes(4)
+        expect(tqMocked.mock.calls[3][0]).toBe("post")
+        expect(tqMocked.mock.calls[3][1]).toBe("steps")
+        expect(tqMocked.mock.calls[3][2]?.query).toEqual(planstep)
+        expect(out).toEqual({
+            date: planstep.stepdatetime,
+            planDesc: plans[0].constituent.displayname+" / "+plans[0].campaign.description+" / "+plans[0].contributiondesignation.description,
+            subject: email.subject,
+        })
+    })
+
     test.each([
         {body: "a@test.com", id: 1},
         {body: "2000", id: 2},
