@@ -87,7 +87,8 @@ describe("planStep", () => {
         "plan": {"id": 0}, 
         "stepdatetime": now,
         "completedondatetime": now, 
-        "type": {"id": 4}
+        "type": {"id": 4},
+        "worker": {"id": 12345}
     }
 
     beforeEach(() => {
