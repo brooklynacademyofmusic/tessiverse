@@ -141,7 +141,8 @@ export async function planStep(email: PlanStepEmail): Promise<PlanStepAppData["h
             notes: email.body,
             stepdatetime: new Date(),
             completedondatetime: planStepData.closeStep ? new Date() : null,
-            description: email.subject.length > 27 ? email.subject.substring(0,27)+"..." : email.subject 
+            description: email.subject.length > 27 ? email.subject.substring(0,27)+"..." : email.subject,
+            worker: {id: tessiData.constituentid}
         },
         login:tessiApp.auth})
         .catch(() => {
