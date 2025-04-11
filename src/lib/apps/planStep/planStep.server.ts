@@ -103,9 +103,11 @@ export async function planStep(email: PlanStepEmail): Promise<PlanStepAppData["h
         let emails = plans_emails[i]
         
         let primary = emails.map((e) => e.address).concat(
-            constituentid, plan.constituent.displayname.split(" "))
+            constituentid)
+            
         let secondary = plan.campaign.description.split(/\W/).concat(
-            plan.contributiondesignation.description.split(/\W/))
+            plan.contributiondesignation.description.split(/\W/),
+            plan.constituent.displayname.split(" "))
 
         plan.primary = findFirstString(primary, body)
         plan.secondary = findFirstString(secondary, body)
