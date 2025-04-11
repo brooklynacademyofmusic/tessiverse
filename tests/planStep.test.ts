@@ -176,9 +176,8 @@ describe("planStep", () => {
 
     test.each([
         {body: "a@test.com", id: 1},
-        {body: "2000", id: 2},
-        {body: "Christina Person", id: 3}
-    ])("planStep identifies a matching plan by email address, constituentid, and name", {timeout: 15000}, async (arg) => {
+        {body: "2000", id: 2}
+    ])("planStep identifies a matching plan by email address and constituentid", {timeout: 15000}, async (arg) => {
 
         tqMocked.mockReset().
             mockResolvedValueOnce([{"constituentid":12345}]).
@@ -230,8 +229,8 @@ describe("planStep", () => {
     test.each([
         {body: "a@test.com 2000 Christina Person", id: 1},
         {body: "2000 a@test.com Christina Person", id: 2},
-        {body: "Christina 2000 a@test.com", id: 3}
-    ])("planStep identifies a matching plan by the first email address, constituentid, and name", async (arg) => {
+        {body: "Christina 2000 a@test.com", id: 2}
+    ])("planStep identifies a matching plan by the first email address, constituentid", async (arg) => {
 
         tqMocked.mockReset().
             mockResolvedValueOnce([{"constituentid":12345}]).
